@@ -1,0 +1,8 @@
+### User defined ###
+# my favorite editors
+.idea/
+.vs/
+.vscode/
+
+# my favorite build directory
+build/
