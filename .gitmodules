@@ -1,0 +1,6 @@
+[submodule "ql/QuantLib"]
+	path = ql/QuantLib
+	url = https://github.com/lballabio/QuantLib.git
+[submodule "ql/QuantLib-SWIG"]
+	path = ql/QuantLib-SWIG
+	url = https://github.com/lballabio/QuantLib-SWIG.git
