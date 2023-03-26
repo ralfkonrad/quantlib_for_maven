@@ -9,12 +9,6 @@
 package org.quantlib;
 
 public class QuantLibJNI {
-
-  /// Load the JNI library
-  static {
-    System.loadLibrary("QuantLibJNI");
-  }
-
   public final static native long new_OptionalBool(boolean jarg1);
   public final static native void delete_OptionalBool(long jarg1);
   public final static native long new_Period__SWIG_0();
