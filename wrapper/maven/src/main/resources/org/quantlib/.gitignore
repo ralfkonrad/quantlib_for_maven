@@ -1,2 +1,2 @@
-*.dll
-*.so
+QuantLibJNI.dll
+libQuantLibJNI.so*
