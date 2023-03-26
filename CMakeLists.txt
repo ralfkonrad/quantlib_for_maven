@@ -63,7 +63,7 @@ link_libraries(Threads::Threads)
 find_package(JNI REQUIRED)
 include_directories(SYSTEM ${JNI_INCLUDE_DIRS})
 
-find_package(SWIG 4.1 REQUIRED COMPONENTS java)
+find_package(SWIG 4.1.1 EXACT REQUIRED COMPONENTS java)
 include(UseSWIG)
 
 set_property(SOURCE ${CMAKE_SOURCE_DIR}/${QUANTLIB_SWIG_FILES} PROPERTY CPLUSPLUS ON)
