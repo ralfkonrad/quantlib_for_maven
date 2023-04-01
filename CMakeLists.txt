@@ -5,8 +5,8 @@ cmake_policy(SET CMP0091 NEW)
 
 project(quantlib_for_maven VERSION 1.29.0 LANGUAGES CXX)
 
-cmake_path(SET QUANTLIB_ROOT "ql/QuantLib")
-cmake_path(SET QUANTLIB_SWIG_ROOT "ql/QuantLib-SWIG")
+cmake_path(SET QUANTLIB_ROOT "extern/QuantLib")
+cmake_path(SET QUANTLIB_SWIG_ROOT "extern/QuantLib-SWIG")
 cmake_path(SET QUANTLIB_SWIG_FILES "${QUANTLIB_SWIG_ROOT}/SWIG/quantlib.i")
 
 cmake_path(SET SWIG_WRAPPER_ROOT "wrapper")
