@@ -12,7 +12,6 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
-        "QL_USE_STD_CLASSES": "ON",
         "QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN": "ON",
         "QL_BUILD_BENCHMARK": "OFF",
         "QL_BUILD_EXAMPLES": "OFF",

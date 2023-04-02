@@ -6,8 +6,10 @@ cmake_policy(SET CMP0091 NEW)
 project(quantlib_for_maven VERSION 1.29.0 LANGUAGES CXX)
 
 cmake_path(SET QUANTLIB_ROOT "extern/QuantLib")
-cmake_path(SET QUANTLIB_SWIG_ROOT "extern/QuantLib-SWIG")
-cmake_path(SET QUANTLIB_SWIG_FILES "${QUANTLIB_SWIG_ROOT}/SWIG/quantlib.i")
+cmake_path(SET QUANTLIB_SWIG_ROOT "extern/QuantLib-SWIG/SWIG")
+
+cmake_path(SET SWIG_PROJECT_DIR "swig")
+cmake_path(SET SWIG_ENTRYPOINT_FILE "${SWIG_PROJECT_DIR}/qlEntrypoint.i")
 
 cmake_path(SET SWIG_WRAPPER_ROOT "wrapper")
 cmake_path(SET SWIG_WRAPPER_CPP_DIR "${SWIG_WRAPPER_ROOT}/cpp")
@@ -25,13 +27,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT}/cmake")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 add_subdirectory(${QUANTLIB_ROOT})
-include_directories(SYSTEM ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT} ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT})
-link_libraries(ql_library)
 
 include(Platform)
 if (${MSVC})
@@ -53,20 +53,21 @@ add_compile_definitions(BOOST_ALL_NO_LIB)
 if (NOT Boost_USE_STATIC_LIBS)
     add_compile_definitions(BOOST_ALL_DYN_LINK)
 endif ()
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-link_libraries(Threads::Threads)
 
 find_package(JNI REQUIRED)
-include_directories(SYSTEM ${JNI_INCLUDE_DIRS})
 
 find_package(SWIG 4.1.1 EXACT REQUIRED COMPONENTS java)
 include(UseSWIG)
 
-set_property(SOURCE ${CMAKE_SOURCE_DIR}/${QUANTLIB_SWIG_FILES} PROPERTY CPLUSPLUS ON)
+set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
+        CPLUSPLUS ON)
+set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
+        INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/${QUANTLIB_SWIG_ROOT})
+set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
+        USE_TARGET_INCLUDE_DIRECTORIES OFF)
 
 swig_add_library(
         QuantLibJNI
@@ -74,7 +75,7 @@ swig_add_library(
         LANGUAGE java
         OUTFILE_DIR ${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_CPP_DIR}
         OUTPUT_DIR ${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_PACKAGE_DIR}
-        SOURCES ${CMAKE_SOURCE_DIR}/${QUANTLIB_SWIG_FILES})
+        SOURCES ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE})
 
 set_property(TARGET QuantLibJNI PROPERTY
         SWIG_COMPILE_OPTIONS -package org.quantlib)
@@ -85,6 +86,20 @@ set_property(TARGET QuantLibJNI PROPERTY
 set_target_properties(QuantLibJNI PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION})
+
+target_include_directories(QuantLibJNI SYSTEM PRIVATE
+        ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT}
+        ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT}
+        ${Boost_INCLUDE_DIRS}
+        ${JNI_INCLUDE_DIRS})
+
+target_link_libraries(QuantLibJNI
+        ql_library
+        Threads::Threads)
+
+target_link_directories(QuantLibJNI PRIVATE
+        ${Boost_LIBRARY_DIRS})
+
 
 add_custom_command(TARGET QuantLibJNI POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_RESOURCES_DIR}"
