@@ -5,25 +5,27 @@ cmake_policy(SET CMP0091 NEW)
 
 project(quantlib_for_maven VERSION 1.29.0 LANGUAGES CXX)
 
-cmake_path(SET QUANTLIB_ROOT "extern/QuantLib")
-cmake_path(SET QUANTLIB_SWIG_ROOT "extern/QuantLib-SWIG/SWIG")
+cmake_path(SET QUANTLIB_ROOT                   extern/QuantLib)
 
-cmake_path(SET SWIG_PROJECT_DIR "swig")
-cmake_path(SET SWIG_ENTRYPOINT_FILE "${SWIG_PROJECT_DIR}/qlEntrypoint.i")
+cmake_path(SET QUANTLIB_ROOT_DIR               ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT})
+cmake_path(SET QUANTLIB_GENERATED_HEADERS_DIR  ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT})
 
-cmake_path(SET SWIG_WRAPPER_ROOT "wrapper")
-cmake_path(SET SWIG_WRAPPER_CPP_DIR "${SWIG_WRAPPER_ROOT}/cpp")
+cmake_path(SET QUANTLIB_SWIG_ROOT_DIR          ${CMAKE_SOURCE_DIR}/extern/QuantLib-SWIG/SWIG)
+cmake_path(SET SWIG_WRAPPER_ROOT_DIR           ${CMAKE_SOURCE_DIR}/wrapper)
+cmake_path(SET SWIG_WRAPPER_CPP_DIR            ${SWIG_WRAPPER_ROOT_DIR}/cpp)
 
-cmake_path(SET SWIG_WRAPPER_MAVEN_DIR "${SWIG_WRAPPER_ROOT}/maven")
-cmake_path(SET SWIG_WRAPPER_JAVA_DIR "${SWIG_WRAPPER_MAVEN_DIR}/src/main")
-cmake_path(SET SWIG_WRAPPER_JAVA_PACKAGE_DIR "${SWIG_WRAPPER_JAVA_DIR}/java/org/quantlib")
-cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_DIR "${SWIG_WRAPPER_JAVA_DIR}/resources/org/quantlib")
+cmake_path(SET SWIG_WRAPPER_MAVEN_DIR          ${SWIG_WRAPPER_ROOT_DIR}/maven)
+cmake_path(SET SWIG_WRAPPER_JAVA_DIR           ${SWIG_WRAPPER_MAVEN_DIR}/src/main)
+cmake_path(SET SWIG_WRAPPER_JAVA_PACKAGE_DIR   ${SWIG_WRAPPER_JAVA_DIR}/java/org/quantlib)
+cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_DIR ${SWIG_WRAPPER_JAVA_DIR}/resources/org/quantlib)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+if (${MSVC})
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif ()
 
 # Path for package-local cmake modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT}/cmake")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${QUANTLIB_ROOT_DIR}/cmake)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -32,76 +34,4 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 add_subdirectory(${QUANTLIB_ROOT})
-
-include(Platform)
-if (${MSVC})
-    add_compile_options(/bigobj)
-endif ()
-
-# Boost static libs ON for MSVC
-if (NOT DEFINED Boost_USE_STATIC_LIBS)
-    set(Boost_USE_STATIC_LIBS ${MSVC})
-endif ()
-
-# Boost static runtime ON for MSVC
-if (NOT DEFINED Boost_USE_STATIC_RUNTIME)
-    set(Boost_USE_STATIC_RUNTIME ${MSVC})
-endif ()
-
-find_package(Boost REQUIRED COMPONENTS thread)
-add_compile_definitions(BOOST_ALL_NO_LIB)
-if (NOT Boost_USE_STATIC_LIBS)
-    add_compile_definitions(BOOST_ALL_DYN_LINK)
-endif ()
-
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
-find_package(JNI REQUIRED)
-
-find_package(SWIG 4.1.1 EXACT REQUIRED COMPONENTS java)
-include(UseSWIG)
-
-set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
-        CPLUSPLUS ON)
-set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
-        INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/${QUANTLIB_SWIG_ROOT})
-set_property(SOURCE ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE} PROPERTY
-        USE_TARGET_INCLUDE_DIRECTORIES OFF)
-
-swig_add_library(
-        QuantLibJNI
-        TYPE SHARED
-        LANGUAGE java
-        OUTFILE_DIR ${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_CPP_DIR}
-        OUTPUT_DIR ${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_PACKAGE_DIR}
-        SOURCES ${CMAKE_SOURCE_DIR}/${SWIG_ENTRYPOINT_FILE})
-
-set_property(TARGET QuantLibJNI PROPERTY
-        SWIG_COMPILE_OPTIONS -package org.quantlib)
-
-set_property(TARGET QuantLibJNI PROPERTY
-        SWIG_COMPILE_DEFINITIONS JAVA_AUTOCLOSEABLE)
-
-set_target_properties(QuantLibJNI PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION})
-
-target_include_directories(QuantLibJNI SYSTEM PRIVATE
-        ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT}
-        ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT}
-        ${Boost_INCLUDE_DIRS}
-        ${JNI_INCLUDE_DIRS})
-
-target_link_libraries(QuantLibJNI
-        ql_library
-        Threads::Threads)
-
-target_link_directories(QuantLibJNI PRIVATE
-        ${Boost_LIBRARY_DIRS})
-
-
-add_custom_command(TARGET QuantLibJNI POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_RESOURCES_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:QuantLibJNI>" "${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_RESOURCES_DIR}"
-        COMMENT "Copying $<TARGET_FILE:QuantLibJNI> to ${CMAKE_SOURCE_DIR}/${SWIG_WRAPPER_JAVA_RESOURCES_DIR}.")
+add_subdirectory(swig)
