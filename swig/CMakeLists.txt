@@ -59,21 +59,7 @@ target_link_libraries(QuantLibJNI
 target_link_directories(QuantLibJNI PRIVATE
         ${Boost_LIBRARY_DIRS})
 
-cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR ${SWIG_WRAPPER_JAVA_RESOURCES_DIR}/native)
-if (${WIN32})
-    cmake_path(APPEND SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR win)
-    if (${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-        cmake_path(APPEND SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR x32)
-    else ()
-        cmake_path(APPEND SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR x64)
-    endif ()
-elseif (${LINUX})
-    cmake_path(APPEND SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR linux)
-elseif (${APPLE})
-    cmake_path(APPEND SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR macos)
-else ()
-    message(FATAL_ERROR "Unsupported platform ${CMAKE_SYSTEM}...")
-endif ()
+include(GetResourcesNativeDirectory)
 
 add_custom_command(TARGET QuantLibJNI POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_WRAPPER_JAVA_RESOURCES_NATIVE_DIR}
