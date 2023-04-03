@@ -12,7 +12,7 @@ public class QuantLibJNI {
 
   /// Load the JNI library
   static {
-    org.quantlib.helper.loadLibrary();
+    org.quantlib.helper.QuantLibJNIHelper.loadLibrary();
   }
 
   public final static native long new_OptionalBool(boolean jarg1);
