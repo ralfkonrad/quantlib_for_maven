@@ -11,10 +11,14 @@ cmake_path(SET QUANTLIB_ROOT_DIR               ${CMAKE_SOURCE_DIR}/${QUANTLIB_RO
 cmake_path(SET QUANTLIB_GENERATED_HEADERS_DIR  ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT})
 
 cmake_path(SET QUANTLIB_SWIG_ROOT_DIR          ${CMAKE_SOURCE_DIR}/extern/QuantLib-SWIG/SWIG)
+
+cmake_path(SET SWIG_ROOT                       swig)
+cmake_path(SET QL_ENTRYPOINT_I_FILE            ${CMAKE_SOURCE_DIR}/${SWIG_ROOT}/QuantLibEntrypoint.i)
+
 cmake_path(SET SWIG_WRAPPER_ROOT_DIR           ${CMAKE_SOURCE_DIR}/wrapper)
 cmake_path(SET SWIG_WRAPPER_CPP_DIR            ${SWIG_WRAPPER_ROOT_DIR}/cpp)
-
 cmake_path(SET SWIG_WRAPPER_MAVEN_DIR          ${SWIG_WRAPPER_ROOT_DIR}/maven)
+
 cmake_path(SET SWIG_WRAPPER_JAVA_DIR           ${SWIG_WRAPPER_MAVEN_DIR}/src/main)
 cmake_path(SET SWIG_WRAPPER_JAVA_PACKAGE_DIR   ${SWIG_WRAPPER_JAVA_DIR}/java/org/quantlib)
 cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_DIR ${SWIG_WRAPPER_JAVA_DIR}/resources/org/quantlib)
@@ -34,4 +38,4 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 add_subdirectory(${QUANTLIB_ROOT})
-add_subdirectory(swig)
+add_subdirectory(${SWIG_ROOT})

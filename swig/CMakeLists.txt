@@ -1,5 +1,3 @@
-cmake_path(SET QL_ENTRYPOINT_I_FILE ${CMAKE_CURRENT_SOURCE_DIR}/QuantLibEntrypoint.i)
-
 include(Platform)
 if (${MSVC})
     add_compile_options(/bigobj)
@@ -47,10 +45,6 @@ set_property(TARGET QuantLibJNI PROPERTY
 
 set_property(TARGET QuantLibJNI PROPERTY
         SWIG_COMPILE_DEFINITIONS JAVA_AUTOCLOSEABLE)
-
-set_target_properties(QuantLibJNI PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION})
 
 target_include_directories(QuantLibJNI SYSTEM PRIVATE
         ${QUANTLIB_GENERATED_HEADERS_DIR}
