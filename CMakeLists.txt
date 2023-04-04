@@ -21,7 +21,7 @@ cmake_path(SET SWIG_WRAPPER_MAVEN_DIR          ${SWIG_WRAPPER_ROOT_DIR}/maven)
 
 cmake_path(SET SWIG_WRAPPER_JAVA_DIR           ${SWIG_WRAPPER_MAVEN_DIR}/src/main)
 cmake_path(SET SWIG_WRAPPER_JAVA_PACKAGE_DIR   ${SWIG_WRAPPER_JAVA_DIR}/java/org/quantlib)
-cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_DIR ${SWIG_WRAPPER_JAVA_DIR}/resources/org/quantlib)
+cmake_path(SET SWIG_WRAPPER_JAVA_RESOURCES_DIR ${SWIG_WRAPPER_JAVA_DIR}/resources/)
 
 if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
