@@ -1,3 +1,5 @@
+include(CreateJavaLibraryDirectory)
+
 include(Platform)
 if (${MSVC})
     add_compile_options(/bigobj)
@@ -46,6 +48,9 @@ set_property(TARGET QuantLibJNI PROPERTY
 set_property(TARGET QuantLibJNI PROPERTY
         SWIG_COMPILE_DEFINITIONS JAVA_AUTOCLOSEABLE)
 
+set_property(TARGET QuantLibJNI PROPERTY
+        RUNTIME_OUTPUT_DIRECTORY ${SWIG_JAVA_RESOURCES_NATIVE_DIR})
+
 target_include_directories(QuantLibJNI SYSTEM PRIVATE
         ${QUANTLIB_GENERATED_HEADERS_DIR}
         ${QUANTLIB_ROOT_DIR}
@@ -58,9 +63,3 @@ target_link_libraries(QuantLibJNI
 
 target_link_directories(QuantLibJNI PRIVATE
         ${Boost_LIBRARY_DIRS})
-
-include(CreateJavaLibraryDirectory)
-
-add_custom_command(TARGET QuantLibJNI POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:QuantLibJNI> ${SWIG_JAVA_RESOURCES_NATIVE_DIR}
-        COMMENT "Copying $<TARGET_FILE:QuantLibJNI> to ${SWIG_JAVA_RESOURCES_NATIVE_DIR}.")

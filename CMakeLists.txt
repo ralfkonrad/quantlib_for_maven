@@ -22,10 +22,6 @@ cmake_path(SET SWIG_JAVA_DIR                   ${SWIG_MAVEN_DIR}/src/main)
 cmake_path(SET SWIG_JAVA_PACKAGE_DIR           ${SWIG_JAVA_DIR}/java/org/quantlib)
 cmake_path(SET SWIG_JAVA_RESOURCES_DIR         ${SWIG_JAVA_DIR}/resources)
 
-if (${MSVC})
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif ()
-
 # Path for package-local cmake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${QUANTLIB_ROOT_DIR}/cmake)
@@ -35,6 +31,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
+
+if (${MSVC})
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif ()
 
 add_subdirectory(${QUANTLIB_ROOT})
 add_subdirectory(${SWIG_ROOT})
