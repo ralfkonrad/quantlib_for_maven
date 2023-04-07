@@ -2,10 +2,7 @@ package org.quantlib.helper;
 
 import cz.adamh.utils.NativeUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class QuantLibJNIHelper {
 
@@ -26,13 +23,10 @@ public class QuantLibJNIHelper {
 
     private static OperatingSystem getOS() {
         String os = System.getProperty("os.name").toLowerCase();
-        if (os.startsWith("linux"))
-            return OperatingSystem.Linux;
-        if (os.startsWith("mac"))
-            return OperatingSystem.MacOs;
-        if (os.startsWith("win"))
-            return OperatingSystem.Windows;
-        throw new UnsupportedOperatingSystemException(os);
+        if (os.startsWith("linux")) return OperatingSystem.Linux;
+        if (os.startsWith("mac")) return OperatingSystem.MacOs;
+        if (os.startsWith("win")) return OperatingSystem.Windows;
+        throw new UnsupportedOperatingSystemException();
     }
 
     private static String getLibraryName() {
@@ -45,7 +39,7 @@ public class QuantLibJNIHelper {
                 return "QuantLibJNI.dll";
 
             default:
-                throw new UnsupportedOperatingSystemException(OS.name());
+                throw new UnsupportedOperatingSystemException();
         }
     }
 
@@ -58,33 +52,29 @@ public class QuantLibJNIHelper {
                 return String.join("/", path, getLibraryName());
 
             case Windows:
-                return String.join("/", path, getWindowsArchiceture(), getLibraryName());
+                return String.join("/", path, ARCH, getLibraryName());
 
             default:
-                throw new UnsupportedOperatingSystemException(OS.name());
+                throw new UnsupportedOperatingSystemException();
         }
-    }
-
-    private static String getWindowsArchiceture() {
-        String arch = System.getProperty("os.arch").toLowerCase();
-        return arch;
     }
 
     private enum OperatingSystem {
-        Linux,
-        MacOs,
-        Windows
+        Linux, MacOs, Windows
     }
 
     public static class UnsupportedOperatingSystemException extends RuntimeException {
-        private final String os;
+        private final static String OS =
+                System.getProperty("os.name") + " (arch: " + System.getProperty("os.arch") + ")";
+        private final static String MESSAGE =
+                "The operating system '" + OS + "' is not supported";
 
-        private UnsupportedOperatingSystemException(String os) {
-            this.os = os;
+        private UnsupportedOperatingSystemException() {
+            super(MESSAGE);
         }
 
         public String getUnsupportedOperatingSystem() {
-            return os;
+            return OS;
         }
     }
 }
