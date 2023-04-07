@@ -13,3 +13,5 @@ elseif (${APPLE})
 else ()
     message(FATAL_ERROR "Unsupported platform ${CMAKE_SYSTEM}...")
 endif ()
+
+file(MAKE_DIRECTORY ${SWIG_JAVA_RESOURCES_NATIVE_DIR})

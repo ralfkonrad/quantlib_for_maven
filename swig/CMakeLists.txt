@@ -59,9 +59,8 @@ target_link_libraries(QuantLibJNI
 target_link_directories(QuantLibJNI PRIVATE
         ${Boost_LIBRARY_DIRS})
 
-include(GetResourcesNativeDirectory)
+include(CreateJavaLibraryDirectory)
 
 add_custom_command(TARGET QuantLibJNI POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_JAVA_RESOURCES_NATIVE_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:QuantLibJNI> ${SWIG_JAVA_RESOURCES_NATIVE_DIR}
         COMMENT "Copying $<TARGET_FILE:QuantLibJNI> to ${SWIG_JAVA_RESOURCES_NATIVE_DIR}.")
