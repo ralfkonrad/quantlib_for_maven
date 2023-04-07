@@ -36,7 +36,7 @@ swig_add_library(
         QuantLibJNI
         TYPE SHARED
         LANGUAGE java
-        OUTFILE_DIR ${SWIG_WRAPPER_CPP_DIR}
+        OUTFILE_DIR ${SWIG_CPP_DIR}
         OUTPUT_DIR ${SWIG_JAVA_PACKAGE_DIR}
         SOURCES ${QL_ENTRYPOINT_I_FILE})
 

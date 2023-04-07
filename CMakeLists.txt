@@ -15,13 +15,12 @@ cmake_path(SET QUANTLIB_SWIG_ROOT_DIR          ${CMAKE_SOURCE_DIR}/extern/QuantL
 cmake_path(SET SWIG_ROOT                       swig)
 cmake_path(SET QL_ENTRYPOINT_I_FILE            ${CMAKE_SOURCE_DIR}/${SWIG_ROOT}/QuantLibEntrypoint.i)
 
-cmake_path(SET SWIG_WRAPPER_ROOT_DIR           ${CMAKE_SOURCE_DIR}/wrapper)
-cmake_path(SET SWIG_WRAPPER_CPP_DIR            ${SWIG_WRAPPER_ROOT_DIR}/cpp)
+cmake_path(SET SWIG_CPP_DIR                    ${CMAKE_SOURCE_DIR}/cpp)
 
-cmake_path(SET SWIG_MAVEN_DIR          ${SWIG_WRAPPER_ROOT_DIR}/maven)
-cmake_path(SET SWIG_JAVA_DIR           ${SWIG_MAVEN_DIR}/src/main)
-cmake_path(SET SWIG_JAVA_PACKAGE_DIR   ${SWIG_JAVA_DIR}/java/org/quantlib)
-cmake_path(SET SWIG_JAVA_RESOURCES_DIR ${SWIG_JAVA_DIR}/resources)
+cmake_path(SET SWIG_MAVEN_DIR                  ${CMAKE_SOURCE_DIR}/maven)
+cmake_path(SET SWIG_JAVA_DIR                   ${SWIG_MAVEN_DIR}/src/main)
+cmake_path(SET SWIG_JAVA_PACKAGE_DIR           ${SWIG_JAVA_DIR}/java/org/quantlib)
+cmake_path(SET SWIG_JAVA_RESOURCES_DIR         ${SWIG_JAVA_DIR}/resources)
 
 if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
