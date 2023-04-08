@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-public class BasicTest {
+public class QuantLibTest {
     @Test
-    public void testLoading() {
+    public void testLocalDate() {
         try (Settings instance = Settings.instance();
              Date evaluationDate = instance.getEvaluationDate()) {
-            LocalDate localDate = evaluationDate.toLocalDate();
-            Assertions.assertEquals(localDate, LocalDate.now());
+
+            Assertions.assertEquals(evaluationDate.toLocalDate(), LocalDate.now());
             Assertions.assertEquals(evaluationDate.toString(), Date.of(LocalDate.now()).toString());
         }
     }
