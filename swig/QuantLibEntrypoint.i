@@ -3,7 +3,7 @@
 %pragma(java) jniclasscode=%{
   /// Load the JNI library
   static {
-    org.quantlib.helper.QuantLibJNIHelper.loadLibrary();
+    QuantLibJNIHelper.loadLibrary();
   }
 %}
 #endif

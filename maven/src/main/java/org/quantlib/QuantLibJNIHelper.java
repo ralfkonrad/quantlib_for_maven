@@ -1,10 +1,10 @@
-package org.quantlib.helper;
+package org.quantlib;
 
 import cz.adamh.utils.NativeUtils;
 
 import java.io.IOException;
 
-public class QuantLibJNIHelper {
+class QuantLibJNIHelper {
 
     private static final OperatingSystem OS = getOS();
     private static final String ARCH = System.getProperty("os.arch").toLowerCase();
@@ -12,12 +12,12 @@ public class QuantLibJNIHelper {
     private QuantLibJNIHelper() {
     }
 
-    public static void loadLibrary() {
+    static void loadLibrary() {
         try {
             String libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UnsupportedOperatingSystemException(e);
         }
     }
 
@@ -67,10 +67,14 @@ public class QuantLibJNIHelper {
         private final static String OS =
                 System.getProperty("os.name") + " (arch: " + System.getProperty("os.arch") + ")";
         private final static String MESSAGE =
-                "The operating system '" + OS + "' is not supported";
+                "The operating system '" + OS + "' is not supported.";
 
         private UnsupportedOperatingSystemException() {
             super(MESSAGE);
+        }
+
+        private UnsupportedOperatingSystemException(Exception exception) {
+            super(MESSAGE, exception);
         }
 
         public String getUnsupportedOperatingSystem() {
