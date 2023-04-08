@@ -5,11 +5,13 @@ import cz.adamh.utils.NativeUtils;
 import java.io.IOException;
 
 class QuantLibJNIHelper {
+    public interface AutoCloseable extends java.lang.AutoCloseable {
+        void delete();
 
-    private static final OperatingSystem OS = getOS();
-    private static final String ARCH = System.getProperty("os.arch").toLowerCase();
-
-    private QuantLibJNIHelper() {
+        @Override
+        default void close() {
+            this.delete();
+        }
     }
 
     static void loadLibrary() {
@@ -19,6 +21,29 @@ class QuantLibJNIHelper {
         } catch (IOException e) {
             throw new UnsupportedOperatingSystemException(e);
         }
+    }
+
+    public static class UnsupportedOperatingSystemException extends RuntimeException {
+        private final static String OS = System.getProperty("os.name") + " (arch: " + System.getProperty("os.arch") + ")";
+        private final static String MESSAGE = "The operating system '" + OS + "' is not supported.";
+
+        private UnsupportedOperatingSystemException() {
+            super(MESSAGE);
+        }
+
+        private UnsupportedOperatingSystemException(Exception exception) {
+            super(MESSAGE, exception);
+        }
+
+        public String getUnsupportedOperatingSystem() {
+            return OS;
+        }
+    }
+
+    private static final OperatingSystem OS = getOS();
+    private static final String ARCH = System.getProperty("os.arch").toLowerCase();
+
+    private QuantLibJNIHelper() {
     }
 
     private static OperatingSystem getOS() {
@@ -61,24 +86,5 @@ class QuantLibJNIHelper {
 
     private enum OperatingSystem {
         Linux, MacOs, Windows
-    }
-
-    public static class UnsupportedOperatingSystemException extends RuntimeException {
-        private final static String OS =
-                System.getProperty("os.name") + " (arch: " + System.getProperty("os.arch") + ")";
-        private final static String MESSAGE =
-                "The operating system '" + OS + "' is not supported.";
-
-        private UnsupportedOperatingSystemException() {
-            super(MESSAGE);
-        }
-
-        private UnsupportedOperatingSystemException(Exception exception) {
-            super(MESSAGE, exception);
-        }
-
-        public String getUnsupportedOperatingSystem() {
-            return OS;
-        }
     }
 }

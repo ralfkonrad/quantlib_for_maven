@@ -45,9 +45,6 @@ swig_add_library(
 set_property(TARGET QuantLibJNI PROPERTY
         SWIG_COMPILE_OPTIONS -package org.quantlib)
 
-set_property(TARGET QuantLibJNI PROPERTY
-        SWIG_COMPILE_DEFINITIONS JAVA_AUTOCLOSEABLE)
-
 if (${MSVC})
     set_property(TARGET QuantLibJNI PROPERTY
             RUNTIME_OUTPUT_DIRECTORY ${SWIG_JAVA_RESOURCES_NATIVE_DIR})
