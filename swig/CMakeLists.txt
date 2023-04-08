@@ -65,3 +65,10 @@ target_link_libraries(QuantLibJNI
 
 target_link_directories(QuantLibJNI PRIVATE
         ${Boost_LIBRARY_DIRS})
+
+add_custom_command(
+        TARGET QuantLibJNI POST_BUILD
+        COMMAND mvn clean verify
+        WORKING_DIRECTORY ${SWIG_MAVEN_DIR}
+        COMMENT "Running mvn clean verify"
+        VERBATIM)
