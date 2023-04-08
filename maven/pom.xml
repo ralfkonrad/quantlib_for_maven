@@ -38,21 +38,21 @@
                     <groupId>com.github.ekryd.sortpom</groupId>
                     <artifactId>sortpom-maven-plugin</artifactId>
                     <version>3.2.1</version>
-                    <configuration>
-                        <createBackupFile>false</createBackupFile>
-                        <sortPlugins>groupId,artifactId</sortPlugins>
-                        <sortDependencies>scope,artifactId</sortDependencies>
-                        <sortDependencyManagement>groupId,artifactId</sortDependencyManagement>
-                        <nrOfIndentSpace>4</nrOfIndentSpace>
-                        <keepBlankLines>true</keepBlankLines>
-                        <sortProperties>true</sortProperties>
-                    </configuration>
                     <executions>
                         <execution>
                             <goals>
                                 <goal>sort</goal>
                             </goals>
                             <phase>verify</phase>
+                            <configuration>
+                                <createBackupFile>false</createBackupFile>
+                                <sortPlugins>groupId,artifactId</sortPlugins>
+                                <sortDependencies>scope,artifactId</sortDependencies>
+                                <sortDependencyManagement>groupId,artifactId</sortDependencyManagement>
+                                <nrOfIndentSpace>4</nrOfIndentSpace>
+                                <keepBlankLines>true</keepBlankLines>
+                                <sortProperties>true</sortProperties>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -104,10 +104,6 @@
 
         <plugins>
             <plugin>
-                <groupId>com.github.ekryd.sortpom</groupId>
-                <artifactId>sortpom-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
@@ -117,4 +113,21 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>sortpom</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.ekryd.sortpom</groupId>
+                        <artifactId>sortpom-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
