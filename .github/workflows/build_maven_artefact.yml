@@ -13,53 +13,58 @@ env:
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
 
 jobs:
-    build-on-macos:
-      runs-on: macos-12
-      steps:
-        - uses: actions/checkout@v3
-          with: 
-            submodules: 'true'
+    # build-on-macos:
+    #   runs-on: macos-12
+    #   steps:
+    #     - uses: actions/checkout@v3
+    #       with: 
+    #         submodules: 'true'
 
-        - name: Build native library for ${{ runner.os }}
-          uses: ./.github/actions/build_native_library
+    #     - name: Build native library for ${{ runner.os }}
+    #       uses: ./.github/actions/build_native_library
     
-    build-on-windows:
-      runs-on: windows-2022
-      steps:
-          - uses: actions/checkout@v3
-            with: 
-              submodules: 'true'
+    # build-on-windows:
+    #   runs-on: windows-2022
+    #   steps:
+    #       - uses: actions/checkout@v3
+    #         with: 
+    #           submodules: 'true'
   
-          - name: Build native library for ${{ runner.os }}
-            uses: ./.github/actions/build_native_library
+    #       - name: Build native library for ${{ runner.os }}
+    #         uses: ./.github/actions/build_native_library
     
     create-quantlib-jar-on-linux:
       runs-on: ubuntu-22.04
-      needs: [ build-on-macos, build-on-windows ]
+      # needs: [ build-on-macos, build-on-windows ]
       steps:
         - uses: actions/checkout@v3
           with: 
             submodules: 'true'
 
-        - name: Download macOS native library
-          uses: actions/download-artifact@v3
-          with:
-            name: native-library-macOS
-            path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+        # - name: Download macOS native library
+        #   uses: actions/download-artifact@v3
+        #   with:
+        #     name: native-library-macOS
+        #     path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
             
-        - name: Download Windows native library
-          uses: actions/download-artifact@v3
-          with:
-            name: native-library-Windows
-            path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+        # - name: Download Windows native library
+        #   uses: actions/download-artifact@v3
+        #   with:
+        #     name: native-library-Windows
+        #     path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
 
         - name: Set the maven version
           working-directory: ${{ env.MAVEN_PATH }}
           run: |
-            mvn versions:set -DnewVersion ${{ env.QUANTLIB_VERSION }}
+            mvn versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
         - name: Build native library for ${{ runner.os }}
           uses: ./.github/actions/build_native_library
+
+        - name: Delete native library artifacts
+          uses: geekyeggo/delete-artifact@v2
+          with:
+              name: native-library-*
 
         - name: Upload quantlib jar
           uses: actions/upload-artifact@v3
