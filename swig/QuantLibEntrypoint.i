@@ -3,16 +3,16 @@
 %pragma(java) jniclasscode=%{
   /// Load the JNI library
   static {
-    QuantLibJNIHelper.loadLibrary();
+    QuantLibJNIHelpers.loadLibrary();
   }
 %}
 
-%typemap(javainterfaces) SWIGTYPE "QuantLibJNIHelper.AutoCloseable";
+%typemap(javainterfaces) SWIGTYPE "QuantLibJNIHelpers.AutoCloseable";
 %extend std::vector {
-    %typemap(javainterfaces) std::vector "QuantLibJNIHelper.AutoCloseable, java.util.RandomAccess";
+    %typemap(javainterfaces) std::vector "QuantLibJNIHelpers.AutoCloseable, java.util.RandomAccess";
 };
 %extend std::vector<bool> {
-    %typemap(javainterfaces) std::vector "QuantLibJNIHelper.AutoCloseable, java.util.RandomAccess"
+    %typemap(javainterfaces) std::vector "QuantLibJNIHelpers.AutoCloseable, java.util.RandomAccess"
 }
 
 // close() method naming conflict with AutoCloseable.close()
@@ -32,4 +32,3 @@
 #endif
 
 %include quantlib.i
-

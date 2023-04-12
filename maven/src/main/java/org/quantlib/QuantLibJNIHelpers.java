@@ -4,7 +4,7 @@ import cz.adamh.utils.NativeUtils;
 
 import java.io.IOException;
 
-class QuantLibJNIHelper {
+class QuantLibJNIHelpers {
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
 
@@ -43,7 +43,7 @@ class QuantLibJNIHelper {
     private static final OperatingSystem OS = getOS();
     private static final String ARCH = System.getProperty("os.arch").toLowerCase();
 
-    private QuantLibJNIHelper() {
+    private QuantLibJNIHelpers() {
     }
 
     private static OperatingSystem getOS() {
