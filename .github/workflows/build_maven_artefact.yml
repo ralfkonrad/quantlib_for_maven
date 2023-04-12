@@ -1,10 +1,13 @@
 name: Build the QuantLib maven artefact
 
 on:
-    workflow_dispatch: {}
+  push:
+    branches:
+      - master
+  workflow_dispatch: {}
 
 env:
-  QUANTLIB_VERSION:                 "1.29.0"
+  QUANTLIB_VERSION:                 1.29.0
   MAVEN_PATH:                       maven
   MAVEN_TARGET_PATH:                maven/target
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
@@ -50,11 +53,25 @@ jobs:
             name: native-library-Windows
             path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
 
+        - name: Set the maven version
+          working-directory: ${{ env.MAVEN_PATH }}
+          run: |
+            mvn versions:set -DnewVersion ${{ env.QUANTLIB_VERSION }}
+
         - name: Build native library for ${{ runner.os }}
           uses: ./.github/actions/build_native_library
 
-        - name: Upload jars
+        - name: Upload quantlib jar
           uses: actions/upload-artifact@v3
           with:
-            name: QuantLib.jars
-            path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-*.jar
+            name: quantlib-${{ env.QUANTLIB_VERSION }}.jar
+            path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}.jar
+            if-no-files-found: error
+
+        - name: Upload quantlib source jar
+          uses: actions/upload-artifact@v3
+          with:
+            name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
+            path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
+            if-no-files-found: error
+  
