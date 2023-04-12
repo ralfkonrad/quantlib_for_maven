@@ -57,8 +57,10 @@ class QuantLibJNIHelper {
     private static String getLibraryName() {
         switch (OS) {
             case Linux:
-            case MacOs:
                 return "libQuantLibJNI.so";
+
+            case MacOs:
+                return "libQuantLibJNI.jnilib";
 
             case Windows:
                 return "QuantLibJNI.dll";

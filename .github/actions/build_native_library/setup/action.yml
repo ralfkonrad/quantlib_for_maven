@@ -1,0 +1,44 @@
+name: Setup of the needed software
+description: Setup of the needed software
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y libboost-all-dev ccache ninja-build
+        sudo apt remove -y swig swig4.0
+        brew install swig
+
+    - name: Setup macOs
+      if: runner.os == 'macOs'
+      shell: bash
+      run: |
+        brew install ninja boost
+
+    - name: Setup Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Start-BitsTransfer -Source $env:BOOST_DOWNLOAD_URI -Destination $env:BOOST_INSTALLER_PATH
+        Start-Process -Wait -FilePath "$env:BOOST_INSTALLER_PATH" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_ROOT"
+        choco install -y ninja
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: "8"
+        distribution: "temurin"
+        cache: maven
+
+    - name: Setup CCache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
+        key: ${{ runner.os }}--${{ github.job }}
+        restore-keys: |
+          ${{ runner.os }}--${{ github.job }}
+          ${{ runner.os }}

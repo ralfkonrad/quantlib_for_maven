@@ -6,3 +6,6 @@
 
 # my favorite build directory
 build/
+
+# visual code leftovers
+.metals/

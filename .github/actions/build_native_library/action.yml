@@ -1,0 +1,22 @@
+name: Build native library for the runner
+description: Build native library for the runner
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/build_native_library/env_variables
+
+    - uses: ./.github/actions/build_native_library/setup
+
+    - name: Build
+      shell: bash
+      run: |
+        cmake --version
+        cmake --preset release -L
+        cmake --build --preset release --verbose
+
+    - name: Upload native library
+      uses: actions/upload-artifact@v3
+      with:
+        name: native-library-${{ runner.os }}
+        path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
