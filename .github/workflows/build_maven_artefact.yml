@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  QUANTLIB_VERSION:                 1.29.0
+  QUANTLIB_VERSION:                 1.30.0-rc
   MAVEN_PATH:                       maven
   MAVEN_TARGET_PATH:                maven/target
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
@@ -79,4 +79,3 @@ jobs:
             name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
             path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
             if-no-files-found: error
-  

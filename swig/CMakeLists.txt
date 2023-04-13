@@ -15,7 +15,7 @@ if (NOT DEFINED Boost_USE_STATIC_RUNTIME)
     set(Boost_USE_STATIC_RUNTIME ${MSVC})
 endif ()
 
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED)
 add_compile_definitions(BOOST_ALL_NO_LIB)
 if (NOT Boost_USE_STATIC_LIBS)
     add_compile_definitions(BOOST_ALL_DYN_LINK)
@@ -62,9 +62,6 @@ target_include_directories(QuantLibJNI SYSTEM PRIVATE
 target_link_libraries(QuantLibJNI
         ql_library
         Threads::Threads)
-
-target_link_directories(QuantLibJNI PRIVATE
-        ${Boost_LIBRARY_DIRS})
 
 add_custom_command(
         TARGET QuantLibJNI POST_BUILD
