@@ -28,9 +28,3 @@ runs:
         Write "BOOST_DOWNLOAD_URI=https://boostorg.jfrog.io/artifactory/main/release/1.81.0/binaries/boost_1_81_0-msvc-14.3-64.exe" >> $env:GITHUB_ENV
         Write "BOOST_INSTALLER_PATH=$env:TEMP\boost.exe"                                                                            >> $env:GITHUB_ENV
         Write "BOOST_ROOT=$env:TEMP\boost"                                                                                          >> $env:GITHUB_ENV
-
-    - name: Set up Visual Studio shell on Windows
-      uses: egor-tensin/vs-shell@v2
-      if: runner.os == 'Windows'
-      with:
-        arch: x64

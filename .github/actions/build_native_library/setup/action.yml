@@ -42,3 +42,9 @@ runs:
         restore-keys: |
           ${{ runner.os }}--${{ github.job }}
           ${{ runner.os }}
+
+    - name: Set up Visual Studio shell on Windows
+      uses: egor-tensin/vs-shell@v2
+      if: runner.os == 'Windows'
+      with:
+        arch: x64
