@@ -5,6 +5,16 @@ if (${MSVC})
     add_compile_options(/bigobj)
 endif ()
 
+# Set the default warning level from quantlib
+if (MSVC)
+    # warning level 3
+    # There are also specific warnings disabled for MSCV in cmake/Platform.cmake.
+    add_compile_options(-W3)
+else ()
+    # lots of warnings
+    add_compile_options(-Wall -Wno-unknown-pragmas)
+endif ()
+
 # Boost static libs ON for MSVC
 if (NOT DEFINED Boost_USE_STATIC_LIBS)
     set(Boost_USE_STATIC_LIBS ${MSVC})
