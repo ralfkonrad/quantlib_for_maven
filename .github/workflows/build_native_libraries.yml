@@ -1,0 +1,29 @@
+name: Build for different runners
+
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+    build-on:
+      strategy:
+        fail-fast: false
+        matrix:
+          os:
+            - ubuntu-20.04
+            - ubuntu-22.04
+            - macos-11
+            - macos-12
+            - windows-2019
+            - windows-2022
+
+      runs-on: ${{ matrix.os }}
+      
+      steps:
+        - uses: actions/checkout@v3
+          with: 
+            submodules: 'true'
+
+        - name: Build native library for ${{ matrix.os }}
+          uses: ./.github/actions/build_native_library
