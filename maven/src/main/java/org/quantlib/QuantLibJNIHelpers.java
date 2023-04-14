@@ -35,6 +35,7 @@ class QuantLibJNIHelpers {
             super(MESSAGE, exception);
         }
 
+        @SuppressWarnings("unused")
         public String getUnsupportedOperatingSystem() {
             return OS;
         }
@@ -48,9 +49,15 @@ class QuantLibJNIHelpers {
 
     private static OperatingSystem getOS() {
         String os = System.getProperty("os.name").toLowerCase();
-        if (os.startsWith("linux")) return OperatingSystem.Linux;
-        if (os.startsWith("mac")) return OperatingSystem.MacOs;
-        if (os.startsWith("win")) return OperatingSystem.Windows;
+        if (os.startsWith("linux")) {
+            return OperatingSystem.Linux;
+        }
+        if (os.startsWith("mac")) {
+            return OperatingSystem.MacOs;
+        }
+        if (os.startsWith("win")) {
+            return OperatingSystem.Windows;
+        }
         throw new UnsupportedOperatingSystemException();
     }
 
@@ -87,6 +94,8 @@ class QuantLibJNIHelpers {
     }
 
     private enum OperatingSystem {
-        Linux, MacOs, Windows
+        Linux,
+        MacOs,
+        Windows
     }
 }
