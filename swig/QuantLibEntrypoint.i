@@ -1,4 +1,7 @@
 #if defined(SWIGJAVA)
+// QuantLibJNI class does not have to public
+%pragma(java) jniclassclassmodifiers="class"
+
 // Automatically load the shared library for JAVA binding
 %pragma(java) jniclasscode=%{
   /// Load the JNI library
@@ -6,6 +9,8 @@
     QuantLibJNIHelpers.loadLibrary();
   }
 %}
+
+%include stl.i
 
 %typemap(javainterfaces) SWIGTYPE "QuantLibJNIHelpers.AutoCloseable";
 %extend std::vector {
