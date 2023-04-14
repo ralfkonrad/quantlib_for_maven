@@ -26,6 +26,8 @@ jobs:
 
           - name: Build native library for ${{ runner.os }}
             uses: ./.github/actions/build_native_library
+            with:
+              upload-path: $MAVEN_RESOURCES_NATIVE_LIBS_PATH
 
   create-quantlib-jar-on-linux:
     runs-on: ubuntu-22.04
