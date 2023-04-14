@@ -4,7 +4,7 @@ description: Build native library for the runner
 inputs:
   upload-path:
     description: The path where to find the native library to upload
-    default: ""
+    default: ''
     required: false
 
 runs:
