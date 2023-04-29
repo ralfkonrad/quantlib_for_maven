@@ -1,0 +1,40 @@
+name: Build with the latest QuantLib and QuantLib-SWIG changes
+
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch: {}
+  schedule:
+    - cron: '23 4 * * *'
+
+jobs:
+    build-latest:
+      strategy:
+        fail-fast: false
+        matrix:
+          os:
+            - ubuntu-22.04
+            - macos-12
+            - windows-2022
+
+      runs-on: ${{ matrix.os }}
+      
+      steps:
+        - uses: actions/checkout@v3
+          with: 
+            submodules: 'true'
+
+        - name: Checkout master of QuantLib
+          working-directory: "extern/QuantLib"
+          run: |
+            git fetch --all
+            git checkout master
+  
+        - name: Checkout master of QuantLib-SWIG
+          working-directory: "extern/QuantLib-SWIG"
+          run: |
+            git fetch --all
+            git checkout master
+
+        - name: Build native library for ${{ matrix.os }}
+          uses: ./.github/actions/build_native_library
