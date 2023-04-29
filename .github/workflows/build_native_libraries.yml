@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 jobs:
-    build-on:
+    build-native:
       strategy:
         fail-fast: false
         matrix:
