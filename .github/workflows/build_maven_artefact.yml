@@ -1,13 +1,12 @@
 name: Build the QuantLib maven artefact
 
 on:
-  push:
-    branches:
-      - master
+  push: {}
+  pull_request: {}
   workflow_dispatch: {}
 
 env:
-  QUANTLIB_VERSION:                 1.30.0-rc
+  QUANTLIB_VERSION:                 1.30.0-SNAPSHOT
   MAVEN_PATH:                       maven
   MAVEN_TARGET_PATH:                maven/target
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
