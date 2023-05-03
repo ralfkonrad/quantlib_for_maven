@@ -65,7 +65,7 @@ target_link_libraries(QuantLibJNI
 
 add_custom_command(
         TARGET QuantLibJNI POST_BUILD
-        COMMAND mvn clean verify
+        COMMAND mvn --batch-mode clean verify
         WORKING_DIRECTORY ${SWIG_MAVEN_DIR}
         COMMENT "Running mvn clean verify"
         VERBATIM)
