@@ -58,7 +58,7 @@ jobs:
       - name: Set the maven version
         working-directory: ${{ env.MAVEN_PATH }}
         run: |
-          mvn versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
+          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
