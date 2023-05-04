@@ -6,6 +6,40 @@
     <groupId>de.ralfkonrad</groupId>
     <artifactId>quantlib</artifactId>
     <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>QuantLib module</name>
+    <description>Java language binding for QuantLib</description>
+    <url>https://github.com/ralfkonrad/quantlib_for_maven</url>
+    <inceptionYear>2023</inceptionYear>
+    <licenses>
+        <license>
+            <name>BSD 3-Clause "New" or "Revised" License</name>
+            <url>https://github.com/ralfkonrad/quantlib_for_maven/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Ralf Konrad Eckel</name>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/ralfkonrad/quantlib_for_maven.git</connection>
+        <developerConnection>scm:git:https://github.com/ralfkonrad/quantlib_for_maven.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/ralfkonrad/quantlib_for_maven</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/ralfkonrad/quantlib_for_maven/issues</url>
+    </issueManagement>
 
     <distributionManagement>
         <repository>
