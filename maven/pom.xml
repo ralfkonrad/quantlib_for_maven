@@ -7,6 +7,14 @@
     <artifactId>quantlib</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/ralfkonrad/quantlib_for_maven</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -43,11 +51,11 @@
                             <goals>
                                 <goal>sort</goal>
                             </goals>
-                            <phase>verify</phase>
+                            <phase>validate</phase>
                             <configuration>
                                 <createBackupFile>false</createBackupFile>
                                 <sortPlugins>groupId,artifactId</sortPlugins>
-                                <sortDependencies>scope,artifactId</sortDependencies>
+                                <sortDependencies>groupId,artifactId</sortDependencies>
                                 <sortDependencyManagement>groupId,artifactId</sortDependencyManagement>
                                 <nrOfIndentSpace>4</nrOfIndentSpace>
                                 <keepBlankLines>true</keepBlankLines>
