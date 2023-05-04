@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-12, windows-2022 ]
+        os: [ ubuntu-22.04, macos-12, windows-2022 ]
     runs-on: ${{ matrix.os }}
     steps:
           - uses: actions/checkout@v3
@@ -28,13 +28,21 @@ jobs:
             with:
               upload-path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
 
-  create-quantlib-jar-on-linux:
+  deploy-quantlib-snapshot:
+    permissions:
+      packages: write
     runs-on: ubuntu-22.04
     needs: [ build-on-runners ]
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'true'
+
+      - name: Download linux native library
+        uses: actions/download-artifact@v3
+        with:
+          name: native-library-Linux
+          path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Download macOS native library
         uses: actions/download-artifact@v3
@@ -59,9 +67,7 @@ jobs:
         working-directory: ${{ env.MAVEN_PATH }}
         run: |
           mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
-
-      - name: Build native library for ${{ runner.os }}
-        uses: ./.github/actions/build_native_library
+          mvn --batch-mode clean deploy
 
       - name: Delete native library artifacts
         uses: geekyeggo/delete-artifact@v2
