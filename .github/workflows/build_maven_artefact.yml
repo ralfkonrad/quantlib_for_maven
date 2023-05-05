@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  QUANTLIB_VERSION: 1.30.0-SNAPSHOT
+  QUANTLIB_VERSION: 0.1.0-SNAPSHOT
   MAVEN_PATH: maven
   MAVEN_TARGET_PATH: maven/target
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
@@ -33,7 +33,7 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-22.04
-    needs: [ build-for-deploy ]
+    needs: [build-for-deploy]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -56,16 +56,13 @@ jobs:
         with:
           name: native-library-*
 
-      - name: Build native library for ${{ runner.os }}
-        uses: ./.github/actions/build_native_library
-
-      - name: Deploy the maven module
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set the maven module version
         working-directory: ${{ env.MAVEN_PATH }}
         run: |
           mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
-          mvn --batch-mode clean deploy
+
+      - name: Build native library for ${{ runner.os }}
+        uses: ./.github/actions/build_native_library
 
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3
@@ -80,4 +77,10 @@ jobs:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           if-no-files-found: error
-  
+
+      - name: Deploy the maven module
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ${{ env.MAVEN_PATH }}
+        run: |
+          mvn --batch-mode clean deploy
