@@ -30,9 +30,10 @@ find_package(SWIG 4.1.1 EXACT REQUIRED COMPONENTS java)
 include(UseSWIG)
 
 set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY CPLUSPLUS ON)
+set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY SWIG_MODULE_NAME QuantLib)
+set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY COMPILE_DEFINITIONS JAVA_FINALIZER)
 set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY INCLUDE_DIRECTORIES ${QUANTLIB_SWIG_ROOT_DIR})
 set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY USE_TARGET_INCLUDE_DIRECTORIES OFF)
-set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY SWIG_MODULE_NAME QuantLib)
 
 swig_add_library(
         QuantLibJNI
@@ -67,5 +68,5 @@ add_custom_command(
         TARGET QuantLibJNI POST_BUILD
         COMMAND mvn --batch-mode clean verify
         WORKING_DIRECTORY ${SWIG_MAVEN_DIR}
-        COMMENT "Running mvn clean verify"
+        COMMENT "Running 'mvn --batch-mode clean verify'."
         VERBATIM)
