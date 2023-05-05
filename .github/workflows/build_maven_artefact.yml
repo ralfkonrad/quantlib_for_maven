@@ -59,6 +59,14 @@ jobs:
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
 
+      - name: Deploy the maven module
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ${{ env.MAVEN_PATH }}
+        run: |
+          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
+          mvn --batch-mode clean deploy
+
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3
         with:
@@ -72,11 +80,4 @@ jobs:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           if-no-files-found: error
-
-      - name: Deploy the maven module
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ${{ env.MAVEN_PATH }}
-        run: |
-          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
-          mvn --batch-mode clean deploy
+  
