@@ -33,7 +33,7 @@
         <connection>scm:git:https://github.com/ralfkonrad/quantlib_for_maven.git</connection>
         <developerConnection>scm:git:https://github.com/ralfkonrad/quantlib_for_maven.git</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/ralfkonrad/quantlib_for_maven</url>
+        <url>https://github.com/ralfkonrad/quantlib_for_maven.git</url>
     </scm>
 
     <issueManagement>

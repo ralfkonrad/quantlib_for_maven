@@ -6,37 +6,38 @@ on:
   workflow_dispatch: {}
 
 env:
-  QUANTLIB_VERSION:                 1.30.0-SNAPSHOT
-  MAVEN_PATH:                       maven
-  MAVEN_TARGET_PATH:                maven/target
+  QUANTLIB_VERSION: 1.30.0-SNAPSHOT
+  MAVEN_PATH: maven
+  MAVEN_TARGET_PATH: maven/target
   MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
 
 jobs:
-  build-on-runners:
+  build-for-deploy:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-12, windows-2022 ]
+        os: [macos-12, windows-2022]
     runs-on: ${{ matrix.os }}
-    steps:
-          - uses: actions/checkout@v3
-            with:
-              submodules: 'true'
-
-          - name: Build native library for ${{ runner.os }}
-            uses: ./.github/actions/build_native_library
-            with:
-              upload-path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
-
-  deploy-quantlib-snapshot:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    needs: [ build-on-runners ]
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: 'true'
+          submodules: "true"
+
+      - name: Build native library for ${{ runner.os }}
+        uses: ./.github/actions/build_native_library
+        with:
+          upload-path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+
+  deploy-quantlib-snapshot:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-22.04
+    needs: [ build-for-deploy ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "true"
 
       - name: Download macOS native library
         uses: actions/download-artifact@v3
@@ -58,12 +59,6 @@ jobs:
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
 
-      - name: Deploy the maven module
-        working-directory: ${{ env.MAVEN_PATH }}
-        run: |
-          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
-          mvn --batch-mode clean deploy
-
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3
         with:
@@ -77,3 +72,11 @@ jobs:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           if-no-files-found: error
+
+      - name: Deploy the maven module
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ${{ env.MAVEN_PATH }}
+        run: |
+          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
+          mvn --batch-mode clean deploy
