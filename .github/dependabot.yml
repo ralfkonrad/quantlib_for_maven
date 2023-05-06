@@ -27,7 +27,7 @@ updates:
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
-    directory: "/.github/actions/build_native_library/setup/jdk8"
+    directory: "/.github/actions/build_native_library/setup/jdk11"
     schedule:
       interval: "daily"
 
