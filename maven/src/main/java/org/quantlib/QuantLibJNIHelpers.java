@@ -16,7 +16,7 @@ class QuantLibJNIHelpers {
 
     static void loadLibrary() {
         try {
-            String libraryPath = getLibraryPath();
+            var libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
         } catch (IOException e) {
             throw new UnsupportedOperatingSystemException(e);
@@ -48,7 +48,7 @@ class QuantLibJNIHelpers {
     }
 
     private static OperatingSystem getOS() {
-        String os = System.getProperty("os.name").toLowerCase();
+        var os = System.getProperty("os.name").toLowerCase();
         if (os.startsWith("linux")) {
             return OperatingSystem.Linux;
         }
@@ -78,8 +78,8 @@ class QuantLibJNIHelpers {
     }
 
     private static String getLibraryPath() {
-        String rootPath = "/native";
-        String path = String.join("/", rootPath, OS.name().toLowerCase());
+        var rootPath = "/native";
+        var path = String.join("/", rootPath, OS.name().toLowerCase());
         switch (OS) {
             case Linux:
             case MacOs:
