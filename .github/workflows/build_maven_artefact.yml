@@ -57,11 +57,7 @@ jobs:
           name: native-library-*
 
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
-        with:
-          java-version: "8"
-          distribution: "temurin"
-          cache: maven
+        uses: ./.github/actions/build_native_library/setup/jdk8
 
       - name: Set the maven module version
         working-directory: ${{ env.MAVEN_PATH }}
