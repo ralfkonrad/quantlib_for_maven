@@ -1,9 +1,9 @@
 name: Build the QuantLib maven artefact
 
 on:
-  push: {}
-  pull_request: {}
-  workflow_dispatch: {}
+  push: { }
+  pull_request: { }
+  workflow_dispatch: { }
 
 env:
   QUANTLIB_VERSION:                 1.30.0-SNAPSHOT
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12, windows-2022]
+        os: [ macos-12, windows-2022 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-22.04
-    needs: [build-for-deploy]
+    needs: [ build-for-deploy ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -71,11 +71,25 @@ jobs:
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}.jar
           if-no-files-found: error
 
+      - name: Upload quantlib tests jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
+          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
+          if-no-files-found: error
+
       - name: Upload quantlib source jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
+          if-no-files-found: error
+
+      - name: Upload quantlib source jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
+          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
           if-no-files-found: error
 
       - name: Deploy the maven module
