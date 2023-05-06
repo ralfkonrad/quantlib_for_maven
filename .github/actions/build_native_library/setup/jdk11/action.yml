@@ -1,5 +1,5 @@
-name: Setup JDK 8
-description: Setup JDK 8
+name: Setup JDK 11
+description: Setup JDK 11
 
 runs:
   using: composite
@@ -7,7 +7,7 @@ runs:
     - uses: actions/setup-java@v3
       if: env.JAVA_IS_SETUP != 'true'
       with:
-        java-version: "8"
+        java-version: "11"
         distribution: "temurin"
         cache: maven
     - id: set_JAVA_IS_SETUP_var

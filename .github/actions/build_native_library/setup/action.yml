@@ -27,8 +27,8 @@ runs:
         Start-Process -Wait -FilePath "$env:BOOST_INSTALLER_PATH" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_ROOT"
         choco install -y ninja
 
-    - name: Set up JDK 8
-      uses: ./.github/actions/build_native_library/setup/jdk8
+    - name: Set up JDK 11
+      uses: ./.github/actions/build_native_library/setup/jdk11
 
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
