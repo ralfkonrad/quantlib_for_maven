@@ -7,6 +7,24 @@ updates:
     schedule:
       interval: "daily"
 
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/build_native_library"
+    schedule:
+      interval: "daily"
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/build_native_library/env_variables"
+    schedule:
+      interval: "daily"
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/build_native_library/setup"
+    schedule:
+      interval: "daily"
+
   # Maintain dependencies for maven
   - package-ecosystem: "maven"
     directory: "/maven"
