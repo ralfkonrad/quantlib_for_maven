@@ -25,6 +25,12 @@ updates:
     schedule:
       interval: "daily"
 
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/build_native_library/setup/jdk8"
+    schedule:
+      interval: "daily"
+
   # Maintain dependencies for maven
   - package-ecosystem: "maven"
     directory: "/maven"

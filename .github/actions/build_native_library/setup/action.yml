@@ -28,11 +28,7 @@ runs:
         choco install -y ninja
 
     - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: "8"
-        distribution: "temurin"
-        cache: maven
+      uses: ./.github/actions/build_native_library/setup/jdk8
 
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
