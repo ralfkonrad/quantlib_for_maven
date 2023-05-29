@@ -62,7 +62,7 @@ jobs:
       - name: Set the maven module version
         working-directory: ${{ env.MAVEN_PATH }}
         run: |
-          mvn --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
+          ./mvnw --batch-mode versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
@@ -101,4 +101,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: ${{ env.MAVEN_PATH }}
         run: |
-          mvn --batch-mode clean deploy
+          ./mvnw --batch-mode clean deploy
