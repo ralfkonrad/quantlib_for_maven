@@ -88,11 +88,25 @@ jobs:
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           if-no-files-found: error
 
-      - name: Upload quantlib source jar
+      - name: Upload quantlib test source jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
           path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
+          if-no-files-found: error
+
+      - name: Upload quantlib javadoc jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
+          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
+          if-no-files-found: error
+
+      - name: Upload quantlib test javadoc jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
+          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
           if-no-files-found: error
 
       - name: Deploy the maven module
