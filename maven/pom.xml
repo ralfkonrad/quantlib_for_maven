@@ -121,6 +121,9 @@
                             </goals>
                             <configuration>
                                 <rules>
+                                    <requireJavaVersion>
+                                        <version>[11,12)</version>
+                                    </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>3.2.5</version>
                                     </requireMavenVersion>
@@ -136,6 +139,34 @@
                     <executions>
                         <execution>
                             <goals>
+                                <goal>test-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.5.0</version>
+                    <configuration>
+                        <doclint>all,-missing</doclint>
+                        <minmemory>128m</minmemory>
+                        <maxmemory>512</maxmemory>
+                        <breakiterator>true</breakiterator>
+                        <quiet>true</quiet>
+                        <source>${maven.compiler.source}</source>
+                        <verbose>true</verbose>
+                        <linksource>true</linksource>
+                        <links>
+                            <!-- JSE -->
+                            <link>https://docs.oracle.com/en/java/javase/11/docs/api/</link>
+                        </links>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadoc</id>
+                            <goals>
+                                <goal>jar</goal>
                                 <goal>test-jar</goal>
                             </goals>
                         </execution>
@@ -170,6 +201,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
