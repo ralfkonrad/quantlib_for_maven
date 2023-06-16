@@ -6,10 +6,10 @@ on:
   workflow_dispatch: { }
 
 env:
-  QUANTLIB_VERSION:                 1.31.0-SNAPSHOT
-  MAVEN_PATH:                       maven
-  MAVEN_TARGET_PATH:                maven/target
-  MAVEN_RESOURCES_NATIVE_LIBS_PATH: maven/src/main/resources/native
+  QUANTLIB_VERSION:                1.31.0-SNAPSHOT
+  JAVA_PATH:                       java
+  JAVA_TARGET_PATH:                java/target
+  JAVA_RESOURCES_NATIVE_LIBS_PATH: java/src/main/resources/native
 
 jobs:
   build-for-deploy:
@@ -26,7 +26,7 @@ jobs:
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
         with:
-          upload-path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+          upload-path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
   deploy-quantlib-snapshot:
     permissions:
@@ -43,13 +43,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: native-library-macOS
-          path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+          path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Download Windows native library
         uses: actions/download-artifact@v3
         with:
           name: native-library-Windows
-          path: ${{ env.MAVEN_RESOURCES_NATIVE_LIBS_PATH }}
+          path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Delete native library artifacts
         uses: geekyeggo/delete-artifact@v2
@@ -60,7 +60,7 @@ jobs:
         uses: ./.github/actions/build_native_library/setup/jdk11
 
       - name: Set the maven module version
-        working-directory: ${{ env.MAVEN_PATH }}
+        working-directory: ${{ env.JAVA_PATH }}
         run: |
           ./mvnw --batch-mode --show-version versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
@@ -71,48 +71,48 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}.jar
           if-no-files-found: error
 
       - name: Upload quantlib tests jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
           if-no-files-found: error
 
       - name: Upload quantlib source jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
           if-no-files-found: error
 
       - name: Upload quantlib test source jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
           if-no-files-found: error
 
       - name: Upload quantlib javadoc jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
           if-no-files-found: error
 
       - name: Upload quantlib test javadoc jar
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
-          path: ${{ env.MAVEN_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
+          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
           if-no-files-found: error
 
       - name: Deploy the maven module
         if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ${{ env.MAVEN_PATH }}
+        working-directory: ${{ env.JAVA_PATH }}
         run: |
           ./mvnw --batch-mode --show-version clean deploy
