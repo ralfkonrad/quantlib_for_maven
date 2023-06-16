@@ -67,6 +67,6 @@ target_link_libraries(QuantLibJNI
 add_custom_command(
         TARGET QuantLibJNI POST_BUILD
         COMMAND ./mvnw --batch-mode --show-version clean verify
-        WORKING_DIRECTORY ${SWIG_MAVEN_DIR}
+        WORKING_DIRECTORY ${SWIG_JAVA_DIR}
         COMMENT "Running './mvnw --batch-mode --show-version clean verify'."
         VERBATIM)
