@@ -5,12 +5,12 @@ cmake_policy(SET CMP0091 NEW)
 
 project(quantlib_for_maven VERSION 1.30.0 LANGUAGES CXX)
 
-cmake_path(SET QUANTLIB_ROOT                   extern/QuantLib)
+cmake_path(SET QUANTLIB_ROOT                   external/QuantLib)
 
 cmake_path(SET QUANTLIB_ROOT_DIR               ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT})
 cmake_path(SET QUANTLIB_GENERATED_HEADERS_DIR  ${CMAKE_BINARY_DIR}/${QUANTLIB_ROOT})
 
-cmake_path(SET QUANTLIB_SWIG_ROOT_DIR          ${CMAKE_SOURCE_DIR}/extern/QuantLib-SWIG/SWIG)
+cmake_path(SET QUANTLIB_SWIG_ROOT_DIR          ${CMAKE_SOURCE_DIR}/external/QuantLib-SWIG/SWIG)
 
 cmake_path(SET SWIG_ROOT                       swig)
 cmake_path(SET QL_ENTRYPOINT_I_FILE            ${CMAKE_SOURCE_DIR}/${SWIG_ROOT}/QuantLibEntrypoint.i)
