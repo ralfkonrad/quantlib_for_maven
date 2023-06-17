@@ -9,9 +9,9 @@ runs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y libboost-all-dev ccache ninja-build
+        sudo apt install -y ccache ninja-build
         sudo apt remove -y swig swig4.0
-        brew install swig
+        brew install swig boost
 
     - name: Setup macOs
       if: runner.os == 'macOs'
