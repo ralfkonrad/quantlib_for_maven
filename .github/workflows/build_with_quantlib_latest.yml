@@ -23,16 +23,16 @@ jobs:
             submodules: 'true'
 
         - name: Checkout master of QuantLib
-          working-directory: "extern/QuantLib"
+          working-directory: "external/QuantLib"
           run: |
-            git fetch --all
             git checkout master
+            git pull
   
         - name: Checkout master of QuantLib-SWIG
-          working-directory: "extern/QuantLib-SWIG"
+          working-directory: "external/QuantLib-SWIG"
           run: |
-            git fetch --all
             git checkout master
+            git pull
 
         - name: Build native library for ${{ matrix.os }}
           uses: ./.github/actions/build_native_library
