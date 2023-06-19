@@ -26,6 +26,7 @@ jobs:
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
         with:
+          runner-name: ${{ matrix.os }}
           upload-path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
   deploy-quantlib-snapshot:
@@ -66,6 +67,8 @@ jobs:
 
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
+        with:
+          runner-name: ubuntu-22.04
 
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3

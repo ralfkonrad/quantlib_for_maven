@@ -1,9 +1,22 @@
 name: Setup of the needed software
 description: Setup of the needed software
 
+inputs:
+  runner-name:
+    description: The runner name to be used for ccache key name
+    default: ''
+    required: true
+
 runs:
   using: composite
   steps:
+    - name: Check if runner-name variable is Set
+      if: inputs.runner-name == ''
+      shell: bash
+      run: |
+        echo "The variable 'runner-name' was not set"  
+        exit 1
+
     - name: Setup Linux
       if: runner.os == 'Linux'
       shell: bash
@@ -34,9 +47,10 @@ runs:
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
-        key: ${{ runner.os }}--${{ github.job }}
+        key: ${{ runner.os }}--{{ inputs.runner-name }}--${{ github.job }}
         restore-keys: |
-          ${{ runner.os }}--${{ github.job }}
+          ${{ runner.os }}--${{ inputs.runner-name }}--${{ github.job }}
+          ${{ runner.os }}--${{ inputs.runner-name }}
           ${{ runner.os }}
 
     - name: Set up Visual Studio shell on Windows
