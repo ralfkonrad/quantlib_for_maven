@@ -2,6 +2,10 @@ name: Build native library for the runner
 description: Build native library for the runner
 
 inputs:
+  runner-name:
+    description: The runner name to be used for ccache key name
+    default: ''
+    required: true
   upload-path:
     description: The path where to find the native library to upload
     default: ''
@@ -13,6 +17,8 @@ runs:
     - uses: ./.github/actions/build_native_library/env_variables
 
     - uses: ./.github/actions/build_native_library/setup
+      with:
+        runner-name: ${{ inputs.runner-name }}
 
     - name: Build
       shell: bash

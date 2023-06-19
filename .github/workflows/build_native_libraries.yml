@@ -11,8 +11,11 @@ jobs:
         fail-fast: false
         matrix:
           os:
+            - ubuntu-20.04
             - ubuntu-22.04
+            - macos-11
             - macos-12
+            - windows-2019
             - windows-2022
 
       runs-on: ${{ matrix.os }}
@@ -24,3 +27,5 @@ jobs:
 
         - name: Build native library for ${{ matrix.os }}
           uses: ./.github/actions/build_native_library
+          with:
+            runner-name: ${{ matrix.os }}
