@@ -47,7 +47,7 @@ runs:
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
-        key: ${{ runner.os }}--{{ inputs.runner-name }}--${{ github.job }}
+        key: ${{ runner.os }}--${{ inputs.runner-name }}--${{ github.job }}
         restore-keys: |
           ${{ runner.os }}--${{ inputs.runner-name }}--${{ github.job }}
           ${{ runner.os }}--${{ inputs.runner-name }}
