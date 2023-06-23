@@ -90,6 +90,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN:           ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE:   ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         working-directory: ${{ env.JAVA_PATH }}
