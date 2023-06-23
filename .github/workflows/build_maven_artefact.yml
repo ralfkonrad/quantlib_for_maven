@@ -6,9 +6,9 @@ on:
   workflow_dispatch: { }
 
 env:
-  QUANTLIB_VERSION: 1.31.0-SNAPSHOT
-  JAVA_PATH: java
-  JAVA_TARGET_PATH: java/target
+  QUANTLIB_VERSION:                1.31.0-SNAPSHOT
+  JAVA_PATH:                       java
+  JAVA_TARGET_PATH:                java/target
   JAVA_RESOURCES_NATIVE_LIBS_PATH: java/src/main/resources/native
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-12, windows-2022 ]
+        os: [ macos-11, windows-2019 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     needs: [ build-for-deploy ]
     steps:
       - uses: actions/checkout@v3
@@ -89,7 +89,10 @@ jobs:
       - name: Deploy the maven module
         if: github.ref == 'refs/heads/master'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN:           ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE:   ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         working-directory: ${{ env.JAVA_PATH }}
         run: |
           ./mvnw --batch-mode --show-version clean deploy
