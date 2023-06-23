@@ -69,6 +69,8 @@ jobs:
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ubuntu-22.04
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3

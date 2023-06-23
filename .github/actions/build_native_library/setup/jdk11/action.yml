@@ -1,6 +1,12 @@
 name: Setup JDK 11
 description: Setup JDK 11
 
+inputs:
+  gpg-secret-key:
+    description: The gpg secret key
+    default: ''
+    required: true
+
 runs:
   using: composite
   steps:
@@ -9,7 +15,7 @@ runs:
       with:
         java-version: "11"
         distribution: "temurin"
-        gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
+        gpg-private-key: ${{ inputs.gpg-secret-key }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
         cache: maven
     - id: set_JAVA_IS_SETUP_var

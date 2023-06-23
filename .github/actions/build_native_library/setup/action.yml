@@ -6,6 +6,10 @@ inputs:
     description: The runner name to be used for ccache key name
     default: ''
     required: true
+  gpg-secret-key:
+    description: The gpg secret key
+    default: ''
+    required: true
 
 runs:
   using: composite
