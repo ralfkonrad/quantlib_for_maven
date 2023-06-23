@@ -27,6 +27,7 @@ runs:
     - uses: ./.github/actions/build_native_library/setup
       with:
         runner-name: ${{ inputs.runner-name }}
+        gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
     - name: Build
       shell: bash
