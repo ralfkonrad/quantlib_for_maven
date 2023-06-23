@@ -15,6 +15,9 @@ runs:
       with:
         java-version: "11"
         distribution: "temurin"
+        server-id: ossrh
+        server-username: MAVEN_CENTRAL_USERNAME
+        server-password: MAVEN_CENTRAL_PASSWORD
         gpg-private-key: ${{ inputs.gpg-secret-key }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
         cache: maven
