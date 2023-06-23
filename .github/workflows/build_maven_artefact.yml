@@ -6,9 +6,9 @@ on:
   workflow_dispatch: { }
 
 env:
-  QUANTLIB_VERSION:                1.31.0-SNAPSHOT
-  JAVA_PATH:                       java
-  JAVA_TARGET_PATH:                java/target
+  QUANTLIB_VERSION: 1.31.0-SNAPSHOT
+  JAVA_PATH: java
+  JAVA_TARGET_PATH: java/target
   JAVA_RESOURCES_NATIVE_LIBS_PATH: java/src/main/resources/native
 
 jobs:
@@ -27,6 +27,8 @@ jobs:
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ${{ matrix.os }}
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           upload-path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
   deploy-quantlib-snapshot:
@@ -59,6 +61,8 @@ jobs:
 
       - name: Set up JDK 11
         uses: ./.github/actions/build_native_library/setup/jdk11
+        with:
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
 
       - name: Set the maven module version
         working-directory: ${{ env.JAVA_PATH }}
@@ -69,48 +73,18 @@ jobs:
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ubuntu-22.04
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
       - name: Upload quantlib jar
         uses: actions/upload-artifact@v3
         with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}.jar
+          name: quantlib-${{ env.QUANTLIB_VERSION }}
           if-no-files-found: error
-
-      - name: Upload quantlib tests jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-tests.jar
-          if-no-files-found: error
-
-      - name: Upload quantlib source jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-sources.jar
-          if-no-files-found: error
-
-      - name: Upload quantlib test source jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-sources.jar
-          if-no-files-found: error
-
-      - name: Upload quantlib javadoc jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-javadoc.jar
-          if-no-files-found: error
-
-      - name: Upload quantlib test javadoc jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
-          path: ${{ env.JAVA_TARGET_PATH }}/quantlib-${{ env.QUANTLIB_VERSION }}-test-javadoc.jar
-          if-no-files-found: error
+          path: |
+            ${{ env.JAVA_TARGET_PATH }}/*.pom
+            ${{ env.JAVA_TARGET_PATH }}/*.jar
+            ${{ env.JAVA_TARGET_PATH }}/*.asc
 
       - name: Deploy the maven module
         if: github.ref == 'refs/heads/master'

@@ -38,6 +38,8 @@ jobs:
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ${{ matrix.os }}
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
   push-latest:
     runs-on: ubuntu-22.04

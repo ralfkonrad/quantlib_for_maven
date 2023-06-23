@@ -6,6 +6,14 @@ inputs:
     description: The runner name to be used for ccache key name
     default: ''
     required: true
+  gpg-secret-key:
+    description: The gpg secret key
+    default: ''
+    required: true
+  gpg-secret-key-password:
+    description: The password for the gpg secret key
+    default: ''
+    required: true
   upload-path:
     description: The path where to find the native library to upload
     default: ''
@@ -19,9 +27,12 @@ runs:
     - uses: ./.github/actions/build_native_library/setup
       with:
         runner-name: ${{ inputs.runner-name }}
+        gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
     - name: Build
       shell: bash
+      env:
+        MAVEN_GPG_PASSPHRASE: ${{ inputs.gpg-secret-key-password }}
       run: |
         cmake --version
         cmake --preset release -L
