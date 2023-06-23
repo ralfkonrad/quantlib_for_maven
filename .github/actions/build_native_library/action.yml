@@ -22,6 +22,8 @@ runs:
 
     - name: Build
       shell: bash
+      env:
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
       run: |
         cmake --version
         cmake --preset release -L

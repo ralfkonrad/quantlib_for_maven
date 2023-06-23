@@ -9,6 +9,8 @@ runs:
       with:
         java-version: "11"
         distribution: "temurin"
+        gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
         cache: maven
     - id: set_JAVA_IS_SETUP_var
       shell: bash
