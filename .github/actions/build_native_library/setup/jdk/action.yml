@@ -1,0 +1,46 @@
+name: Setup JDK
+description: Setup JDK
+
+inputs:
+  java-version:
+    description: The java jdk version to setup
+    default: ''
+    required: true
+  gpg-secret-key:
+    description: The gpg secret key
+    default: ''
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check if java-version variable is Set
+      if: inputs.java-version == ''
+      shell: bash
+      run: |
+        echo "The variable 'java-version' was not set"  
+        exit 1
+
+    - name: Check if gpg-secret-key variable is Set
+      if: inputs.gpg-secret-key == ''
+      shell: bash
+      run: |
+        echo "The variable 'gpg-secret-key' was not set"  
+        exit 1
+
+    - uses: actions/setup-java@v3
+      if: env.JAVA_IS_SETUP != 'true'
+      with:
+        java-version:    ${{ inputs.java-version }}
+        distribution:    "temurin"
+        server-id:       ossrh
+        server-username: MAVEN_CENTRAL_USERNAME
+        server-password: MAVEN_CENTRAL_PASSWORD
+        gpg-private-key: ${{ inputs.gpg-secret-key }}
+        gpg-passphrase:  MAVEN_GPG_PASSPHRASE
+        cache:           maven
+
+    - id: set_JAVA_IS_SETUP_var
+      shell: bash
+      run: |
+        echo "JAVA_IS_SETUP=true" >> $GITHUB_ENV
