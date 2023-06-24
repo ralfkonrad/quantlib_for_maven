@@ -16,7 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-11, windows-2019 ]
+        java-version:
+          - 11
+        os:
+          - macos-11
+          - windows-2019
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -26,17 +30,25 @@ jobs:
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
         with:
-          runner-name: ${{ matrix.os }}
-          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          runner-name:             ${{ matrix.os }}
+          java-version:            ${{ matrix.java-version }}
+          gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
-          upload-path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
+          upload-path:             ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
   deploy-quantlib-snapshot:
+    needs: [ build-for-deploy ]
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-20.04
-    needs: [ build-for-deploy ]
+    strategy:
+      fail-fast: true
+      matrix:
+        java-version:
+          - 11
+        os:
+          - ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -59,9 +71,10 @@ jobs:
         with:
           name: native-library-*
 
-      - name: Set up JDK 11
-        uses: ./.github/actions/build_native_library/setup/jdk11
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: ./.github/actions/build_native_library/setup/jdk
         with:
+          java-version:   ${{ matrix.java-version }}
           gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
 
       - name: Set the maven module version
@@ -69,14 +82,15 @@ jobs:
         run: |
           ./mvnw --batch-mode --show-version versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
-      - name: Build native library for ${{ runner.os }}
+      - name: Build native library for ${{ runner.os }} and jdk ${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
-          runner-name: ubuntu-22.04
-          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          runner-name:             ${{ matrix.os }}
+          java-version:            ${{ matrix.java-version }}
+          gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
-      - name: Upload quantlib jar
+      - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
         uses: actions/upload-artifact@v3
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}

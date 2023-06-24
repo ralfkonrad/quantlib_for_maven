@@ -10,6 +10,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        java-version:
+          - 11
+          - 17
         os:
           - ubuntu-20.04
           - ubuntu-22.04
@@ -37,11 +40,12 @@ jobs:
           git checkout master
           git pull
 
-      - name: Build native library for ${{ matrix.os }}
+      - name: Build native library for ${{ matrix.os }} and jdk ${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
-          runner-name: ${{ matrix.os }}
-          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          runner-name:             ${{ matrix.os }}
+          java-version:            ${{ matrix.java-version }}
+          gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
   push-latest:
