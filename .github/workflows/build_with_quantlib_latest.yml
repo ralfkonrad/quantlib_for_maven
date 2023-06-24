@@ -3,7 +3,7 @@ name: Build with the latest QuantLib and QuantLib-SWIG changes
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '23 4 * * *'
+    - cron: '23 2 * * *'
 
 jobs:
   build-latest:
@@ -14,8 +14,11 @@ jobs:
           - 11
           - 17
         os:
+          - ubuntu-20.04
           - ubuntu-22.04
+          - macos-11
           - macos-12
+          - windows-2019
           - windows-2022
 
     runs-on: ${{ matrix.os }}
