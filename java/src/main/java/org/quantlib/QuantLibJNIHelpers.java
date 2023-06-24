@@ -1,10 +1,15 @@
 package org.quantlib;
 
 import cz.adamh.utils.NativeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 class QuantLibJNIHelpers {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantLibJNIHelpers.class);
+
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
 
@@ -16,6 +21,7 @@ class QuantLibJNIHelpers {
 
     static void loadLibrary() {
         try {
+            LOGGER.debug("Trying to load QuantLib native library...");
             var libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
         } catch (IOException e) {
