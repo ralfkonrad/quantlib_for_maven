@@ -6,51 +6,8 @@ on:
     - cron: '23 2 * * *'
 
 jobs:
-  build-latest:
-    strategy:
-      fail-fast: false
-      matrix:
-        java-version:
-          - 11
-          - 17
-        os:
-          - ubuntu-20.04
-          - ubuntu-22.04
-          - macos-11
-          - macos-12
-          - windows-2019
-          - windows-2022
-
-    runs-on: ${{ matrix.os }}
-    
-    steps:
-      - uses: actions/checkout@v3
-        with: 
-          submodules: 'true'
-
-      - name: Checkout master of QuantLib
-        working-directory: "external/QuantLib"
-        run: |
-          git checkout master
-          git pull
-
-      - name: Checkout master of QuantLib-SWIG
-        working-directory: "external/QuantLib-SWIG"
-        run: |
-          git checkout master
-          git pull
-
-      - name: Build native library for ${{ matrix.os }} and jdk ${{ matrix.java-version }}
-        uses: ./.github/actions/build_native_library
-        with:
-          runner-name:             ${{ matrix.os }}
-          java-version:            ${{ matrix.java-version }}
-          gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
-          gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
-
   push-latest:
     runs-on: ubuntu-22.04
-    needs: [ build-latest ]
     steps:
       - uses: actions/checkout@v3
         with: 
