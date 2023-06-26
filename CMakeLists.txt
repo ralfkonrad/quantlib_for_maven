@@ -31,6 +31,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
 
+# we need a static QuantLib library to link against
+set(BUILD_SHARED_LIBS OFF)
+
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 if (${MSVC})
