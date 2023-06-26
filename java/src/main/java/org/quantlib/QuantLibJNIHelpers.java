@@ -1,10 +1,19 @@
 package org.quantlib;
 
 import cz.adamh.utils.NativeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.Map;
 
 class QuantLibJNIHelpers {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantLibJNIHelpers.class);
+    private final static String OS_NAME = System.getProperty("os.name");
+    private final static String OS_ARCH = System.getProperty("os.arch");
+
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
 
@@ -16,15 +25,23 @@ class QuantLibJNIHelpers {
 
     static void loadLibrary() {
         try {
+            LOGGER.debug("Trying to load QuantLib native library for {} (arch: {})",
+                    OS_NAME, OS_ARCH);
+            if (LOGGER.isTraceEnabled()) {
+                traceLogAllSystemProperties();
+            }
+
             var libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
+
+            LOGGER.debug("Native library loaded");
         } catch (IOException e) {
             throw new UnsupportedOperatingSystemException(e);
         }
     }
 
     public static class UnsupportedOperatingSystemException extends RuntimeException {
-        private final static String OS = System.getProperty("os.name") + " (arch: " + System.getProperty("os.arch") + ")";
+        private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ")";
         private final static String MESSAGE = "The operating system '" + OS + "' is not supported.";
 
         private UnsupportedOperatingSystemException() {
@@ -41,14 +58,14 @@ class QuantLibJNIHelpers {
         }
     }
 
-    private static final OperatingSystem OS = getOS();
+    private static final OperatingSystem OS_SYSTEM = getOS();
     private static final String ARCH = System.getProperty("os.arch").toLowerCase();
 
     private QuantLibJNIHelpers() {
     }
 
     private static OperatingSystem getOS() {
-        var os = System.getProperty("os.name").toLowerCase();
+        var os = OS_NAME.toLowerCase();
         if (os.startsWith("linux")) {
             return OperatingSystem.Linux;
         }
@@ -62,7 +79,7 @@ class QuantLibJNIHelpers {
     }
 
     private static String getLibraryName() {
-        switch (OS) {
+        switch (OS_SYSTEM) {
             case Linux:
                 return "libQuantLibJNI.so";
 
@@ -79,8 +96,8 @@ class QuantLibJNIHelpers {
 
     private static String getLibraryPath() {
         var rootPath = "/native";
-        var path = String.join("/", rootPath, OS.name().toLowerCase());
-        switch (OS) {
+        var path = String.join("/", rootPath, OS_SYSTEM.name().toLowerCase());
+        switch (OS_SYSTEM) {
             case Linux:
             case MacOs:
                 return String.join("/", path, getLibraryName());
@@ -97,5 +114,13 @@ class QuantLibJNIHelpers {
         Linux,
         MacOs,
         Windows
+    }
+
+    private static void traceLogAllSystemProperties() {
+        LOGGER.trace("System properties:");
+        var properties = System.getProperties();
+        properties.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
+                .forEach(entry -> LOGGER.trace("\t{}: {}", entry.getKey(), entry.getValue()));
     }
 }
