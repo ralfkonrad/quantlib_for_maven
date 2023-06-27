@@ -15,6 +15,7 @@ public class QuantLibJNIHelpers {
     private final static String OS_ARCH = System.getProperty("os.arch");
     private final static String OS_VERSION = System.getProperty("os.version");
     private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
+    private static boolean libraryIsLoaded = false;
 
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
@@ -27,11 +28,18 @@ public class QuantLibJNIHelpers {
 
     public static void loadLibrary() {
         try {
+            if (libraryIsLoaded) {
+                LOGGER.warn("QuantLib native library for {} was already loaded, " +
+                        "skipping reloading", OS);
+                return;
+            }
+
             LOGGER.debug("Trying to load QuantLib native library for {}", OS);
             traceLogAllSystemProperties();
 
             var libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
+            libraryIsLoaded = true;
 
             LOGGER.debug("Native library loaded");
         } catch (IOException e) {
