@@ -1,4 +1,4 @@
-package org.quantlib;
+package org.quantlib.helpers;
 
 import cz.adamh.utils.NativeUtils;
 import org.slf4j.Logger;
@@ -8,11 +8,13 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.Map;
 
-class QuantLibJNIHelpers {
+public class QuantLibJNIHelpers {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuantLibJNIHelpers.class);
     private final static String OS_NAME = System.getProperty("os.name");
     private final static String OS_ARCH = System.getProperty("os.arch");
+    private final static String OS_VERSION = System.getProperty("os.version");
+    private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
 
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
@@ -23,13 +25,10 @@ class QuantLibJNIHelpers {
         }
     }
 
-    static void loadLibrary() {
+    public static void loadLibrary() {
         try {
-            LOGGER.debug("Trying to load QuantLib native library for {} (arch: {})",
-                    OS_NAME, OS_ARCH);
-            if (LOGGER.isTraceEnabled()) {
-                traceLogAllSystemProperties();
-            }
+            LOGGER.debug("Trying to load QuantLib native library for {}", OS);
+            traceLogAllSystemProperties();
 
             var libraryPath = getLibraryPath();
             NativeUtils.loadLibraryFromJar(libraryPath);
@@ -41,7 +40,6 @@ class QuantLibJNIHelpers {
     }
 
     public static class UnsupportedOperatingSystemException extends RuntimeException {
-        private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ")";
         private final static String MESSAGE = "The operating system '" + OS + "' is not supported.";
 
         private UnsupportedOperatingSystemException() {
@@ -117,6 +115,10 @@ class QuantLibJNIHelpers {
     }
 
     private static void traceLogAllSystemProperties() {
+        if (!LOGGER.isTraceEnabled()) {
+            return;
+        }
+
         LOGGER.trace("System properties:");
         var properties = System.getProperties();
         properties.entrySet().stream()
