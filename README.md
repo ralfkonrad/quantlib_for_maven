@@ -8,14 +8,14 @@
 
 [![Build the QuantLib maven artefact](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_maven_artefact.yml/badge.svg?branch=master)](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_maven_artefact.yml)
 [![Build for different runners](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_native_libraries.yml/badge.svg?branch=master)](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_native_libraries.yml)
-[![Build with the latest QuantLib and QuantLib-SWIG changes](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_with_quantlib_latest.yml/badge.svg?branch=master)](https://github.com/ralfkonrad/quantlib_for_maven/actions/workflows/build_with_quantlib_latest.yml)
 
 ---
 
-This repository provides a SWIG (Simplified Wrapper and Interface Generator) language binding for
-QuantLib, a powerful open-source library for quantitative finance, specifically for the Java
-programming language. The language binding allows you to seamlessly integrate QuantLib functionality
-into your Java projects.
+This repository provides Java language binding
+for the [QuantLib](https://github.com/lballabio/QuantLib) library, a powerful open-source library
+for quantitative finance, using their [QuantLib-SWIG](https://github.com/lballabio/QuantLib-SWIG)
+interface. The language binding allows you to seamlessly integrate QuantLib functionality into your
+Java projects.
 
 ## Introduction
 
@@ -24,21 +24,26 @@ tools for pricing, risk management, and modeling of financial derivatives. It is
 offers an extensive collection of classes and functions for various financial instruments, market
 data handling, and numerical methods.
 
-SWIG, the Simplified Wrapper and Interface Generator, is a software development tool that connects
-programs written in C and C++ with a variety of high-level programming languages. It automates the
-process of creating language-specific interfaces, allowing you to seamlessly use QuantLib from Java.
+QuantLib-SWIG provides the means to use QuantLib from a number of languages; currently their list
+includes Python, C#, Java and R.
+
+[SWIG](https://swig.org/), the Simplified Wrapper and Interface Generator, is a software development
+tool that connects programs written in C and C++ with a variety of high-level programming languages.
+It automates the process of creating language-specific interfaces, allowing you to seamlessly use
+QuantLib from Java.
 
 This repository provides a SWIG language binding for QuantLib specifically for Java. The binding
-includes the necessary native libraries and is designed to be used with Maven, a popular build
-automation and dependency management tool for Java projects.
+includes the necessary native libraries for Linux, macOS and Windows and is designed to be used with
+Maven, a popular build automation and dependency management tool for Java projects and all other
+build tools like Gradle, sbt which can include maven modules.
 
 ## Supported Platforms
 
 The QuantLib SWIG Java binding supports the following platforms:
 
-- Windows
-- macOS
 - Linux
+- macOS
+- Windows
 
 The binding should work on these platforms as long as the required dependencies are available for
 your specific operating system.
@@ -50,6 +55,7 @@ To use the QuantLib SWIG Java binding in your Maven-based project, follow these 
 1. Add the QuantLib SWIG Java binding as a dependency in your Maven project's `pom.xml` file:
 
 ```xml
+
 <dependencies>
   <dependency>
     <groupId>io.github.ralfkonrad.quantlib_for_maven</groupId>
@@ -170,10 +176,8 @@ public class Main {
 }
 ```
 
-Please refer to
-
-the QuantLib documentation and examples for further details on using the QuantLib SWIG Java binding
-and its various functionalities.
+Please refer to the QuantLib documentation and examples for further details on using the QuantLib
+SWIG Java binding and its various functionalities.
 
 ## Contributing
 
@@ -192,4 +196,5 @@ When contributing, please adhere to the following guidelines:
 
 The QuantLib SWIG Java Binding is released under the [BSD 3-Clause License](LICENSE). You can use it
 in both commercial and non-commercial projects. However, please note that the QuantLib library
-itself has its own licensing terms, and you should consult the official QuantLib documentation for
+itself has its own licensing terms, and you should consult the
+official [QuantLib documentation](https://github.com/lballabio/QuantLib) for further information.
