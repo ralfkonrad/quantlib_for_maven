@@ -1,6 +1,6 @@
 # Java language binding for QuantLib
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.ralfkonrad.quantlib_for_maven/quantlib/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.ralfkonrad.quantlib_for_maven/quantlib)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.ralfkonrad.quantlib_for_maven/quantlib.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.ralfkonrad.quantlib_for_maven%22%20AND%20a:%22quantlib%22)
 
 [![Java: &gt;= 11](https://oss.aoapps.com/ao-badges/java-11.svg)](https://docs.oracle.com/en/java/javase/11/)
 [![Licensed under the BSD 3-Clause License](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://github.com/ralfkonrad/quantlib_for_maven/blob/master/LICENSE)
