@@ -179,7 +179,7 @@ official [QuantLib documentation](https://github.com/lballabio/QuantLib) for fur
 Also, the module uses [functionality](java/src/main/java/cz/adamh/utils/NativeUtils.java) by Adam
 Heinrich which is provided under the MIT License.
 
----
+
 
 [^1]: You find SNAPSHOT builds
 at https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/ralfkonrad/quantlib_for_maven/quantlib/
