@@ -17,6 +17,10 @@ for quantitative finance, using their [QuantLib-SWIG](https://github.com/lballab
 interface. The language binding allows you to seamlessly integrate QuantLib functionality into your
 Java projects.
 
+This project and its maven module `io.github.ralfkonrad.quantlib_for_maven:quantlib` does not add
+any functionality to the existing ones in QuantLib and QuantLib-SWIG but makes them available
+including the native libraries for Linux, macOS and Windows.
+
 ## Introduction
 
 QuantLib is a widely-used library for quantitative finance that provides a comprehensive set of
@@ -37,6 +41,15 @@ includes the necessary native libraries for Linux, macOS and Windows and is desi
 Maven, a popular build automation and dependency management tool for Java projects and all other
 build tools like Gradle, sbt which can include maven modules.
 
+## Releases
+
+The maven module tries to follow the release cycle of QuantLib (approx. every three to four month)
+and uses the same semantic versioning starting with `v1.31.0`. Therefore, a new release of QuantLib
+will mean a new version of this maven module.
+
+Also, there will be regular `SNAPSHOT`-builds[^1] reflecting the current development of QuantLib and
+QuantLib-SWIG.
+
 ## Supported Platforms
 
 The QuantLib SWIG Java binding supports the following platforms:
@@ -53,7 +66,8 @@ your specific operating system.
 To use the QuantLib SWIG Java binding in your Maven-based project, follow these steps:
 
 1. Add the QuantLib SWIG Java binding as a dependency in your Maven project's `pom.xml` file
-   or add the [dependency to your favorite build system](https://search.maven.org/artifact/io.github.ralfkonrad.quantlib_for_maven/quantlib):
+   or add
+   the [dependency to your favorite build system](https://search.maven.org/artifact/io.github.ralfkonrad.quantlib_for_maven/quantlib):
 
 ```xml
 <dependencies>
@@ -143,6 +157,11 @@ Contributions to this repository are welcome! If you encounter any issues, have 
 improvements, or would like to add support for additional platforms, please feel free to open an
 issue or submit a pull request.
 
+Please keep in mind: This maven module does not add any new functionality to QuantLib and
+QuantLib-SWIG. It just uses their official releases[^2] to build a maven module from it. If e.g. the
+above European option unit tests runs on your machine you probably do not want to open an issue or
+pull request here but more likely in QuantLib or QuantLib-SWIG itself.
+
 When contributing, please adhere to the following guidelines:
 
 - Clearly describe the problem or improvement in the issue or pull request.
@@ -156,3 +175,15 @@ The QuantLib SWIG Java Binding is released under the [BSD 3-Clause License](LICE
 in both commercial and non-commercial projects. However, please note that the QuantLib library
 itself has its own licensing terms, and you should consult the
 official [QuantLib documentation](https://github.com/lballabio/QuantLib) for further information.
+
+Also, the module uses [functionality](java/src/main/java/cz/adamh/utils/NativeUtils.java) by Adam
+Heinrich which is provided under the MIT License.
+
+---
+
+[^1]
+See https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/ralfkonrad/quantlib_for_maven/quantlib/
+
+[^2] See
+- https://github.com/lballabio/QuantLib/releases
+- https://github.com/lballabio/QuantLib-SWIG/releases
