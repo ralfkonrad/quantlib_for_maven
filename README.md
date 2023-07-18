@@ -52,15 +52,15 @@ your specific operating system.
 
 To use the QuantLib SWIG Java binding in your Maven-based project, follow these steps:
 
-1. Add the QuantLib SWIG Java binding as a dependency in your Maven project's `pom.xml` file:
+1. Add the QuantLib SWIG Java binding as a dependency in your Maven project's `pom.xml` file
+   or add the [dependency to your favorite build system](https://search.maven.org/artifact/io.github.ralfkonrad.quantlib_for_maven/quantlib):
 
 ```xml
-
 <dependencies>
   <dependency>
     <groupId>io.github.ralfkonrad.quantlib_for_maven</groupId>
     <artifactId>quantlib</artifactId>
-    <version>1.31.0-RC2</version>
+    <version>1.31.0</version>
   </dependency>
 </dependencies>
 ```
