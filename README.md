@@ -148,6 +148,8 @@ public class EuropeanOptionTest {
 }
 ```
 
+Taken from [quantlib_for_maven_test](https://github.com/ralfkonrad/quantlib_for_maven_test).
+
 Please refer to the QuantLib documentation and examples for further details on using the QuantLib
 SWIG Java binding and its various functionalities.
 
