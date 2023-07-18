@@ -181,9 +181,8 @@ Heinrich which is provided under the MIT License.
 
 ---
 
-[^1]
-See https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/ralfkonrad/quantlib_for_maven/quantlib/
+[^1]: See https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/ralfkonrad/quantlib_for_maven/quantlib/
 
-[^2] See
+[^2]: See
 - https://github.com/lballabio/QuantLib/releases
 - https://github.com/lballabio/QuantLib-SWIG/releases
