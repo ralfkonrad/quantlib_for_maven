@@ -40,6 +40,12 @@ runs:
       run: |
         brew install ninja boost
 
+    - name: Setup macOs
+      if: inputs.runner-name == 'macos-13'
+      shell: bash
+      run: |
+        brew install swig
+
     - name: Setup Windows
       if: runner.os == 'Windows'
       shell: pwsh
