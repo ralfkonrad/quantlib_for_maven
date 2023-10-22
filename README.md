@@ -50,6 +50,14 @@ will mean a new version of this maven module.
 Also, there will be regular `SNAPSHOT`-builds[^1] reflecting the current development of QuantLib and
 QuantLib-SWIG.
 
+## Supported JDK versions
+
+The latest release [`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
+and versions prior to it are build using `jdk11`.
+
+Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`
+as `jdk11` is no longer under active support.
+
 ## Supported Platforms
 
 The QuantLib SWIG Java binding supports the following platforms:
