@@ -53,8 +53,8 @@
     </distributionManagement>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -162,7 +162,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[11,12)</version>
+                                        <version>[17,18)</version>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>3.2.5</version>
@@ -314,13 +314,13 @@
 
     <profiles>
         <profile>
-            <id>jdk17</id>
+            <id>jdk21</id>
             <activation>
-                <jdk>17</jdk>
+                <jdk>21</jdk>
             </activation>
             <properties>
-                <maven.compiler.source>17</maven.compiler.source>
-                <maven.compiler.target>17</maven.compiler.target>
+                <maven.compiler.source>21</maven.compiler.source>
+                <maven.compiler.target>21</maven.compiler.target>
             </properties>
             <build>
                 <pluginManagement>
@@ -337,7 +337,7 @@
                                     <configuration>
                                         <rules>
                                             <requireJavaVersion>
-                                                <version>[17,18)</version>
+                                                <version>[21,22)</version>
                                             </requireJavaVersion>
                                         </rules>
                                     </configuration>
