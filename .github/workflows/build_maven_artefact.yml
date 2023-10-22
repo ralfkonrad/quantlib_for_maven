@@ -7,7 +7,6 @@ on:
 
 env:
   QUANTLIB_VERSION:                1.33.0-SNAPSHOT
-  JAVA_VERSION:                    17
   JAVA_PATH:                       java
   JAVA_TARGET_PATH:                java/target
   JAVA_RESOURCES_NATIVE_LIBS_PATH: java/src/main/resources/native
@@ -18,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         java-version:
-          - ${{ env.JAVA_VERSION }}
+          - 17
         os:
           - macos-11
           - windows-2019
@@ -46,7 +45,7 @@ jobs:
       fail-fast: true
       matrix:
         java-version:
-          - ${{ env.JAVA_VERSION }}
+          - 17
         os:
           - ubuntu-20.04
     runs-on: ${{ matrix.os }}
