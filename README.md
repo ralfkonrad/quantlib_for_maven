@@ -55,7 +55,7 @@ QuantLib-SWIG.
 The latest release [`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
 and versions prior to it are build using `jdk11`.
 
-Starting with `1.33.0-SNAPSHOT` we start building against `jdk17`
+Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`
 as `jdk11` is no longer under active support.
 
 ## Supported Platforms
