@@ -55,13 +55,13 @@ jobs:
           submodules: "true"
 
       - name: Download macOS native library
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: native-library-macOS
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Download Windows native library
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: native-library-Windows
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
