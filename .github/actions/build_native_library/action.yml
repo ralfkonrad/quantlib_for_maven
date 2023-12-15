@@ -45,7 +45,7 @@ runs:
 
     - name: Upload native library
       if: ${{ inputs.upload-path != '' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: native-library-${{ runner.os }}
         path: ${{ inputs.upload-path }}
