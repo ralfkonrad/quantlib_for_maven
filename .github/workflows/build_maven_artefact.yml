@@ -91,7 +91,7 @@ jobs:
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
       - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}
           if-no-files-found: error
