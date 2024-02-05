@@ -29,6 +29,6 @@ runs:
         Write "BOOST_INSTALLER_PATH=$env:RUNNER_TEMP\boost.exe"                                                                         >> $env:GITHUB_ENV
         Write "BOOST_ROOT=$env:RUNNER_TEMP\boost"                                                                                       >> $env:GITHUB_ENV
 
-        Write "SWIG_DOWNLOAD_URI=https://downloads.sourceforge.net/projects/swig/files/swigwin/swigwin-4.2.0/swigwin-4.2.0.zip"         >> $env:GITHUB_ENV
+        Write "SWIG_DOWNLOAD_URI=https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.2.0/swigwin-4.2.0.zip/download"          >> $env:GITHUB_ENV
         Write "SWIG_ZIP_FILE_PATH=$env:RUNNER_TEMP\swigwin-4.2.0.zip"                                                                   >> $env:GITHUB_ENV
         Write "$env:RUNNER_TEMP\swigwin-4.2.0"                                                                                          >> $env:GITHUB_PATH
