@@ -52,6 +52,11 @@ runs:
       run: |
         Start-BitsTransfer -Source $env:BOOST_DOWNLOAD_URI -Destination $env:BOOST_INSTALLER_PATH
         Start-Process -Wait -FilePath "$env:BOOST_INSTALLER_PATH" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_ROOT"
+        
+        Start-BitsTransfer -Source $env:SWIG_DOWNLOAD_URI -Destination $env:SWIG_ZIP_FILE_PATH
+        Expand-Archive $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
+        swig -version
+
         choco install -y ninja
 
     - name: Set up JDK ${{ inputs.java-version }}
