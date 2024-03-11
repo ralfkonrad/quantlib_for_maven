@@ -20,6 +20,7 @@ runs:
       shell: bash
       run: |
         echo "CXXFLAGS=-stdlib=libc++"                                                                                                  >> $GITHUB_ENV
+        echo "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1"                                                                                 >> $GITHUB_ENV
 
     - name: Setup BOOST_ROOT and directories on Windows
       if: runner.os == 'Windows'
