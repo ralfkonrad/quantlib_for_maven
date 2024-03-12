@@ -186,10 +186,12 @@
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>3.2.0</version>
                     <configuration>
-                        <bestPractices>false</bestPractices>
                         <gpgArguments>
                             <arg>--pinentry-mode</arg>
                             <arg>loopback</arg>
+                            <arg>--debug-level</arg>
+                            <arg>advanced</arg>
+                            <arg>--debug-all</arg>
                         </gpgArguments>
                     </configuration>
                     <executions>
