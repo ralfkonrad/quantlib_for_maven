@@ -67,10 +67,9 @@ jobs:
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Delete native library artifacts
-        uses: geekyeggo/delete-artifact@v4
+        uses: geekyeggo/delete-artifact@v5
         with:
           name:        native-library-*
-          token:       ${{ secrets.REPO_SCOPED_TOKEN }}
           failOnError: true
 
       - name: Set up JDK ${{ matrix.java-version }}
