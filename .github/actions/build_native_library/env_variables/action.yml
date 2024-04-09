@@ -1,9 +1,20 @@
 name: Setup needed environment variables
 description: Setup needed environment variables
 
+inputs:
+  gpg-secret-key-password:
+    description: The password for the gpg secret key
+    default: ''
+    required: true
+
 runs:
   using: composite
   steps:
+    - name: Set the 'MAVEN_GPG_PASSPHRASE'
+      shell: bash
+      run: |
+        echo "MAVEN_GPG_PASSPHRASE=${{ inputs.gpg-secret-key-password }}"                                                               >> $GITHUB_ENV
+
     - name: Determine ccache variant
       shell: bash
       run: |

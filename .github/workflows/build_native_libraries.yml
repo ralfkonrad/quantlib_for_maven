@@ -7,6 +7,7 @@ on:
 
 jobs:
   build-native:
+    name: Build on ${{ matrix.os }} for jdk${{ matrix.java-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +29,7 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Build native library for ${{ matrix.os }} and jdk ${{ matrix.java-version }}
+      - name: Build native library for ${{ matrix.os }} and jdk${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
           runner-name:             ${{ matrix.os }}
