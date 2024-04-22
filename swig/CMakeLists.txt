@@ -15,7 +15,7 @@ if (NOT DEFINED Boost_USE_STATIC_RUNTIME)
     set(Boost_USE_STATIC_RUNTIME ${MSVC})
 endif ()
 
-find_package(Boost REQUIRED)
+find_package(Boost 1.84.0 EXACT REQUIRED)
 add_compile_definitions(BOOST_ALL_NO_LIB)
 if (NOT Boost_USE_STATIC_LIBS)
     add_compile_definitions(BOOST_ALL_DYN_LINK)
