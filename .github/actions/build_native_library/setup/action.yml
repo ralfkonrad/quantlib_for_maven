@@ -29,9 +29,9 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo apt update
-        sudo apt install -y ccache ninja-build
-        sudo apt remove -y swig swig4.0
+        sudo apt-get update
+        sudo apt-get install -y ccache ninja-build
+        sudo apt-get remove -y swig swig4.0
         brew install swig boost
 
     - name: Setup macOs
