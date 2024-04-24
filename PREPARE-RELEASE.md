@@ -8,6 +8,7 @@
 - Update the version in `README.md`
 - Update the environment variable `QUANTLIB_VERSION` from `SNAPSHOT` to the new release tag
   for the `.github/workflows/build_maven_artefact.yml` workflow
+- Update the `cmake` project version
 - Merge Pull Request
 
 # Update the repository
