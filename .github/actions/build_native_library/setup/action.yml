@@ -32,13 +32,14 @@ runs:
         sudo apt-get update
         sudo apt-get install -y ccache ninja-build
         sudo apt-get remove -y swig swig4.0
+        
+        brew update
         brew install swig boost
 
     - name: Setup macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
-        brew cleanup --prune=all
         brew update
         brew install ninja boost
 
