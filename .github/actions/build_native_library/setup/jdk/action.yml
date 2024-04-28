@@ -40,16 +40,31 @@ runs:
         gpg-passphrase:  MAVEN_GPG_PASSPHRASE
         cache:           maven
 
-    - name: Check gpg setup
+    - name: Check gpg setup on Windows
+      if: runner.os == 'Windows'
       shell: bash
       run: |
         gpg --version
         gpg --list-keys
         gpg --list-secret-keys
         ls -lah /c/Users/runneradmin/.gnupg
+        cat     /c/Users/runneradmin/.gnupg/common.conf
         ls -lah /c/Users/runneradmin/.m2
-        cat /c/Users/runneradmin/.m2/toolchains.xml
-        cat /c/Users/runneradmin/.m2/settings.xml
+        cat     /c/Users/runneradmin/.m2/toolchains.xml
+        cat     /c/Users/runneradmin/.m2/settings.xml
+
+    - name: Check gpg setup on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        gpg --version
+        gpg --list-keys
+        gpg --list-secret-keys
+        ls -lah /home/runner/.gnupg
+        cat     /home/runner/.gnupg/common.conf
+        ls -lah /home/runner/.m2
+        cat     /home/runner/.m2/toolchains.xml
+        cat     /home/runner/.m2/settings.xml
 
     - id: set_JAVA_IS_SETUP_var
       shell: bash
