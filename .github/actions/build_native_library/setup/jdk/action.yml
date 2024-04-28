@@ -34,6 +34,11 @@ runs:
       run: |
         gpg --version
         where.exe gpg
+
+        choco install gnupg
+        gpg --version
+        where.exe gpg
+
         mkdir -p /c/Users/runneradmin/.gnupg
         ls -lah  /c/Users/runneradmin/.gnupg
 
