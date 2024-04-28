@@ -28,6 +28,15 @@ runs:
         echo "The variable 'gpg-secret-key' was not set"  
         exit 1
 
+    - name: Check gpg setup on Windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        gpg --version
+        gpg-disable-keyboxd
+        ls -lah /c/Users/runneradmin/.gnupg
+        cat     /c/Users/runneradmin/.gnupg/common.conf
+
     - uses: actions/setup-java@v4
       if: env.JAVA_IS_SETUP != 'true'
       with:
@@ -49,7 +58,6 @@ runs:
         gpg --list-secret-keys
         ls -lah /c/Users/runneradmin/.gnupg
         cat     /c/Users/runneradmin/.gnupg/common.conf
-        rm      /c/Users/runneradmin/.gnupg/common.conf
         ls -lah /c/Users/runneradmin/.m2
         cat     /c/Users/runneradmin/.m2/toolchains.xml
         cat     /c/Users/runneradmin/.m2/settings.xml
