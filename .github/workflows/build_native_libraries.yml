@@ -15,7 +15,7 @@ jobs:
           - 17
 #          - 21
         os:
-#          - ubuntu-20.04
+          - ubuntu-20.04
 #          - ubuntu-22.04
 #          - macos-12
 #          - macos-13
