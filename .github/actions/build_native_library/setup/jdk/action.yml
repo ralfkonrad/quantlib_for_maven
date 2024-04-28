@@ -30,10 +30,10 @@ runs:
 
     - name: Check gpg setup on Windows
       if: runner.os == 'Windows'
-      shell: cmd
+      shell: bash
       run: |
         gpg --version
-        del /c/Users/runneradmin/.gnupg/common.conf
+        rm -f /c/Users/runneradmin/.gnupg/common.conf
 
     - uses: actions/setup-java@v4
       if: env.JAVA_IS_SETUP != 'true'
