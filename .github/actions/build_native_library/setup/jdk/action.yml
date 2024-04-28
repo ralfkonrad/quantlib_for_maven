@@ -30,12 +30,10 @@ runs:
 
     - name: Check gpg setup on Windows
       if: runner.os == 'Windows'
-      shell: bash
+      shell: powershell
       run: |
         gpg --version
-        gpg-disable-keyboxd
-        ls -lah /c/Users/runneradmin/.gnupg
-        cat     /c/Users/runneradmin/.gnupg/common.conf
+        gpg-disable-keyboxd.bat
 
     - uses: actions/setup-java@v4
       if: env.JAVA_IS_SETUP != 'true'
