@@ -48,6 +48,7 @@ runs:
         gpg --list-keys
         gpg --list-secret-keys
         ls -lah /c/Users/runneradmin/.gnupg
+        cat     /c/Users/runneradmin/.gnupg/common.conf
         ls -lah /c/Users/runneradmin/.m2
         cat     /c/Users/runneradmin/.m2/toolchains.xml
         cat     /c/Users/runneradmin/.m2/settings.xml
@@ -60,7 +61,6 @@ runs:
         gpg --list-keys
         gpg --list-secret-keys
         ls -lah /home/runner/.gnupg
-        cat     /home/runner/.gnupg/common.conf
         ls -lah /home/runner/.m2
         cat     /home/runner/.m2/toolchains.xml
         cat     /home/runner/.m2/settings.xml
