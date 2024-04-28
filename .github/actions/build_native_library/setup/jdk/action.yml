@@ -40,6 +40,14 @@ runs:
         gpg-passphrase:  MAVEN_GPG_PASSPHRASE
         cache:           maven
 
+    - name: Check gpg setup
+      shell: bash
+      run: |
+        gpg --version
+        ls -lah C:\Users\runneradmin\.m2\
+        cat C:\Users\runneradmin\.m2\toolchains.xml
+        cat C:\Users\runneradmin\.m2\settings.xml
+
     - id: set_JAVA_IS_SETUP_var
       shell: bash
       run: |
