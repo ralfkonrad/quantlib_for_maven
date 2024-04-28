@@ -33,7 +33,10 @@ runs:
       shell: bash
       run: |
         gpg --version
-        rm -f /c/Users/runneradmin/.gnupg/common.conf
+        ls -lah /c/Users/runneradmin/.gnupg
+        rm -f   /c/Users/runneradmin/.gnupg/common.conf
+        ls -lah /c/Users/runneradmin/.gnupg
+        where.exe gpg
 
     - uses: actions/setup-java@v4
       if: env.JAVA_IS_SETUP != 'true'
