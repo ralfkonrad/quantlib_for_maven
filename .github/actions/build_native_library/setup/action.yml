@@ -25,6 +25,12 @@ runs:
         echo "The variable 'runner-name' was not set"  
         exit 1
 
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: ./.github/actions/build_native_library/setup/jdk
+      with:
+        java-version:   ${{ inputs.java-version }}
+        gpg-secret-key: ${{ inputs.gpg-secret-key }}
+
     - name: Setup Linux
       if: runner.os == 'Linux'
       shell: bash
@@ -61,12 +67,6 @@ runs:
         swig -version
 
         choco install -y ninja
-
-    - name: Set up JDK ${{ inputs.java-version }}
-      uses: ./.github/actions/build_native_library/setup/jdk
-      with:
-        java-version:   ${{ inputs.java-version }}
-        gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
