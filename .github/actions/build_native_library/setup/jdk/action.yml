@@ -35,7 +35,7 @@ runs:
         gpg --version
         where.exe gpg
 
-        choco install -y gnupg
+        choco install -y gpg4win
         gpg --version
         where.exe gpg
 
