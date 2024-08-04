@@ -93,16 +93,6 @@ jobs:
           gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
-      - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: quantlib-${{ env.QUANTLIB_VERSION }}
-          if-no-files-found: error
-          path: |
-            ${{ env.JAVA_TARGET_PATH }}/*.pom
-            ${{ env.JAVA_TARGET_PATH }}/*.jar
-            ${{ env.JAVA_TARGET_PATH }}/*.asc
-
       - name: Deploy the maven module
         if: github.ref == 'refs/heads/master'
         env:
@@ -112,4 +102,14 @@ jobs:
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         working-directory: ${{ env.JAVA_PATH }}
         run: |
-          ./mvnw --batch-mode --show-version clean deploy
+          ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
+
+      - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: quantlib-${{ env.QUANTLIB_VERSION }}
+          if-no-files-found: error
+          path: |
+            ${{ env.JAVA_TARGET_PATH }}/*.pom
+            ${{ env.JAVA_TARGET_PATH }}/*.jar
+            ${{ env.JAVA_TARGET_PATH }}/*.asc
