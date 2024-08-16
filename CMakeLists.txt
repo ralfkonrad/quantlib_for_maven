@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.25.0)
 # For MSVC RUNTIME LIBRARY, need CMP0091=NEW and cmake 3.15+
 cmake_policy(SET CMP0091 NEW)
 
+# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif ()
+
 project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
 cmake_path(SET QUANTLIB_ROOT                   external/QuantLib)
