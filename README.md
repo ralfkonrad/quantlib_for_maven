@@ -41,34 +41,6 @@ includes the necessary native libraries for Linux, macOS and Windows and is desi
 Maven, a popular build automation and dependency management tool for Java projects and all other
 build tools like Gradle, sbt which can include maven modules.
 
-## Releases
-
-The maven module tries to follow the release cycle of QuantLib (approx. every three to four month)
-and uses the same semantic versioning starting with `v1.31.0`. Therefore, a new release of QuantLib
-will mean a new version of this maven module.
-
-Also, there will be regular `SNAPSHOT`-builds[^1] reflecting the current development of QuantLib and
-QuantLib-SWIG.
-
-## Supported JDK versions
-
-The latest release [`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
-and versions prior to it are build using `jdk11`.
-
-Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`
-as `jdk11` is no longer under active support.
-
-## Supported Platforms
-
-The QuantLib SWIG Java binding supports the following platforms:
-
-- Linux
-- macOS
-- Windows
-
-The binding should work on these platforms as long as the required dependencies are available for
-your specific operating system.
-
 ## Installation
 
 To use the QuantLib SWIG Java binding in your Maven-based project, follow these steps:
@@ -160,6 +132,34 @@ Taken from [quantlib_for_maven_test](https://github.com/ralfkonrad/quantlib_for_
 
 Please refer to the QuantLib documentation and examples for further details on using the QuantLib
 SWIG Java binding and its various functionalities.
+
+## Releases
+
+The maven module tries to follow the release cycle of QuantLib (approx. every three to four month)
+and uses the same semantic versioning starting with `v1.31.0`. Therefore, a new release of QuantLib
+will mean a new version of this maven module.
+
+Also, there will be regular `SNAPSHOT`-builds[^1] reflecting the current development of QuantLib and
+QuantLib-SWIG.
+
+## Supported JDK versions
+
+The latest release [`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
+and versions prior to it are build using `jdk11`.
+
+Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`
+as `jdk11` is no longer under active support.
+
+## Supported Platforms
+
+The QuantLib SWIG Java binding supports the following platforms:
+
+- Linux
+- macOS (`arm64` architecture is supported since `1.36.0-SNAPSHOT`)
+- Windows
+
+The binding should work on these platforms as long as the required dependencies are available for
+your specific operating system.
 
 ## Contributing
 
