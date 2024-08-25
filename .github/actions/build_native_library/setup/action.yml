@@ -33,6 +33,7 @@ runs:
         sudo apt-get install -y ccache ninja-build
         sudo apt-get remove -y swig swig4.0
         
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew update
         brew install swig boost
 

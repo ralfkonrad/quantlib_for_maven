@@ -20,12 +20,6 @@ runs:
       run: |
         echo "CMAKE_CXX_COMPILER_LAUNCHER=${{ ( (runner.os == 'Windows') && 'sccache' ) || 'ccache' }}"                                 >> $GITHUB_ENV
 
-    - name: Setup Homebrew on Linux
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin"                                                           >> $GITHUB_PATH
-
     - name: Setup build variables on macOs
       if: runner.os == 'macOs'
       shell: bash
