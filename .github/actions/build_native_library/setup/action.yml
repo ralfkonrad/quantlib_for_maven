@@ -44,8 +44,8 @@ runs:
         brew update
         brew install ninja boost
 
-    - name: Setup macOs 13
-      if: inputs.runner-name == 'macos-13'
+    - name: Setup macOs 13 and macOs 14
+      if: inputs.runner-name == 'macos-13' || inputs.runner-name == 'macos-14'
       shell: bash
       run: |
         brew install swig
