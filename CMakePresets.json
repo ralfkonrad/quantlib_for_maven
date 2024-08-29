@@ -11,10 +11,7 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
-        "QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN": "ON",
-        "QL_THROW_IN_CYCLES": "ON",
-        "QL_FASTER_LAZY_OBJECTS": "OFF",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "ON",
         "QL_BUILD_EXAMPLES": "OFF",
         "QL_BUILD_TEST_SUITE": "OFF"
       },
