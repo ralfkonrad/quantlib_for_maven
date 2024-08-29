@@ -11,6 +11,13 @@ set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 
 project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
+# set the QuantLib options the way we need them.
+# So, they do not need to be provided in the presets or as a cmake -D cache entry.
+set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON  CACHE BOOL "Needed for java's garbage collector" FORCE)
+set(QL_THROW_IN_CYCLES                     ON  CACHE BOOL ""                                    FORCE)
+set(QL_FASTER_LAZY_OBJECTS                 OFF CACHE BOOL ""                                    FORCE)
+
+# paths needed throughout the build
 cmake_path(SET QUANTLIB_ROOT                   external/QuantLib)
 
 cmake_path(SET QUANTLIB_ROOT_DIR               ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT})
