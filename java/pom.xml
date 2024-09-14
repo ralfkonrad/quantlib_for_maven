@@ -308,9 +308,6 @@
     <profiles>
         <profile>
             <id>enable-gpg-plugin</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
