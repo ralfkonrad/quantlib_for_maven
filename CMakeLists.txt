@@ -9,6 +9,11 @@ cmake_policy(SET CMP0091 NEW)
 #   invocation because it may influence configuration of the toolchain and flags
 set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 
+# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif ()
+
 project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
 # set the QuantLib options the way we need them.
@@ -52,6 +57,8 @@ set(Boost_NO_WARN_NEW_VERSIONS ON)
 if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
+
+find_package(Boost 1.86.0 EXACT CONFIG REQUIRED)
 
 add_subdirectory(${QUANTLIB_ROOT})
 add_subdirectory(${SWIG_ROOT})
