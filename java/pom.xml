@@ -164,7 +164,8 @@
                                         <version>3.2.5</version>
                                     </requireMavenVersion>
                                     <requirePluginVersions>
-                                        <message>Best Practice is to always define plugin versions!</message>
+                                        <message>Best Practice is to always define plugin
+                                            versions!</message>
                                         <banLatest>true</banLatest>
                                         <banRelease>true</banRelease>
                                         <banSnapshots>true</banSnapshots>
@@ -307,6 +308,9 @@
     <profiles>
         <profile>
             <id>enable-gpg-plugin</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
