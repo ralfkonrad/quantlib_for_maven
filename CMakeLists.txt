@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 3.25.0)
 # For MSVC RUNTIME LIBRARY, need CMP0091=NEW and cmake 3.15+
 cmake_policy(SET CMP0091 NEW)
 
+# Target specific architectures for macOS and iOS, enable dual builds both for arm64 and amd64 architectures
+# According to the documentation:
+#   The value of this variable should be set prior to the first project() or enable_language() command
+#   invocation because it may influence configuration of the toolchain and flags
+set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+
 # The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
 if (POLICY CMP0167)
     cmake_policy(SET CMP0167 NEW)
@@ -10,6 +16,13 @@ endif ()
 
 project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
+# set the QuantLib options the way we need them.
+# So, they do not need to be provided in the presets or as a cmake -D cache entry.
+set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON  CACHE BOOL "Needed for java's garbage collector" FORCE)
+set(QL_THROW_IN_CYCLES                     ON  CACHE BOOL ""                                    FORCE)
+set(QL_FASTER_LAZY_OBJECTS                 OFF CACHE BOOL ""                                    FORCE)
+
+# paths needed throughout the build
 cmake_path(SET QUANTLIB_ROOT                   external/QuantLib)
 
 cmake_path(SET QUANTLIB_ROOT_DIR               ${CMAKE_SOURCE_DIR}/${QUANTLIB_ROOT})
