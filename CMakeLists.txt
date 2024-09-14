@@ -58,5 +58,7 @@ if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
+find_package(Boost 1.86.0 EXACT CONFIG REQUIRED)
+
 add_subdirectory(${QUANTLIB_ROOT})
 add_subdirectory(${SWIG_ROOT})
