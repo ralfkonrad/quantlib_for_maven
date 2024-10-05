@@ -41,14 +41,7 @@ runs:
       if: runner.os == 'macOs'
       shell: bash
       run: |
-        brew update
-        brew install ninja boost
-
-    - name: Setup macOs 13, macOs 14 and macOs 15
-      if: runner.os == 'macOs' && inputs.runner-name != 'macos-12'
-      shell: bash
-      run: |
-        brew install swig
+        brew install boost ninja swig
 
     - name: Setup Windows
       if: runner.os == 'Windows'

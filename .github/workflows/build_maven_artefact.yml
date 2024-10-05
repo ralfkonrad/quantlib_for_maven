@@ -20,7 +20,7 @@ jobs:
         java-version:
           - 17
         os:
-          - macos-12
+          - macos-13
           - windows-2019
     runs-on: ${{ matrix.os }}
     steps:
