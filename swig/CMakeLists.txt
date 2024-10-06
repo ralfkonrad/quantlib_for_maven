@@ -25,7 +25,7 @@ find_package(Threads REQUIRED)
 
 find_package(JNI REQUIRED)
 
-find_package(SWIG ${RKE_SWIG_VERSION} EXACT REQUIRED COMPONENTS java)
+find_package(SWIG ${QL_MVN_SWIG_VERSION} EXACT REQUIRED COMPONENTS java)
 include(UseSWIG)
 
 set_property(SOURCE ${QL_ENTRYPOINT_I_FILE} PROPERTY CPLUSPLUS ON)

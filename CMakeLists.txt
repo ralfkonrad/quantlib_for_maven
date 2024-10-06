@@ -18,8 +18,8 @@ project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use
 # to ensure compatibility across linux, macos and windows builds
-set(RKE_BOOST_VERSION "1.86.0" CACHE STRING "Boost version we want to use to ensure compatibility")
-set(RKE_SWIG_VERSION "4.2.1" CACHE STRING "Swig version we want to use to ensure compatibility")
+set(QL_MVN_BOOST_VERSION "1.86.0" CACHE STRING "Boost version we want to use to ensure compatibility")
+set(QL_MVN_SWIG_VERSION "4.2.1" CACHE STRING "Swig version we want to use to ensure compatibility")
 
 # set the QuantLib options the way we need them.
 # So, they do not need to be provided in the presets or as a cmake -D cache entry.
@@ -63,7 +63,7 @@ if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
-find_package(Boost ${RKE_BOOST_VERSION} EXACT CONFIG REQUIRED)
+find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
 
 add_subdirectory(${QUANTLIB_ROOT})
 add_subdirectory(${SWIG_ROOT})
