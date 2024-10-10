@@ -1,18 +1,10 @@
 cmake_minimum_required(VERSION 3.25.0)
 
-# For MSVC RUNTIME LIBRARY, need CMP0091=NEW and cmake 3.15+
-cmake_policy(SET CMP0091 NEW)
-
 # Target specific architectures for macOS and iOS, enable dual builds both for arm64 and amd64 architectures
 # According to the documentation:
 #   The value of this variable should be set prior to the first project() or enable_language() command
 #   invocation because it may influence configuration of the toolchain and flags
 set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
-
-# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
-if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-endif ()
 
 project(quantlib_for_maven VERSION 1.35.0 LANGUAGES CXX)
 
@@ -63,6 +55,7 @@ if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
+# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
 if (POLICY CMP0167)
     find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
 else ()
