@@ -63,7 +63,11 @@ if (${MSVC})
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
-find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
+if (POLICY CMP0167)
+    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
+else ()
+    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT REQUIRED)
+endif ()
 
 add_subdirectory(${QUANTLIB_ROOT})
 add_subdirectory(${SWIG_ROOT})
