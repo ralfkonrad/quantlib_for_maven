@@ -33,13 +33,13 @@ runs:
         echo "CXXFLAGS=-stdlib=libc++"                                                                                                  >> $GITHUB_ENV
         echo "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1"                                                                                 >> $GITHUB_ENV
 
-    - name: Setup BOOST_ROOT and directories on Windows
+    - name: Setup installation directories on Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
         Write "BOOST_DOWNLOAD_URI=https://downloads.sourceforge.net/project/boost/boost-binaries/1.86.0/boost_1_86_0-msvc-14.3-64.exe"  >> $env:GITHUB_ENV
         Write "BOOST_INSTALLER_PATH=$env:RUNNER_TEMP\boost.exe"                                                                         >> $env:GITHUB_ENV
-        Write "BOOST_ROOT=$env:RUNNER_TEMP\boost"                                                                                       >> $env:GITHUB_ENV
+        Write "BOOST_INSTALL_DIR=$env:RUNNER_TEMP\boost"                                                                                >> $env:GITHUB_ENV
         Write "Boost_DIR=$env:RUNNER_TEMP\boost\lib64-msvc-14.3\cmake\Boost-1.86.0"                                                     >> $env:GITHUB_ENV
 
         Write "SWIG_DOWNLOAD_URI=https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.2.1/swigwin-4.2.1.zip/download"          >> $env:GITHUB_ENV
