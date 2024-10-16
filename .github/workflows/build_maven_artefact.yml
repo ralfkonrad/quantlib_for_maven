@@ -6,7 +6,7 @@ on:
   workflow_dispatch: { }
 
 env:
-  QUANTLIB_VERSION:                1.36.0-SNAPSHOT
+  QUANTLIB_VERSION:                1.37.0-SNAPSHOT
   JAVA_PATH:                       java
   JAVA_TARGET_PATH:                java/target
   JAVA_RESOURCES_NATIVE_LIBS_PATH: java/src/main/resources/native

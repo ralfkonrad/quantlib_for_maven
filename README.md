@@ -1,6 +1,6 @@
 # Java language binding for QuantLib
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.ralfkonrad.quantlib_for_maven/quantlib/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.ralfkonrad.quantlib_for_maven/quantlib)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.ralfkonrad.quantlib_for_maven/quantlib.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.ralfkonrad.quantlib_for_maven/quantlib?smo=true)
 
 [![Java: &gt;= 17](https://oss.aoapps.com/ao-badges/java-17.svg)](https://docs.oracle.com/en/java/javase/17/)
 [![Licensed under the BSD 3-Clause License](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://github.com/ralfkonrad/quantlib_for_maven/blob/master/LICENSE)
@@ -54,7 +54,7 @@ To use the QuantLib SWIG Java binding in your Maven-based project, follow these 
   <dependency>
     <groupId>io.github.ralfkonrad.quantlib_for_maven</groupId>
     <artifactId>quantlib</artifactId>
-    <version>1.35.0</version>
+    <version>1.36.0</version>
   </dependency>
 </dependencies>
 ```
