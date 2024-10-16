@@ -54,7 +54,7 @@ To use the QuantLib SWIG Java binding in your Maven-based project, follow these 
   <dependency>
     <groupId>io.github.ralfkonrad.quantlib_for_maven</groupId>
     <artifactId>quantlib</artifactId>
-    <version>1.35.0</version>
+    <version>1.36.0</version>
   </dependency>
 </dependencies>
 ```
