@@ -35,12 +35,13 @@ runs:
         
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew update
-        brew install swig boost
+        brew install boost swig
 
     - name: Setup macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
+        brew update
         brew install boost ninja swig
 
     - name: Setup Windows
