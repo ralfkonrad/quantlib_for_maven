@@ -142,13 +142,13 @@ will mean a new version of this maven module.
 Also, there will be regular `SNAPSHOT`-builds[^1] reflecting the current development of QuantLib and
 QuantLib-SWIG.
 
-## Supported JDK versions
+## Supported JDK version is `jdk17`
 
-The latest release [`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
-and versions prior to it are build using `jdk11`.
+Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`.
 
-Starting with `1.33.0-SNAPSHOT` we are building against `jdk17`
-as `jdk11` is no longer under active support.
+The latest release for `jdk11` was
+[`v1.32.0`](https://github.com/ralfkonrad/quantlib_for_maven/releases/tag/v1.32.0)
+as it is no longer under active support.
 
 ## Supported Platforms
 
@@ -160,6 +160,12 @@ The QuantLib SWIG Java binding supports the following platforms:
 
 The binding should work on these platforms as long as the required dependencies are available for
 your specific operating system.
+
+## Build the maven artifact from source code
+
+Have a look [here](./HOWTO-BUILD-FROM-SOURCE.md)
+if you are interested in build the maven artifact yourself
+using `c++`, `cmake` and `maven`. 
 
 ## Contributing
 
