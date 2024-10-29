@@ -48,10 +48,10 @@ If you do not have access to the latest versions of the Boost C++ libraries or S
 you can use the following CMake cache variables to customize the build process:
 
 - `QL_MVN_BOOST_VERSION`: The version of the Boost C++ libraries to use, 
-                          if you do not want to use the current default `v1.86.0`.
+                          if you do not want to use the current default `1.86.0`.
 
 - `QL_MVN_SWIG_VERSION`: The version of the SWIG binaries to use,
-                         if you do not want to use the current default `v4.3.0`.
+                         if you do not want to use the current default `4.3.0`.
 
 You can pass these variables to the `cmake` command using the `-D` option like this:
 
@@ -59,7 +59,7 @@ You can pass these variables to the `cmake` command using the `-D` option like t
 cd quantlib_for_maven
 mkdir build
 cd build
-cmake -S .. -B . -DQL_MVN_BOOST_VERSION=v1.83.0 -DQL_MVN_SWIG_VERSION=v4.2.1 -L
+cmake -S .. -B . -DQL_MVN_BOOST_VERSION=1.83.0 -DQL_MVN_SWIG_VERSION=4.2.1 -L
 cmake --build . -v
 ```
 
