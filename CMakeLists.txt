@@ -10,7 +10,7 @@ project(quantlib_for_maven VERSION 1.36.0 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use
 # to ensure compatibility across linux, macos and windows builds
-set(QL_MVN_BOOST_VERSION "1.86.0" CACHE STRING "Boost version we want to use to ensure compatibility")
+set(QL_MVN_BOOST_VERSION "1.87.0" CACHE STRING "Boost version we want to use to ensure compatibility")
 set(QL_MVN_SWIG_VERSION "4.3.0" CACHE STRING "Swig version we want to use to ensure compatibility")
 
 # set the QuantLib options the way we need them.
