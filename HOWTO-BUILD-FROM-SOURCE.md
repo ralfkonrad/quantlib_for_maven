@@ -8,7 +8,7 @@
 - an up-to-date cmake
 - an up-to-date ninja build system
 - Boost C++ libraries version `v1.88.0`
-- Swig version `v4.3.0`
+- Swig version `v4.3.1`
 - OpenJDK version `jdk17` or `jdk21`
 - an up-to-date Apache Maven
 
@@ -51,7 +51,7 @@ you can use the following CMake cache variables to customize the build process:
                           if you do not want to use the current default `1.88.0`.
 
 - `QL_MVN_SWIG_VERSION`: The version of the SWIG binaries to use,
-                         if you do not want to use the current default `4.3.0`.
+                         if you do not want to use the current default `4.3.1`.
 
 You can pass these variables to the `cmake` command using the `-D` option like this:
 
@@ -109,7 +109,7 @@ installed on your system:
   installed on your system.
 
   We are trying to use the latest version of the SWIG binaries.
-  Currently, we build the maven artifact using version `v4.3.0`.
+  Currently, we build the maven artifact using version `v4.3.1`.
 
   See the [SWIG](http://www.swig.org/) website for more information.
 
