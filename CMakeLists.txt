@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.25.0)
 #   invocation because it may influence configuration of the toolchain and flags
 set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 
-project(quantlib_for_maven VERSION 1.38.0 LANGUAGES CXX)
+project(quantlib_for_maven VERSION 1.39.0 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use
 # to ensure compatibility across linux, macos and windows builds
