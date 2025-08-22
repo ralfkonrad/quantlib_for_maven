@@ -28,7 +28,7 @@ runs:
         echo "The variable 'gpg-secret-key' was not set"  
         exit 1
 
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       if: env.JAVA_IS_SETUP != 'true'
       with:
         java-version:    ${{ inputs.java-version }}
