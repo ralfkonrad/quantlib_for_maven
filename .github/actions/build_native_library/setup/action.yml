@@ -74,7 +74,7 @@ runs:
           ${{ runner.os }}
 
     - name: Set up Visual Studio shell on Windows
-      uses: TheMrMilchmann/setup-msvc-dev@v3
+      uses: TheMrMilchmann/setup-msvc-dev@v4
       if: runner.os == 'Windows'
       with:
         arch: x64
