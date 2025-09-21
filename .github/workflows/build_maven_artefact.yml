@@ -1,8 +1,8 @@
 name: Build the QuantLib maven artefact
 
 on:
-  # push: { }
-  # pull_request: { }
+  push: {}
+  pull_request: {}
   workflow_dispatch: {}
 
 env:
@@ -20,7 +20,7 @@ jobs:
         java-version:
           - 17
         os:
-          - macos-13
+          - macos-14
           - windows-2022
     runs-on: ${{ matrix.os }}
     steps:
