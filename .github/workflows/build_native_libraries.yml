@@ -15,27 +15,27 @@ jobs:
       matrix:
         java-version:
           - 17
-          - 21
+          # - 21
         os:
-          - ubuntu-22.04
-          - ubuntu-24.04
+          # - ubuntu-22.04
+          # - ubuntu-24.04
           - macos-13
-          - macos-14
-          - macos-15
-          - windows-2022
-          - windows-2025
+          # - macos-14
+          # - macos-15
+          # - windows-2022
+          # - windows-2025
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v5
         with:
-          submodules: 'true'
+          submodules: "true"
 
       - name: Build native library for ${{ matrix.os }} and jdk${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
-          runner-name:             ${{ matrix.os }}
-          java-version:            ${{ matrix.java-version }}
-          gpg-secret-key:          ${{ secrets.GPG_SECRET_KEY }}
+          runner-name: ${{ matrix.os }}
+          java-version: ${{ matrix.java-version }}
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
