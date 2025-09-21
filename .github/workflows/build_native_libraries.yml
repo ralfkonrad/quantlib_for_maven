@@ -16,7 +16,7 @@ jobs:
         java-version:
           - 17
           - 21
-          - 25
+          # - 25
         os:
           - ubuntu-22.04
           - ubuntu-24.04
