@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -159,7 +161,8 @@
                                         <banRelease>true</banRelease>
                                         <banSnapshots>true</banSnapshots>
                                     </requirePluginVersions>
-                                    <CheckMavenCentral implementation="org.kordamp.maven.enforcer.checker.CheckMavenCentral">
+                                    <CheckMavenCentral
+                                        implementation="org.kordamp.maven.enforcer.checker.CheckMavenCentral">
                                         <release>false</release>
                                     </CheckMavenCentral>
                                 </rules>
@@ -331,6 +334,41 @@
                                         <rules>
                                             <requireJavaVersion>
                                                 <version>[21,22)</version>
+                                            </requireJavaVersion>
+                                        </rules>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk25</id>
+            <activation>
+                <jdk>25</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.source>25</maven.compiler.source>
+                <maven.compiler.target>25</maven.compiler.target>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-enforcer-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>enforce-maven</id>
+                                    <goals>
+                                        <goal>enforce</goal>
+                                    </goals>
+                                    <configuration>
+                                        <rules>
+                                            <requireJavaVersion>
+                                                <version>[25,26)</version>
                                             </requireJavaVersion>
                                         </rules>
                                     </configuration>
