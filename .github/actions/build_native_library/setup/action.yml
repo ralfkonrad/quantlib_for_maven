@@ -67,9 +67,9 @@ runs:
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
-        key: ${{ runner.os }}--${{ inputs.runner-name }}
+        key: ${{ runner.os }}-${{ inputs.runner-name }}
         restore-keys: |
-          ${{ runner.os }}--${{ inputs.runner-name }}
+          ${{ runner.os }}-${{ inputs.runner-name }}
           ${{ runner.os }}
 
     - name: Set up Visual Studio shell on Windows

@@ -24,9 +24,9 @@ jobs:
           - windows-2022
           - windows-2025
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             java-version: 21
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             java-version: 25
 
     runs-on: ${{ matrix.os }}
