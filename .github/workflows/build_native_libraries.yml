@@ -15,8 +15,6 @@ jobs:
       matrix:
         java-version:
           - 17
-          - 21
-          - 25
         os:
           - ubuntu-22.04
           - ubuntu-24.04
@@ -25,6 +23,11 @@ jobs:
           - macos-26
           - windows-2022
           - windows-2025
+        include:
+          - os: ubuntu-latest
+            java-version: 21
+          - os: ubuntu-latest
+            java-version: 25
 
     runs-on: ${{ matrix.os }}
 
