@@ -6,11 +6,11 @@
 
 - an up-to-date cpp compiler
 - an up-to-date cmake
-- an up-to-date ninja build system
+- Swig version `v4.4.0`
 - Boost C++ libraries version `v1.89.0`
-- Swig version `v4.3.1`
-- OpenJDK version `jdk17` or `jdk21`
+- OpenJDK version `jdk17`, `jdk21` or `jdk25`
 - an up-to-date Apache Maven
+- an up-to-date ninja build system
 
 ### Build steps
 
@@ -47,11 +47,11 @@ They will work out of the box if you have all the required tools and libraries i
 If you do not have access to the latest versions of the Boost C++ libraries or SWIG binaries,
 you can use the following CMake cache variables to customize the build process:
 
-- `QL_MVN_BOOST_VERSION`: The version of the Boost C++ libraries to use, 
-                          if you do not want to use the current default `1.89.0`.
+- `QL_MVN_BOOST_VERSION`: The version of the Boost C++ libraries to use,
+  if you do not want to use the current default `1.89.0`.
 
 - `QL_MVN_SWIG_VERSION`: The version of the SWIG binaries to use,
-                         if you do not want to use the current default `4.3.1`.
+  if you do not want to use the current default `4.4.0`.
 
 You can pass these variables to the `cmake` command using the `-D` option like this:
 
@@ -66,7 +66,7 @@ cmake --build . -v
 Also, there are three additional CMake cache variables available
 which differ from their QuantLib defaults:
 
-- `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`: 
+- `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`:
   This is required to be set to `ON` and cannot be changed.
 
   The thread-safe observer pattern will be enabled which is required for the Java bindings as the
@@ -95,6 +95,15 @@ installed on your system:
 
   See the [CMake](https://cmake.org/) website for more information.
 
+- **SWIG**:
+  We are using SWIG to generate the Java bindings for QuantLib. Therefore, you need to have SWIG
+  installed on your system.
+
+  We are trying to use the latest version of the SWIG binaries.
+  Currently, we build the maven artifact using version `v4.4.0`.
+
+  See the [SWIG](http://www.swig.org/) website for more information.
+
 - **The Boost C++ libraries**:
   The QuantLib library depends on the Boost C++ libraries. Therefore, you need to have the Boost C++
   libraries installed on your system. Only the header files are required to build the QuantLib SWIG.
@@ -104,19 +113,10 @@ installed on your system:
 
   See the [Boost C++ Libraries](https://www.boost.org/) website for more information.
 
-- **SWIG**:
-  We are using SWIG to generate the Java bindings for QuantLib. Therefore, you need to have SWIG
-  installed on your system.
-
-  We are trying to use the latest version of the SWIG binaries.
-  Currently, we build the maven artifact using version `v4.3.1`.
-
-  See the [SWIG](http://www.swig.org/) website for more information.
-
 - **A Java Development Kit (JDK)**:
   You need a Java Development Kit (JDK) to build the Java bindings and the Maven artifact.
 
-  We are supporting the latest LTS versions of the JDK which are currently `jdk17` and `jdk21`.
+  We are supporting the latest LTS versions of the JDK which are currently `jdk17`, `jdk21` and `jdk25`.
 
   We recommend using the Temurin JDK. See the [AdoptOpenJDK](https://adoptopenjdk.net/) website
   for more information.
@@ -132,6 +132,6 @@ installed on your system:
   If you want to use the given cmake presets `release` and `debug`,
   you need to have Ninja installed.
 
-  See the [Ninja](https://ninja-build.org/) website for more information.  
+  See the [Ninja](https://ninja-build.org/) website for more information.
 
 Ensure that all these dependencies are correctly installed and configured in your system's PATH.
