@@ -42,6 +42,6 @@ runs:
         Write "BOOST_INSTALL_DIR=$env:RUNNER_TEMP\boost"                                                                                >> $env:GITHUB_ENV
         Write "Boost_DIR=$env:RUNNER_TEMP\boost\lib64-msvc-14.3\cmake\Boost-1.89.0"                                                     >> $env:GITHUB_ENV
 
-        Write "SWIG_DOWNLOAD_URI=https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.3.1/swigwin-4.3.1.zip/download"          >> $env:GITHUB_ENV
-        Write "SWIG_ZIP_FILE_PATH=$env:RUNNER_TEMP\swigwin-4.3.1.zip"                                                                   >> $env:GITHUB_ENV
-        Write "$env:RUNNER_TEMP\swigwin-4.3.1"                                                                                          >> $env:GITHUB_PATH
+        Write "SWIG_DOWNLOAD_URI=https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.4.0/swigwin-4.4.0.zip/download"          >> $env:GITHUB_ENV
+        Write "SWIG_ZIP_FILE_PATH=$env:RUNNER_TEMP\swigwin-4.4.0.zip"                                                                   >> $env:GITHUB_ENV
+        Write "$env:RUNNER_TEMP\swigwin-4.4.0"                                                                                          >> $env:GITHUB_PATH
