@@ -105,7 +105,7 @@ jobs:
           ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
 
       - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}
           if-no-files-found: error
