@@ -37,10 +37,10 @@ runs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Write "BOOST_DOWNLOAD_URI=https://downloads.sourceforge.net/project/boost/boost-binaries/1.89.0/boost_1_89_0-msvc-14.3-64.exe"  >> $env:GITHUB_ENV
+        Write "BOOST_DOWNLOAD_URI=https://downloads.sourceforge.net/project/boost/boost-binaries/1.90.0/boost_1_90_0-msvc-14.3-64.exe"  >> $env:GITHUB_ENV
         Write "BOOST_INSTALLER_PATH=$env:RUNNER_TEMP\boost.exe"                                                                         >> $env:GITHUB_ENV
         Write "BOOST_INSTALL_DIR=$env:RUNNER_TEMP\boost"                                                                                >> $env:GITHUB_ENV
-        Write "Boost_DIR=$env:RUNNER_TEMP\boost\lib64-msvc-14.3\cmake\Boost-1.89.0"                                                     >> $env:GITHUB_ENV
+        Write "Boost_DIR=$env:RUNNER_TEMP\boost\lib64-msvc-14.3\cmake\Boost-1.90.0"                                                     >> $env:GITHUB_ENV
 
         Write "SWIG_DOWNLOAD_URI=https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.4.1/swigwin-4.4.1.zip/download"          >> $env:GITHUB_ENV
         Write "SWIG_ZIP_FILE_PATH=$env:RUNNER_TEMP\swigwin-4.4.1.zip"                                                                   >> $env:GITHUB_ENV
