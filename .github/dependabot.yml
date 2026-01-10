@@ -6,7 +6,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "01:00"
       timezone: "Europe/Berlin"
 
   # Maintain dependencies for GitHub Actions
@@ -14,7 +14,7 @@ updates:
     directory: "/.github/actions/build_native_library"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "01:30"
       timezone: "Europe/Berlin"
 
   # Maintain dependencies for GitHub Actions
@@ -22,7 +22,7 @@ updates:
     directory: "/.github/actions/build_native_library/env_variables"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "02:00"
       timezone: "Europe/Berlin"
 
   # Maintain dependencies for GitHub Actions
@@ -30,7 +30,7 @@ updates:
     directory: "/.github/actions/build_native_library/setup"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "02:30"
       timezone: "Europe/Berlin"
 
   # Maintain dependencies for GitHub Actions
@@ -38,7 +38,7 @@ updates:
     directory: "/.github/actions/build_native_library/setup/jdk"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "03:00"
       timezone: "Europe/Berlin"
 
   # Maintain dependencies for maven
@@ -46,5 +46,5 @@ updates:
     directory: "/java"
     schedule:
       interval: "daily"
-      time: "04:00"
+      time: "03:00"
       timezone: "Europe/Berlin"
