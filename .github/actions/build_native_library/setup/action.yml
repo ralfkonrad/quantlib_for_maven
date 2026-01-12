@@ -31,11 +31,11 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y ccache ninja-build
-        sudo apt-get remove -y swig swig4.0
+        sudo apt-get remove -y cmake swig swig4.0
         
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew update
-        brew install boost swig
+        brew install boost cmake swig
 
     - name: Setup macOs
       if: runner.os == 'macOs'
@@ -55,7 +55,7 @@ runs:
         Expand-Archive $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
         swig -version
 
-        choco install -y ninja
+        choco install -y cmake ninja
 
     - name: Set up JDK ${{ inputs.java-version }}
       uses: ./.github/actions/build_native_library/setup/jdk

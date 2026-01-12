@@ -5,7 +5,7 @@
 ### Recommended setup
 
 - an up-to-date cpp compiler
-- an up-to-date cmake
+- an up-to-date cmake 
 - Swig version `v4.4.1`
 - Boost C++ libraries version `v1.90.0`
 - OpenJDK version `jdk17`, `jdk21` or `jdk25`
@@ -94,6 +94,12 @@ installed on your system:
   Therefore, you need to have CMake installed on your system.
 
   See the [CMake](https://cmake.org/) website for more information.
+- **CMake**:
+  We are using the CMake C++ build system to build the QuantLib library and the Java bindings.
+  Therefore, you need to have CMake installed on your system.
+
+  See the [CMake](https://cmake.org/) website for more information.
+  CMake version `v4.0.0` or newer is required.
 
 - **SWIG**:
   We are using SWIG to generate the Java bindings for QuantLib. Therefore, you need to have SWIG
