@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25.0)
+cmake_minimum_required(VERSION 4.0.0)
 
 # Target specific architectures for macOS and iOS, enable dual builds both for arm64 and amd64 architectures
 # According to the documentation:
