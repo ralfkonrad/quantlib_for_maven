@@ -4,7 +4,10 @@ cmake_minimum_required(VERSION 4.0.0)
 # According to the documentation:
 #   The value of this variable should be set prior to the first project() or enable_language() command
 #   invocation because it may influence configuration of the toolchain and flags
-set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+# Only apply this on Apple platforms and don't override an explicit user/toolchain choice.
+if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Target architectures for Apple platforms" FORCE)
+endif()
 
 project(quantlib_for_maven VERSION 1.41.0 LANGUAGES CXX)
 
@@ -15,9 +18,10 @@ set(QL_MVN_SWIG_VERSION "4.4.1" CACHE STRING "Swig version we want to use to ens
 
 # set the QuantLib options the way we need them.
 # So, they do not need to be provided in the presets or as a cmake -D cache entry.
+# FORCE is used to avoid surprises with stale CMake caches in CI/local rebuilds.
 set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "Needed for java's garbage collector" FORCE)
-set(QL_THROW_IN_CYCLES ON CACHE BOOL "Throw an exception when a notification loop is detected")
-set(QL_FASTER_LAZY_OBJECTS OFF CACHE BOOL "Cause lazy objects to forward just the first notification instead of every one")
+set(QL_THROW_IN_CYCLES ON CACHE BOOL "Throw an exception when a notification loop is detected" FORCE)
+set(QL_FASTER_LAZY_OBJECTS OFF CACHE BOOL "Cause lazy objects to forward just the first notification instead of every one" FORCE)
 
 # paths needed throughout the build
 cmake_path(SET QL_MVN_QUANTLIB_ROOT external/QuantLib)
@@ -38,9 +42,9 @@ cmake_path(SET QL_MVN_SWIG_JAVA_PACKAGE_DIR ${QL_MVN_SWIG_JAVA_SRC_DIR}/java/org
 cmake_path(SET QL_MVN_SWIG_JAVA_RESOURCES_DIR ${QL_MVN_SWIG_JAVA_SRC_DIR}/resources)
 cmake_path(SET QL_MVN_SWIG_JAVA_TARGET_DIR ${QL_MVN_SWIG_JAVA_DIR}/target)
 
-# Path for package-local cmake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-list(APPEND CMAKE_MODULE_PATH ${QL_MVN_QUANTLIB_ROOT_DIR}/cmake)
+# Path for package-local cmake modules (use CURRENT_LIST_DIR for superbuild friendliness)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${QL_MVN_QUANTLIB_ROOT_DIR}/cmake")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -49,17 +53,11 @@ set(CMAKE_CXX_STANDARD 17)
 # we need a static QuantLib library to link against
 set(BUILD_SHARED_LIBS OFF)
 
-set(Boost_NO_WARN_NEW_VERSIONS ON)
+# Boost setup
+include(Boost)
 
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif ()
-
-# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
-if (POLICY CMP0167)
-    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
-else ()
-    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT REQUIRED)
 endif ()
 
 add_subdirectory(${QL_MVN_QUANTLIB_ROOT})
