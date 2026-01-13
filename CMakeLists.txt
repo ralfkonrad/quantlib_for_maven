@@ -4,7 +4,9 @@ cmake_minimum_required(VERSION 4.0.0)
 # According to the documentation:
 #   The value of this variable should be set prior to the first project() or enable_language() command
 #   invocation because it may influence configuration of the toolchain and flags
-set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Target architectures for Apple platforms" FORCE)
+endif()
 
 project(quantlib_for_maven VERSION 1.41.0 LANGUAGES CXX)
 
@@ -38,9 +40,9 @@ cmake_path(SET QL_MVN_SWIG_JAVA_PACKAGE_DIR ${QL_MVN_SWIG_JAVA_SRC_DIR}/java/org
 cmake_path(SET QL_MVN_SWIG_JAVA_RESOURCES_DIR ${QL_MVN_SWIG_JAVA_SRC_DIR}/resources)
 cmake_path(SET QL_MVN_SWIG_JAVA_TARGET_DIR ${QL_MVN_SWIG_JAVA_DIR}/target)
 
-# Path for package-local cmake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-list(APPEND CMAKE_MODULE_PATH ${QL_MVN_QUANTLIB_ROOT_DIR}/cmake)
+# Path for package-local cmake modules (use CURRENT_LIST_DIR for superbuild friendliness)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${QL_MVN_QUANTLIB_ROOT_DIR}/cmake")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -49,17 +51,11 @@ set(CMAKE_CXX_STANDARD 17)
 # we need a static QuantLib library to link against
 set(BUILD_SHARED_LIBS OFF)
 
-set(Boost_NO_WARN_NEW_VERSIONS ON)
+# Boost setup
+include(Boost)
 
-if (${MSVC})
+if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif ()
-
-# The FindBoost module is removed in cmake 3.30, finding the upstream BoostConfig.cmake
-if (POLICY CMP0167)
-    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT CONFIG REQUIRED)
-else ()
-    find_package(Boost ${QL_MVN_BOOST_VERSION} EXACT REQUIRED)
 endif ()
 
 add_subdirectory(${QL_MVN_QUANTLIB_ROOT})

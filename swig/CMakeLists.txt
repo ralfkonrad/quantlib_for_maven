@@ -1,9 +1,7 @@
 include(CreateJavaLibraryDirectory)
 
+# QL's Platform.cmake sets up MSVC runtime/warnings etc.
 include(Platform)
-if (${MSVC})
-    add_compile_options(/bigobj)
-endif ()
 
 # Boost static libs ON for MSVC
 if (NOT DEFINED Boost_USE_STATIC_LIBS)
@@ -13,11 +11,6 @@ endif ()
 # Boost static runtime ON for MSVC
 if (NOT DEFINED Boost_USE_STATIC_RUNTIME)
     set(Boost_USE_STATIC_RUNTIME ${MSVC})
-endif ()
-
-add_compile_definitions(BOOST_ALL_NO_LIB)
-if (NOT Boost_USE_STATIC_LIBS)
-    add_compile_definitions(BOOST_ALL_DYN_LINK)
 endif ()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -42,14 +35,24 @@ swig_add_library(
         OUTPUT_DIR ${QL_MVN_SWIG_JAVA_PACKAGE_DIR}
         SOURCES ${QL_MVN_ENTRYPOINT_I_FILE})
 
+# Target-scoped flags/defs instead of directory-wide globals.
+if (MSVC)
+    target_compile_options(QuantLibJNI PRIVATE /bigobj)
+endif ()
+
+target_compile_definitions(QuantLibJNI PRIVATE BOOST_ALL_NO_LIB)
+if (NOT Boost_USE_STATIC_LIBS)
+    target_compile_definitions(QuantLibJNI PRIVATE BOOST_ALL_DYN_LINK)
+endif ()
+
 set_property(TARGET QuantLibJNI PROPERTY
         SWIG_COMPILE_OPTIONS -package org.quantlib)
 
-if (${MSVC})
-    set_property(TARGET QuantLibJNI PROPERTY
+if (MSVC)
+    set_target_properties(QuantLibJNI PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${QL_MVN_SWIG_JAVA_RESOURCES_NATIVE_DIR})
 else ()
-    set_property(TARGET QuantLibJNI PROPERTY
+    set_target_properties(QuantLibJNI PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${QL_MVN_SWIG_JAVA_RESOURCES_NATIVE_DIR})
 endif ()
 
