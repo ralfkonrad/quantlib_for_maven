@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 4.0.0)
 # According to the documentation:
 #   The value of this variable should be set prior to the first project() or enable_language() command
 #   invocation because it may influence configuration of the toolchain and flags
-# Only apply this on Apple platforms and don't override an explicit user/toolchain choice.
 if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Target architectures for Apple platforms" FORCE)
 endif()
@@ -18,10 +17,9 @@ set(QL_MVN_SWIG_VERSION "4.4.1" CACHE STRING "Swig version we want to use to ens
 
 # set the QuantLib options the way we need them.
 # So, they do not need to be provided in the presets or as a cmake -D cache entry.
-# FORCE is used to avoid surprises with stale CMake caches in CI/local rebuilds.
 set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "Needed for java's garbage collector" FORCE)
-set(QL_THROW_IN_CYCLES ON CACHE BOOL "Throw an exception when a notification loop is detected" FORCE)
-set(QL_FASTER_LAZY_OBJECTS OFF CACHE BOOL "Cause lazy objects to forward just the first notification instead of every one" FORCE)
+set(QL_THROW_IN_CYCLES ON CACHE BOOL "Throw an exception when a notification loop is detected")
+set(QL_FASTER_LAZY_OBJECTS OFF CACHE BOOL "Cause lazy objects to forward just the first notification instead of every one")
 
 # paths needed throughout the build
 cmake_path(SET QL_MVN_QUANTLIB_ROOT external/QuantLib)
