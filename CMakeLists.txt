@@ -51,7 +51,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
-if (${MSVC})
+if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
