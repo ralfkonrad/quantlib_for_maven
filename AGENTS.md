@@ -132,6 +132,15 @@ try (var date = new Date(14, Month.April, 2023)) {
 }
 ```
 
+### Prefer the `var` keyword whererver possible (Java)
+The minimum JDK version is `17`.
+Therefore, use the `var` keyword in Java for local variable type inference.
+
+### Prefer LocalDate over org.quantlib.Date (Java)
+When writing `junit` tests, define dates as `java.time.LocalDate`. 
+Use `static Date org.quantlib.Date.of(LocalDate date)` and `LocalDate org.quantlib.Date.toLocalDate()`
+to convert between them. 
+
 ### JNI Library Loading
 The native library loads automatically when any QuantLib class is first used.
 Do not call `System.loadLibrary()` manually.
