@@ -1,7 +1,4 @@
 ## user defined ###
-# ignore the swig generated java files
-target/generated-sources/swig/
-
 # sortpom backup files
 *.bak
 
