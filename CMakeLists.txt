@@ -38,7 +38,7 @@ cmake_path(SET QL_MVN_SWIG_JAVA_DIR ${CMAKE_SOURCE_DIR}/java)
 cmake_path(SET QL_MVN_SWIG_JAVA_SRC_DIR ${QL_MVN_SWIG_JAVA_DIR}/src/main)
 cmake_path(SET QL_MVN_SWIG_JAVA_TARGET_DIR ${QL_MVN_SWIG_JAVA_DIR}/target)
 cmake_path(SET QL_MVN_SWIG_JAVA_PACKAGE_DIR ${QL_MVN_SWIG_JAVA_TARGET_DIR}/generated-sources/swig/org/quantlib)
-cmake_path(SET QL_MVN_SWIG_JAVA_RESOURCES_DIR ${QL_MVN_SWIG_JAVA_SRC_DIR}/resources)
+cmake_path(SET QL_MVN_SWIG_JAVA_RESOURCES_DIR ${QL_MVN_SWIG_JAVA_TARGET_DIR}/generated-resources/swig)
 
 # Path for package-local cmake modules (use CURRENT_LIST_DIR for superbuild friendliness)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")

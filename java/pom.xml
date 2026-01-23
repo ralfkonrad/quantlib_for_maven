@@ -119,6 +119,7 @@
                                 <directory>${project.basedir}/target</directory>
                                 <excludes>
                                     <exclude>generated-sources/swig/**</exclude>
+                                    <exclude>generated-resources/swig/**</exclude>
                                 </excludes>
                                 <followSymlinks>false</followSymlinks>
                             </fileset>
@@ -283,6 +284,20 @@
                                 <sources>
                                     <source>${project.basedir}/target/generated-sources/swig</source>
                                 </sources>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>add-swig-resources</id>
+                            <goals>
+                                <goal>add-resource</goal>
+                            </goals>
+                            <phase>generate-resources</phase>
+                            <configuration>
+                                <resources>
+                                    <resource>
+                                        <directory>${project.basedir}/target/generated-resources/swig</directory>
+                                    </resource>
+                                </resources>
                             </configuration>
                         </execution>
                     </executions>
