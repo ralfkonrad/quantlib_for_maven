@@ -118,7 +118,7 @@
                             <fileset>
                                 <directory>${project.basedir}/target</directory>
                                 <excludes>
-                                    <exclude>generated-sources/**</exclude>
+                                    <exclude>generated-sources/swig/**</exclude>
                                 </excludes>
                                 <followSymlinks>false</followSymlinks>
                             </fileset>
