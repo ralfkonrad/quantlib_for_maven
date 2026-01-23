@@ -9,6 +9,7 @@ This file guides agentic coding tools working in this repository.
 - Maven coordinates: `io.github.ralfkonrad.quantlib_for_maven:quantlib`
 - Languages: C++17 (native), Java 17+ (bindings/tests)
 - SWIG entrypoint: `swig/QuantLibEntrypoint.i`
+- SWIG-generated files: `java/target/generated-sources/swig/` (Java) and `java/target/generated-resources/swig/` (native libraries)
 - Submodules in `external/` are read-only, never edit them
 
 ## Build Commands
@@ -147,6 +148,10 @@ Do not call `System.loadLibrary()` manually.
 
 ### SWIG Interface Files
 - Project-specific SWIG code: `swig/QuantLibEntrypoint.i`
+- SWIG-generated Java sources: `java/target/generated-sources/swig/org/quantlib/`
+- SWIG-generated native libraries: `java/target/generated-resources/swig/native/`
+- These directories are automatically added to the Maven build path via `build-helper-maven-plugin`
+- Generated files are preserved during `mvn clean` to avoid rebuilding native code unnecessarily
 - Never edit `external/QuantLib-SWIG/SWIG/`
 
 ## Cursor/Copilot Rules
