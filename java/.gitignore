@@ -1,6 +1,6 @@
 ## user defined ###
 # ignore the swig generated java files
-src/main/java/org/quantlib/*.java
+target/generated-sources/swig/
 
 # Created by https://www.toptal.com/developers/gitignore/api/java,maven,intellij+all,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,maven,intellij+all,visualstudiocode
