@@ -57,11 +57,12 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
-# Suppress deprecation warnings from Boost headers (e.g., boost::array::assign)
-# This is necessary because Boost 1.90.0 contains deprecated APIs that trigger
-# warnings when compiled with -Werror on certain platforms (e.g., macos-15-intel)
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    add_compile_options(-Wno-deprecated-declarations)
+# Treat Boost include directories as system headers to suppress warnings from them.
+# This is necessary because Boost 1.90.0 contains deprecated APIs (e.g., boost::array::assign)
+# that would otherwise trigger -Werror build failures on certain platforms (e.g., macos-15-intel).
+# Using include_directories(SYSTEM ...) here affects subdirectories added below.
+if (Boost_INCLUDE_DIRS)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 endif ()
 
 add_subdirectory(${QL_MVN_QUANTLIB_ROOT})
