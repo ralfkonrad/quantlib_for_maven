@@ -105,15 +105,27 @@ public class QuantLibJNIHelpers {
         var path = String.join("/", rootPath, OS_SYSTEM.name().toLowerCase());
         switch (OS_SYSTEM) {
             case Linux:
+                return String.join("/", path, normalizeArchitecture(ARCH), getLibraryName());
+
             case MacOs:
                 return String.join("/", path, getLibraryName());
 
             case Windows:
-                return String.join("/", path, ARCH, getLibraryName());
+                return String.join("/", path, normalizeArchitecture(ARCH), getLibraryName());
 
             default:
                 throw new UnsupportedOperatingSystemException();
         }
+    }
+
+    private static String normalizeArchitecture(String arch) {
+        if (arch.equals("x86_64") || arch.equals("amd64")) {
+            return "amd64";
+        }
+        if (arch.equals("aarch64") || arch.equals("arm64")) {
+            return "arm64";
+        }
+        throw new UnsupportedOperatingSystemException();
     }
 
     private enum OperatingSystem {
