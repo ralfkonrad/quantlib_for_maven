@@ -52,6 +52,8 @@ set(BUILD_SHARED_LIBS OFF)
 
 # Boost setup
 include(Boost)
+# Treat Boost include directories as system headers to suppress warnings from them.
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
