@@ -111,7 +111,7 @@ public class QuantLibJNIHelpers {
                 return String.join("/", path, getLibraryName());
 
             case Windows:
-                return String.join("/", path, ARCH, getLibraryName());
+                return String.join("/", path, normalizeArchitecture(ARCH), getLibraryName());
 
             default:
                 throw new UnsupportedOperatingSystemException();
