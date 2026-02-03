@@ -41,7 +41,7 @@ runs:
       run: |
         cmake --version
         cmake --preset release -L
-        cmake --build --preset release --verbose
+        cmake --build --parallel --preset release --verbose
 
     - name: Upload native library
       if: ${{ inputs.upload-path != '' }}
