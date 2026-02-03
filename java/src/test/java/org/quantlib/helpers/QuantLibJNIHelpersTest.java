@@ -31,6 +31,8 @@ public class QuantLibJNIHelpersTest {
         var normalizeArchMethod = QuantLibJNIHelpers.class.getDeclaredMethod("normalizeArchitecture", String.class);
         normalizeArchMethod.setAccessible(true);
 
-        assertThrows(Exception.class, () -> normalizeArchMethod.invoke(null, "unsupported"));
+        var exception = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                () -> normalizeArchMethod.invoke(null, "unsupported"));
+        assertInstanceOf(QuantLibJNIHelpers.UnsupportedOperatingSystemException.class, exception.getCause());
     }
 }
