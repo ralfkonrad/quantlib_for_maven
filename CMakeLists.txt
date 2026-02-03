@@ -57,5 +57,12 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
+# Suppress deprecation warnings from Boost headers (e.g., boost::array::assign)
+# This is necessary because Boost 1.90.0 contains deprecated APIs that trigger
+# warnings when compiled with -Werror on certain platforms (e.g., macos-15-intel)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    add_compile_options(-Wno-deprecated-declarations)
+endif ()
+
 add_subdirectory(${QL_MVN_QUANTLIB_ROOT})
 add_subdirectory(${QL_MVN_SWIG_ROOT})
