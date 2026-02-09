@@ -38,6 +38,8 @@ swig_add_library(
 # Target-scoped flags/defs instead of directory-wide globals.
 if (MSVC)
     target_compile_options(QuantLibJNI PRIVATE /bigobj)
+elseif (APPLE)
+    target_compile_options(QuantLibJNI PRIVATE -isystem ${Boost_INCLUDE_DIRS})
 endif ()
 
 target_compile_definitions(QuantLibJNI PRIVATE BOOST_ALL_NO_LIB)
