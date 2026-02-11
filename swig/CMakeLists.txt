@@ -39,6 +39,7 @@ swig_add_library(
 if (MSVC)
     target_compile_options(QuantLibJNI PRIVATE /bigobj)
 elseif (APPLE)
+    message(INFO "Apple detected")
     target_compile_options(QuantLibJNI PRIVATE -isystem ${Boost_INCLUDE_DIRS})
 endif ()
 
