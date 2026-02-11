@@ -42,7 +42,8 @@ runs:
       shell: bash
       run: |
         brew update
-        brew install boost ninja swig
+        brew install boost cmake ninja swig
+        brew upgrade boost cmake ninja swig
 
     - name: Setup Windows
       if: runner.os == 'Windows'

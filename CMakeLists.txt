@@ -55,6 +55,9 @@ include(Boost)
 
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif (APPLE)
+    # On APPLE arch arm64, Boost warning are not suppressed, we try it here
+    add_compile_options(-isystem ${Boost_INCLUDE_DIRS})
 endif ()
 
 add_subdirectory(${QL_MVN_QUANTLIB_ROOT})
