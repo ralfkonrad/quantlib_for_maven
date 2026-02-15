@@ -29,12 +29,10 @@ runs:
       if: runner.os == 'Linux' && runner.arch == 'ARM64'
       shell: bash
       run: |
-        sudo apt-get install -y build-essential procps curl file git
-
         if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+          sudo apt-get install -y build-essential procps curl file git
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
-
 
     - name: Setup Linux
       if: runner.os == 'Linux'
