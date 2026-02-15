@@ -24,6 +24,17 @@ runs:
       run: |
         echo "The variable 'runner-name' was not set"  
         exit 1
+    
+    - name: Setup Linux ARM64
+      if: runner.os == 'Linux' && runner.arch == 'ARM64'
+      shell: bash
+      run: |
+        sudo apt-get install -y build-essential procps curl file git
+
+        if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+
 
     - name: Setup Linux
       if: runner.os == 'Linux'
@@ -32,14 +43,6 @@ runs:
         sudo apt-get update
         sudo apt-get install -y ccache ninja-build
         sudo apt-get remove -y cmake swig swig4.0
-
-        if [ "${{ inputs.runner-name }}" = "ubuntu-22.04-arm" ]; then
-          sudo apt-get install -y build-essential procps curl file git
-
-          if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          fi
-        fi
 
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew update
