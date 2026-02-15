@@ -154,7 +154,7 @@ as it is no longer under active support.
 
 The QuantLib SWIG Java binding supports the following platforms:
 
-- Linux
+- Linux (`arm64` architecture is supported since `1.42.0-SNAPSHOT`)
 - macOS (`arm64` architecture is supported since `1.36.0-SNAPSHOT`)
 - Windows
 
