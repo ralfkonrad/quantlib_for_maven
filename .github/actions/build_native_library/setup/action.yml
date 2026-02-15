@@ -30,8 +30,12 @@ runs:
       shell: bash
       run: |
         if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+          echo "Homebrew is not installed yet"
+          sudo apt-get update
           sudo apt-get install -y build-essential procps curl file git
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        else
+          echo "Homebrew ist already installed"
         fi
 
     - name: Setup Linux
