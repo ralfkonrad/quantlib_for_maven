@@ -60,7 +60,7 @@ build tools like Gradle, sbt which can include maven modules.
 > - few objects but very large native buffers, still invisible to the JVM heap.
 >
 > Therefore, every QuantLib Java object implements `AutoCloseable`.
-> Use `try-with-resources` so `close() releases the native `c++` memory promptly.
+> Use `try-with-resources` so `close()` releases the native `c++` memory promptly.
 >
 > ##### Underlying process in simple terms
 >
