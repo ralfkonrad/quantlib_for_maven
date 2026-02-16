@@ -7,8 +7,9 @@
 # my favorite build directory
 build/
 
-# opencode sisyphus directory
+# opencode directories
 .sisyphus/
+.settings/
 
 # visual code leftovers
 .metals/
