@@ -41,6 +41,33 @@ includes the necessary native libraries for Linux, macOS and Windows and is desi
 Maven, a popular build automation and dependency management tool for Java projects and all other
 build tools like Gradle, sbt which can include maven modules.
 
+> [!WARNING]
+> #### Be careful when using the module in production environments
+>
+> The SWIG wrapper and the Java Garbage Collector do not cooperate well by default.
+> Each QuantLib Java object usually contains only a `private transient long swigCPtr;`
+> that points to native `c++` memory.
+>
+> So, even if you build a large structure,
+> like a 10Y swap with dozens of cashflows, IBOR indices and term structures,
+> the Java object looks tiny to the GC.
+> There is little heap pressure, so the GC has no reason to reclaim it,
+> even though it holds substantial native memory.
+>
+> As a result, native memory usage can grow silently and the JVM can fail "out of nowhere".
+> Many Java proxies can correspond to
+> - many native allocations (`c++` objects, buffers), or
+> - few objects but very large native buffers, still invisible to the JVM heap.
+>
+> Therefore, every QuantLib Java object implements `AutoCloseable`.
+> Use `try-with-resources` so `close() releases the native `c++` memory promptly.
+>
+> ##### Underlying process in simple terms
+>
+> The JVM GC only tracks Java heap usage, not native memory referenced by SWIG pointers.
+> If Java objects remain reachable, their native allocations remain too, even if the native side is large.
+> Relying on finalization or delayed GC is unsafe; explicit `close()` is required for timely native cleanup.
+
 ## Installation
 
 To use the QuantLib SWIG Java binding in your Maven-based project, follow these steps:
