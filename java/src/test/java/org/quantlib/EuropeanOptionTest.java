@@ -67,74 +67,74 @@ public class EuropeanOptionTest {
         var today = Date.todaysDate();
         var dc = new Actual360();
 
-        var types = new Option.Type[] { Option.Type.Call, Option.Type.Put };
-        var strikes = new double[] { 75.0, 100.0, 125.0 };
-        var lengths = new int[] { 1 };
-        var underlyings = new double[] { 100.0 };
-        var qRates = new double[] { 0.00, 0.05 };
-        var rRates = new double[] { 0.01, 0.05, 0.15 };
-        var vols = new double[] { 0.11, 0.50, 1.20 };
+        var types = new Option.Type[]{Option.Type.Call, Option.Type.Put};
+        var strikes = new double[]{75.0, 100.0, 125.0};
+        var lengths = new int[]{1};
+        var underlyings = new double[]{100.0};
+        var qRates = new double[]{0.00, 0.05};
+        var rRates = new double[]{0.01, 0.05, 0.15};
+        var vols = new double[]{0.11, 0.50, 1.20};
 
         for (var type : types) {
             for (var strike : strikes) {
                 for (var length : lengths) {
                     try (var exDate = today.add(length * 360);
-                            var exercise = new EuropeanExercise(exDate);
-                            var payoff = new PlainVanillaPayoff(type, strike)) {
+                         var exercise = new EuropeanExercise(exDate);
+                         var payoff = new PlainVanillaPayoff(type, strike)) {
 
                         for (var u : underlyings) {
                             for (var q : qRates) {
                                 for (var r : rRates) {
                                     for (var v : vols) {
                                         try (var spot = new SimpleQuote(u);
-                                                var qRate = new SimpleQuote(
-                                                        q);
-                                                var rRate = new SimpleQuote(
-                                                        r);
-                                                var vol = new SimpleQuote(
-                                                        v);
-                                                var qTS = flatRate(
-                                                        today,
-                                                        qRate,
-                                                        dc);
-                                                var rTS = flatRate(
-                                                        today,
-                                                        rRate,
-                                                        dc);
-                                                var volTS = flatVol(
-                                                        today,
-                                                        vol,
-                                                        dc)) {
+                                             var qRate = new SimpleQuote(
+                                                     q);
+                                             var rRate = new SimpleQuote(
+                                                     r);
+                                             var vol = new SimpleQuote(
+                                                     v);
+                                             var qTS = flatRate(
+                                                     today,
+                                                     qRate,
+                                                     dc);
+                                             var rTS = flatRate(
+                                                     today,
+                                                     rRate,
+                                                     dc);
+                                             var volTS = flatVol(
+                                                     today,
+                                                     vol,
+                                                     dc)) {
 
                                             try (var spotHandle1 = new QuoteHandle(
                                                     spot);
-                                                    var process1 = new BlackScholesMertonProcess(
-                                                            spotHandle1,
-                                                            qTS,
-                                                            rTS,
-                                                            volTS);
-                                                    var refEngine = new AnalyticEuropeanEngine(
-                                                            process1);
-                                                    var refOption = new EuropeanOption(
-                                                            payoff,
-                                                            exercise)) {
+                                                 var process1 = new BlackScholesMertonProcess(
+                                                         spotHandle1,
+                                                         qTS,
+                                                         rTS,
+                                                         volTS);
+                                                 var refEngine = new AnalyticEuropeanEngine(
+                                                         process1);
+                                                 var refOption = new EuropeanOption(
+                                                         payoff,
+                                                         exercise)) {
 
                                                 refOption.setPricingEngine(
                                                         refEngine);
 
                                                 try (var spotHandle2 = new QuoteHandle(
                                                         spot);
-                                                        var process2 = new BlackScholesMertonProcess(
-                                                                spotHandle2,
-                                                                qTS,
-                                                                rTS,
-                                                                volTS);
-                                                        var testEngine = factory
-                                                                .create(
-                                                                        process2);
-                                                        var testOption = new EuropeanOption(
-                                                                payoff,
-                                                                exercise)) {
+                                                     var process2 = new BlackScholesMertonProcess(
+                                                             spotHandle2,
+                                                             qTS,
+                                                             rTS,
+                                                             volTS);
+                                                     var testEngine = factory
+                                                             .create(
+                                                                     process2);
+                                                     var testOption = new EuropeanOption(
+                                                             payoff,
+                                                             exercise)) {
 
                                                     testOption.setPricingEngine(
                                                             testEngine);
@@ -152,8 +152,8 @@ public class EuropeanOptionTest {
 
                                                     if (testGreeks
                                                             && testOption.NPV() > spot
-                                                                    .value()
-                                                                    * 1e-5) {
+                                                            .value()
+                                                            * 1e-5) {
                                                         checkGreek("delta",
                                                                 refOption.delta(),
                                                                 testOption.delta(),
@@ -343,8 +343,8 @@ public class EuropeanOptionTest {
 
         for (var value : TEST_DATA) {
             try (var payoff = new PlainVanillaPayoff(value.type, value.strike);
-                    var exDate = today.add(timeToDays(value.t));
-                    var exercise = new EuropeanExercise(exDate)) {
+                 var exDate = today.add(timeToDays(value.t));
+                 var exercise = new EuropeanExercise(exDate)) {
 
                 spot.setValue(value.s);
                 qRate.setValue(value.q);
@@ -352,10 +352,10 @@ public class EuropeanOptionTest {
                 vol.setValue(value.v);
 
                 try (var spotHandle = new QuoteHandle(spot);
-                        var stochProcess = new BlackScholesMertonProcess(
-                                spotHandle, qTS, rTS, volTS);
-                        var engine = new AnalyticEuropeanEngine(stochProcess);
-                        var option = new EuropeanOption(payoff, exercise)) {
+                     var stochProcess = new BlackScholesMertonProcess(
+                             spotHandle, qTS, rTS, volTS);
+                     var engine = new AnalyticEuropeanEngine(stochProcess);
+                     var option = new EuropeanOption(payoff, exercise)) {
 
                     option.setPricingEngine(engine);
 
@@ -385,11 +385,11 @@ public class EuropeanOptionTest {
                 }
 
                 try (var spotHandle = new QuoteHandle(spot);
-                        var stochProcess = new BlackScholesMertonProcess(
-                                spotHandle, qTS, rTS, volTS);
-                        var engine = new FdBlackScholesVanillaEngine(
-                                stochProcess, 200, 400);
-                        var option = new EuropeanOption(payoff, exercise)) {
+                     var stochProcess = new BlackScholesMertonProcess(
+                             spotHandle, qTS, rTS, volTS);
+                     var engine = new FdBlackScholesVanillaEngine(
+                             stochProcess, 200, 400);
+                     var option = new EuropeanOption(payoff, exercise)) {
 
                     option.setPricingEngine(engine);
 
@@ -426,7 +426,7 @@ public class EuropeanOptionTest {
         record GreekTestCase(EuropeanOptionData data, String greek) {
         }
 
-        var testCases = new GreekTestCase[] {
+        var testCases = new GreekTestCase[]{
                 new GreekTestCase(new EuropeanOptionData(Option.Type.Call, 100.00, 105.00,
                         0.10, 0.10, 0.500000, 0.36, 0.5946, 0), "delta"),
                 new GreekTestCase(new EuropeanOptionData(Option.Type.Put, 100.00, 105.00,
@@ -465,8 +465,8 @@ public class EuropeanOptionTest {
         for (var testCase : testCases) {
             var value = testCase.data;
             try (var payoff = new PlainVanillaPayoff(value.type, value.strike);
-                    var exDate = today.add(timeToDays(value.t));
-                    var exercise = new EuropeanExercise(exDate)) {
+                 var exDate = today.add(timeToDays(value.t));
+                 var exercise = new EuropeanExercise(exDate)) {
 
                 spot.setValue(value.s);
                 qRate.setValue(value.q);
@@ -474,10 +474,10 @@ public class EuropeanOptionTest {
                 vol.setValue(value.v);
 
                 try (var spotHandle = new QuoteHandle(spot);
-                        var stochProcess = new BlackScholesMertonProcess(
-                                spotHandle, qTS, rTS, volTS);
-                        var engine = new AnalyticEuropeanEngine(stochProcess);
-                        var option = new EuropeanOption(payoff, exercise)) {
+                     var stochProcess = new BlackScholesMertonProcess(
+                             spotHandle, qTS, rTS, volTS);
+                     var engine = new AnalyticEuropeanEngine(stochProcess);
+                     var option = new EuropeanOption(payoff, exercise)) {
 
                     option.setPricingEngine(engine);
 
@@ -525,14 +525,14 @@ public class EuropeanOptionTest {
         var maxEvaluations = 100;
         var tolerance = 1.0e-6;
 
-        var types = new Option.Type[] { Option.Type.Call, Option.Type.Put };
-        var strikes = new double[] { 90.0, 99.5, 100.0, 100.5, 110.0 };
-        var lengths = new int[] { 36, 180, 360, 1080 };
+        var types = new Option.Type[]{Option.Type.Call, Option.Type.Put};
+        var strikes = new double[]{90.0, 99.5, 100.0, 100.5, 110.0};
+        var lengths = new int[]{36, 180, 360, 1080};
 
-        var underlyings = new double[] { 90.0, 95.0, 99.9, 100.0, 100.1, 105.0, 110.0 };
-        var qRates = new double[] { 0.01, 0.05, 0.10 };
-        var rRates = new double[] { 0.01, 0.05, 0.10 };
-        var vols = new double[] { 0.01, 0.20, 0.30, 0.70, 0.90 };
+        var underlyings = new double[]{90.0, 95.0, 99.9, 100.0, 100.1, 105.0, 110.0};
+        var qRates = new double[]{0.01, 0.05, 0.10};
+        var rRates = new double[]{0.01, 0.05, 0.10};
+        var vols = new double[]{0.01, 0.20, 0.30, 0.70, 0.90};
 
         var dayCounter = new Actual360();
         var today = Date.todaysDate();
@@ -550,7 +550,7 @@ public class EuropeanOptionTest {
                 for (var length : lengths) {
                     var exDate = today.add(length);
                     try (var exercise = new EuropeanExercise(exDate);
-                            var payoff = new PlainVanillaPayoff(type, strike)) {
+                         var payoff = new PlainVanillaPayoff(type, strike)) {
 
                         for (var u : underlyings) {
                             for (var q : qRates) {
@@ -563,16 +563,16 @@ public class EuropeanOptionTest {
 
                                         try (var spotHandle = new QuoteHandle(
                                                 spot);
-                                                var process = new BlackScholesMertonProcess(
-                                                        spotHandle,
-                                                        qTS,
-                                                        rTS,
-                                                        volTS);
-                                                var engine = new AnalyticEuropeanEngine(
-                                                        process);
-                                                var option = new EuropeanOption(
-                                                        payoff,
-                                                        exercise)) {
+                                             var process = new BlackScholesMertonProcess(
+                                                     spotHandle,
+                                                     qTS,
+                                                     rTS,
+                                                     volTS);
+                                             var engine = new AnalyticEuropeanEngine(
+                                                     process);
+                                             var option = new EuropeanOption(
+                                                     payoff,
+                                                     exercise)) {
 
                                             option.setPricingEngine(engine);
 
@@ -819,13 +819,13 @@ public class EuropeanOptionTest {
         tolerance.put("divRho", 1.0e-5);
         tolerance.put("vega", 1.0e-5);
 
-        var types = new Option.Type[] { Option.Type.Call, Option.Type.Put };
-        var strikes = new double[] { 50.0, 99.5, 100.0, 100.5, 150.0 };
-        var underlyings = new double[] { 100.0 };
-        var qRates = new double[] { 0.04, 0.05, 0.06 };
-        var rRates = new double[] { 0.01, 0.05, 0.15 };
-        var residualTimes = new double[] { 1.0, 2.0 };
-        var vols = new double[] { 0.11, 0.50, 1.20 };
+        var types = new Option.Type[]{Option.Type.Call, Option.Type.Put};
+        var strikes = new double[]{50.0, 99.5, 100.0, 100.5, 150.0};
+        var underlyings = new double[]{100.0};
+        var qRates = new double[]{0.04, 0.05, 0.06};
+        var rRates = new double[]{0.01, 0.05, 0.15};
+        var residualTimes = new double[]{1.0, 2.0};
+        var vols = new double[]{0.11, 0.50, 1.20};
 
         var dc = new Actual360();
         var today = Date.todaysDate();
@@ -869,16 +869,16 @@ public class EuropeanOptionTest {
 
                                                 try (var spotHandle = new QuoteHandle(
                                                         spot);
-                                                        var stochProcess = new BlackScholesMertonProcess(
-                                                                spotHandle,
-                                                                qTS,
-                                                                rTS,
-                                                                volTS);
-                                                        var engine = new AnalyticEuropeanEngine(
-                                                                stochProcess);
-                                                        var option = new EuropeanOption(
-                                                                payoff,
-                                                                exercise)) {
+                                                     var stochProcess = new BlackScholesMertonProcess(
+                                                             spotHandle,
+                                                             qTS,
+                                                             rTS,
+                                                             volTS);
+                                                     var engine = new AnalyticEuropeanEngine(
+                                                             stochProcess);
+                                                     var option = new EuropeanOption(
+                                                             payoff,
+                                                             exercise)) {
 
                                                     option.setPricingEngine(
                                                             engine);
@@ -1057,15 +1057,15 @@ public class EuropeanOptionTest {
         var discTS = flatRate(today, discRate, dc);
 
         try (var spotHandle = new QuoteHandle(spot);
-                var stochProcess = new BlackScholesMertonProcess(
-                        spotHandle, qTS, rTS, volTS);
-                var engineSingleCurve = new AnalyticEuropeanEngine(stochProcess);
-                var engineMultiCurve = new AnalyticEuropeanEngine(stochProcess, discTS);
-                var payoff = new PlainVanillaPayoff(Option.Type.Call, 1025.0);
-                var exDate = today.add(new Period(1, TimeUnit.Years));
-                var exercise = new EuropeanExercise(exDate);
-                var optionSingleCurve = new EuropeanOption(payoff, exercise);
-                var optionMultiCurve = new EuropeanOption(payoff, exercise)) {
+             var stochProcess = new BlackScholesMertonProcess(
+                     spotHandle, qTS, rTS, volTS);
+             var engineSingleCurve = new AnalyticEuropeanEngine(stochProcess);
+             var engineMultiCurve = new AnalyticEuropeanEngine(stochProcess, discTS);
+             var payoff = new PlainVanillaPayoff(Option.Type.Call, 1025.0);
+             var exDate = today.add(new Period(1, TimeUnit.Years));
+             var exercise = new EuropeanExercise(exDate);
+             var optionSingleCurve = new EuropeanOption(payoff, exercise);
+             var optionMultiCurve = new EuropeanOption(payoff, exercise)) {
 
             optionSingleCurve.setPricingEngine(engineSingleCurve);
             optionMultiCurve.setPricingEngine(engineMultiCurve);
