@@ -28,14 +28,14 @@ public class DatesTest {
         };
 
         try (var start = new Date(1, Month.January, 2000);
-                var last = new Date(1, Month.January, 2040)) {
+             var last = new Date(1, Month.January, 2040)) {
             int counterSerial = start.serialNumber();
             int lastSerial = last.serialNumber();
 
             while (counterSerial <= lastSerial) {
                 try (var counter = new Date(counterSerial);
-                        var imm = IMM.nextDate(counter, false);
-                        var nextMain = IMM.nextDate(counter, true)) {
+                     var imm = IMM.nextDate(counter, false);
+                     var nextMain = IMM.nextDate(counter, true)) {
                     Assertions.assertTrue(imm.compareTo(counter) > 0,
                             imm.weekday() + " " + imm + " is not greater than "
                                     + counter.weekday() + " " + counter);
@@ -57,9 +57,10 @@ public class DatesTest {
 
                     for (int i = 0; i < 40; i++) {
                         try (var dateFromCode = IMM.date(immCodes[i], counter)) {
-                            Assertions.assertTrue(dateFromCode.compareTo(counter) >= 0,
-                                    dateFromCode + " is wrong for " + immCodes[i]
-                                            + " at reference date " + counter);
+                            if (dateFromCode.compareTo(counter) < 0) {
+                                Assertions.fail(dateFromCode + " is wrong for " + immCodes[i]
+                                        + " at reference date " + counter);
+                            }
                         }
                     }
                 }
@@ -85,14 +86,14 @@ public class DatesTest {
         };
 
         try (var start = new Date(1, Month.January, 2000);
-                var last = new Date(1, Month.January, 2040)) {
+             var last = new Date(1, Month.January, 2040)) {
             int counterSerial = start.serialNumber();
             int lastSerial = last.serialNumber();
 
             while (counterSerial <= lastSerial) {
                 try (var counter = new Date(counterSerial);
-                        var asx = ASX.nextDate(counter, false);
-                        var nextMain = ASX.nextDate(counter, true)) {
+                     var asx = ASX.nextDate(counter, false);
+                     var nextMain = ASX.nextDate(counter, true)) {
                     Assertions.assertTrue(asx.compareTo(counter) > 0,
                             asx.weekday() + " " + asx + " is not greater than "
                                     + counter.weekday() + " " + counter);
@@ -114,9 +115,10 @@ public class DatesTest {
 
                     for (String asxCode : asxCodes) {
                         try (var dateFromCode = ASX.date(asxCode, counter)) {
-                            Assertions.assertTrue(dateFromCode.compareTo(counter) >= 0,
-                                    dateFromCode + " is wrong for " + asxCode
-                                            + " at reference date " + counter);
+                            if (dateFromCode.compareTo(counter) < 0) {
+                                Assertions.fail(dateFromCode + " is wrong for " + asxCode
+                                        + " at reference date " + counter);
+                            }
                         }
                     }
                 }
@@ -135,14 +137,14 @@ public class DatesTest {
         }
 
         try (var ref = new Date(1, Month.January, 2000);
-                var expected = new Date(8, Month.February, 2002);
-                var asx = ASX.nextDate("F2", false, ref)) {
+             var expected = new Date(8, Month.February, 2002);
+             var asx = ASX.nextDate("F2", false, ref)) {
             assertDatesEqual(expected, asx, "Unexpected ASX date for F2");
         }
 
         try (var ref = new Date(1, Month.January, 2014);
-                var expected = new Date(9, Month.June, 2023);
-                var asx = ASX.nextDate("K3", true, ref)) {
+             var expected = new Date(9, Month.June, 2023);
+             var asx = ASX.nextDate("K3", true, ref)) {
             assertDatesEqual(expected, asx, "Unexpected ASX date for K3");
         }
 
@@ -164,8 +166,8 @@ public class DatesTest {
     @Test
     public void testConsistency() {
         try (var minDate = Date.minDate();
-                var maxDate = Date.maxDate();
-                var previousDate = new Date(minDate.serialNumber())) {
+             var maxDate = Date.maxDate();
+             var previousDate = new Date(minDate.serialNumber())) {
             int minSerial = minDate.serialNumber() + 1;
             int maxSerial = maxDate.serialNumber();
 
@@ -178,9 +180,10 @@ public class DatesTest {
             for (int serial = minSerial; serial <= maxSerial; serial++) {
                 try (var date = new Date(serial)) {
                     int actualSerial = date.serialNumber();
-                    Assertions.assertEquals(serial, actualSerial,
-                            "inconsistent serial number: original=" + serial
-                                    + " date=" + date + " serial=" + actualSerial);
+                    if (serial != actualSerial) {
+                        Assertions.fail("inconsistent serial number: original=" + serial
+                                + " date=" + date + " serial=" + actualSerial);
+                    }
 
                     int dayOfYear = date.dayOfYear();
                     int dayOfMonth = date.dayOfMonth();
@@ -245,11 +248,12 @@ public class DatesTest {
 
                     try (var cloned = new Date(dayOfMonth, Month.swigToEnum(month), year)) {
                         int clonedSerial = cloned.serialNumber();
-                        Assertions.assertEquals(serial, clonedSerial,
-                                "inconsistent serial number: date=" + date
-                                        + " serial=" + serial
-                                        + " cloned=" + cloned
-                                        + " clonedSerial=" + clonedSerial);
+                        if (serial != clonedSerial) {
+                            Assertions.fail("inconsistent serial number: date=" + date
+                                    + " serial=" + serial
+                                    + " cloned=" + cloned
+                                    + " clonedSerial=" + clonedSerial);
+                        }
                     }
                 }
             }
@@ -270,24 +274,24 @@ public class DatesTest {
     public void testParseDates() {
         String inputDate = "2006-01-15";
         try (var parsed = DateParser.parseFormatted(inputDate, "%Y-%m-%d");
-                var expected = new Date(15, Month.January, 2006)) {
+             var expected = new Date(15, Month.January, 2006)) {
             assertDatesEqual(expected, parsed, "Date parsing failed for ISO format");
         }
 
         inputDate = "12/02/2012";
         try (var parsed = DateParser.parseFormatted(inputDate, "%m/%d/%Y");
-                var expected = new Date(2, Month.December, 2012)) {
+             var expected = new Date(2, Month.December, 2012)) {
             assertDatesEqual(expected, parsed, "Date parsing failed for US format");
         }
 
         try (var parsed = DateParser.parseFormatted(inputDate, "%d/%m/%Y");
-                var expected = new Date(12, Month.February, 2012)) {
+             var expected = new Date(12, Month.February, 2012)) {
             assertDatesEqual(expected, parsed, "Date parsing failed for EU format");
         }
 
         inputDate = "20011002";
         try (var parsed = DateParser.parseFormatted(inputDate, "%Y%m%d");
-                var expected = new Date(2, Month.October, 2001)) {
+             var expected = new Date(2, Month.October, 2001)) {
             assertDatesEqual(expected, parsed, "Date parsing failed for compact format");
         }
     }
@@ -300,7 +304,7 @@ public class DatesTest {
             for (int i = 0; i < nbTests; i++) {
                 for (int j = 0; j < nbTests; j++) {
                     try (var lhs = startDate.add(i);
-                            var rhs = startDate.add(j)) {
+                         var rhs = startDate.add(j)) {
                         int lhsHash = lhs.hashCode();
                         int rhsHash = rhs.hashCode();
 
