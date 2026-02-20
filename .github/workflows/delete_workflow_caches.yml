@@ -1,0 +1,38 @@
+name: Delete workflow caches
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 0 * * 0"
+
+permissions:
+  actions: write
+
+jobs:
+  delete-workflow-caches:
+    name: Delete all workflow caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all caches
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const caches = await github.paginate(
+              github.rest.actions.getActionsCacheList,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              },
+              (response) => response.data.actions_caches
+            );
+
+            core.info(`Found ${caches.length} cache entries.`);
+
+            for (const cache of caches) {
+              await github.rest.actions.deleteActionsCacheById({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                cache_id: cache.id,
+              });
+              core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
+            }
