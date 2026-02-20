@@ -29,10 +29,14 @@ jobs:
             core.info(`Found ${caches.length} cache entries.`);
 
             for (const cache of caches) {
-              await github.rest.actions.deleteActionsCacheById({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                cache_id: cache.id,
-              });
-              core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
+              try {
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+                core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
+              } catch (error) {
+                core.warning(`Could not delete cache id ${cache.id} (${cache.key}): ${error.message}`);
+              }
             }
