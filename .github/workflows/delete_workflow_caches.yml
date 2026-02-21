@@ -23,7 +23,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
               },
-              (response) => response.data.actions_caches
+              (response) => response.data
             );
 
             core.info(`Found ${caches.length} cache entries.`);
