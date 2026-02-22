@@ -94,11 +94,6 @@ installed on your system:
   Therefore, you need to have CMake installed on your system.
 
   See the [CMake](https://cmake.org/) website for more information.
-- **CMake**:
-  We are using the CMake C++ build system to build the QuantLib library and the Java bindings.
-  Therefore, you need to have CMake installed on your system.
-
-  See the [CMake](https://cmake.org/) website for more information.
   CMake version `v4.0.0` or newer is required.
 
 - **SWIG**:
