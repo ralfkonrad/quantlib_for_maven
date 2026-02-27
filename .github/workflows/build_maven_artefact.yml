@@ -58,19 +58,19 @@ jobs:
           submodules: "true"
 
       - name: Download macOS native library
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: native-library-macOS
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Download Linux ARM64 native library
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: native-library-Linux
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Download Windows native library
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: native-library-Windows
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
@@ -112,7 +112,7 @@ jobs:
           ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
 
       - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}
           if-no-files-found: error
