@@ -389,7 +389,7 @@ cannot be fully fixed in the SWIG layer.  Mitigation options:
 
 ## Performance
 
-### P1 — Native resource leaks in tests (missing try-with-resources)
+### ~~P1 — Native resource leaks in tests (missing try-with-resources)~~
 **Files:**
 - `java/src/test/java/org/quantlib/ZigguratXoshiro256StarStarGaussianTest.java` — `rng`, `gaussianRng`, `gaussianRsg`, `sample` never closed
 - `java/src/test/java/org/quantlib/QuantLibDateToLocalDateTest.java:16` — `Date.of(localDate)` inside `assertEquals`, never closed
@@ -823,7 +823,7 @@ target_link_libraries(QuantLibJNI PRIVATE
     Boost::headers JNI::JNI)
 ```
 
-### C12 — Source-tree mutation during configure
+### ~~C12 — Source-tree mutation during configure~~
 **File:** `cmake/CreateJavaLibraryDirectory.cmake`
 **Lines:** 31–32
 
@@ -1174,7 +1174,7 @@ void testCanHash() {
 
 ## CI/CD
 
-### CI1 — Deploy job only builds for JDK 17
+### ~~CI1 — Deploy job only builds for JDK 17~~
 **File:** `.github/workflows/build_maven_artefact.yml`
 
 The `build-for-deploy` job only runs the `jdk17` matrix entry.
@@ -1196,7 +1196,7 @@ a single deploy is correct but should be validated against all JDKs.  Add
 a separate test job that runs the test suite on JDK 21 and 25 before
 deploying.
 
-### CI2 — `ubuntu-22.04` runner for deploy
+### ~~CI2 — `ubuntu-22.04` runner for deploy~~
 **File:** `.github/workflows/build_maven_artefact.yml`
 **Line:** 53
 
@@ -1215,7 +1215,7 @@ runs-on: ubuntu-24.04
 Test that the build works on 24.04 first (Boost, SWIG, and CMake package
 availability).
 
-### CI3 — Submodule checkout uses `master` branch without pinning
+### ~~CI3 — Submodule checkout uses `master` branch without pinning~~
 **File:** `.github/workflows/build_with_quantlib_latest.yml`
 
 `git checkout master && git pull` fetches whatever is currently on master.
