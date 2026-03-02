@@ -7,12 +7,13 @@ Excludes `external/` (read-only submodules).
 
 ## Critical / Security
 
-### S1 — Predictable temp directory in native library loading
+### ~~S1 — Predictable temp directory in native library loading~~
+
 **File:** `java/src/main/java/cz/adamh/utils/NativeUtils.java`
 **Lines:** 82–92
 
 `createTempDirectory()` constructs a directory name from `"nativeutils"` +
-`System.nanoTime()`, then calls `File.mkdir()`.  `nanoTime()` is predictable;
+`System.nanoTime()`, then calls `File.mkdir()`. `nanoTime()` is predictable;
 an attacker who can write to the system temp directory can win a race and
 substitute a malicious shared library before the real one is copied in
 (CWE-377 insecure temporary file, CWE-427 uncontrolled search path).
@@ -36,16 +37,17 @@ private static Path createTempDirectory(String prefix) throws IOException {
 ```
 
 This uses `java.nio.file.Files.createTempDirectory()` which atomically
-creates the directory with a cryptographically random suffix.  On POSIX
+creates the directory with a cryptographically random suffix. On POSIX
 systems, the explicit `PosixFilePermissions` restrict access to the owner
 only (mode `0700`).
 
-### S2 — REPLACE_EXISTING copy into guessable temp path
+### ~~S2 — REPLACE_EXISTING copy into guessable temp path~~
+
 **File:** `java/src/main/java/cz/adamh/utils/NativeUtils.java`
 **Line:** 127
 
 `Files.copy(…, StandardCopyOption.REPLACE_EXISTING)` into the directory
-created in S1.  If an attacker pre-creates the file, this silently replaces
+created in S1. If an attacker pre-creates the file, this silently replaces
 their payload — or if they win the race after copy, they overwrite the
 legitimate library.
 
@@ -59,10 +61,11 @@ Files.copy(is, temp, StandardCopyOption.COPY_ATTRIBUTES);
 ```
 
 Alternatively, use `CREATE_NEW` semantics by opening a `FileChannel` with
-`StandardOpenOption.CREATE_NEW` and copying bytes manually.  Combined with
+`StandardOpenOption.CREATE_NEW` and copying bytes manually. Combined with
 the owner-only directory from S1, this eliminates the race window.
 
-### S3 — `deleteOnExit()` is unreliable for cleanup
+### ~~S3 — `deleteOnExit()` is unreliable for cleanup~~
+
 **File:** `java/src/main/java/cz/adamh/utils/NativeUtils.java`
 **Lines:** 105, 128
 
@@ -72,7 +75,7 @@ surface.
 
 **Possible fix:** Replace `deleteOnExit()` with a shutdown-hook that uses
 `Files.deleteIfExists()`, and accept that abrupt termination will leave
-files behind (which is unavoidable).  Additionally, on startup, scan for
+files behind (which is unavoidable). Additionally, on startup, scan for
 and clean up stale `nativeutils*` directories from previous runs:
 
 ```java
@@ -90,35 +93,37 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 For a more robust approach, write a lock file into the temp directory and
 have each startup attempt to clean up directories without active locks.
 
-### S4 — Legacy `java.io.File` API used throughout NativeUtils
+### ~~S4 — Legacy `java.io.File` API used throughout NativeUtils~~
+
 **File:** `java/src/main/java/cz/adamh/utils/NativeUtils.java`
 
 The entire class uses `java.io.File` instead of `java.nio.file.Path` /
-`java.nio.file.Files`.  The old API does not report permission failures,
+`java.nio.file.Files`. The old API does not report permission failures,
 cannot set POSIX permissions, and `mkdir()` silently returns `false` on
 failure (line 94 does check, but the pattern is fragile).
 
 **Possible fix:** Rewrite the class to use `java.nio.file.Path` throughout.
 Key replacements:
 
-| Old (`java.io.File`)                      | New (`java.nio.file`)                                 |
-|-------------------------------------------|-------------------------------------------------------|
-| `new File(System.getProperty("…"))`       | `Path.of(System.getProperty("…"))`                    |
-| `file.mkdir()`                            | `Files.createDirectory(path)`                         |
-| `file.exists()`                           | `Files.exists(path)`                                  |
-| `file.deleteOnExit()`                     | Shutdown hook with `Files.deleteIfExists(path)`       |
-| `new FileOutputStream(file)`              | `Files.newOutputStream(path)`                         |
-| `file.getAbsolutePath()`                  | `path.toAbsolutePath().toString()`                    |
+| Old (`java.io.File`)                | New (`java.nio.file`)                           |
+| ----------------------------------- | ----------------------------------------------- |
+| `new File(System.getProperty("…"))` | `Path.of(System.getProperty("…"))`              |
+| `file.mkdir()`                      | `Files.createDirectory(path)`                   |
+| `file.exists()`                     | `Files.exists(path)`                            |
+| `file.deleteOnExit()`               | Shutdown hook with `Files.deleteIfExists(path)` |
+| `new FileOutputStream(file)`        | `Files.newOutputStream(path)`                   |
+| `file.getAbsolutePath()`            | `path.toAbsolutePath().toString()`              |
 
 This also fixes S1–S3 as side effects since the new API provides atomic
 creation with permissions and better error reporting.
 
-### S5 — Non-volatile, unsynchronized flag for library loading
+### ~~S5 — Non-volatile, unsynchronized flag for library loading~~
+
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 **Line:** 18
 
 `private static boolean libraryIsLoaded` is neither `volatile` nor guarded
-by a lock.  In a multi-threaded startup scenario the library can be loaded
+by a lock. In a multi-threaded startup scenario the library can be loaded
 multiple times or partially observed as loaded.
 
 **Possible fix:** Use double-checked locking with `volatile`:
@@ -152,7 +157,8 @@ static void loadLibrary() {
 }
 ```
 
-### S6 — Wildcard import
+### ~~S6 — Wildcard import~~
+
 **File:** `java/src/main/java/cz/adamh/utils/NativeUtils.java`
 **Line:** 26
 
@@ -168,12 +174,13 @@ import java.io.InputStream;
 ```
 
 ### S7 — `JAVA_FINALIZER` relies on deprecated finalization
+
 **File:** `swig/QuantLibEntrypoint.i`
 **Line:** 26
 
 `target_compile_definitions(QuantLibJNI PRIVATE JAVA_FINALIZER)` enables
-calling the C++ destructor from Java's `finalize()`.  Finalization has been
-deprecated since JDK 9 and is targeted for removal (JEP 421).  On JDK 21+
+calling the C++ destructor from Java's `finalize()`. Finalization has been
+deprecated since JDK 9 and is targeted for removal (JEP 421). On JDK 21+
 finalizers may run unpredictably or not at all.
 
 **Possible fix:** Remove the `JAVA_FINALIZER` compile definition from
@@ -185,16 +192,17 @@ finalizers may run unpredictably or not at all.
 ```
 
 The project already provides `AutoCloseable` via the `SWIGTYPE` typemap
-(S11) and the `QuantLibJNIHelpers.AutoCloseable` interface.  Rely solely
+(S11) and the `QuantLibJNIHelpers.AutoCloseable` interface. Rely solely
 on `try-with-resources` / explicit `close()` for deterministic cleanup.
 Update the project README (already done) and Javadoc to emphasize
 `try-with-resources` usage.
 
 ### S8 — No SWIG `%exception` directive for C++ exceptions
+
 **File:** `swig/QuantLibEntrypoint.i`
 
 There is no `%exception` block to translate C++ exceptions
-(`QuantLib::Error`, `std::exception`) into Java exceptions.  An uncaught C++
+(`QuantLib::Error`, `std::exception`) into Java exceptions. An uncaught C++
 exception propagating through JNI will crash the JVM with no diagnostic.
 
 **Possible fix:** Add a `%exception` block in `swig/QuantLibEntrypoint.i`
@@ -224,6 +232,7 @@ This ensures every JNI call is wrapped in a try/catch that translates C++
 exceptions into Java `RuntimeException` instances with the original message.
 
 ### S9 — CI workflow uses overly broad default permissions
+
 **File:** `.github/workflows/build_maven_artefact.yml`
 
 Only the `deploy` job specifies `permissions: contents: read, packages: write`.
@@ -250,15 +259,16 @@ jobs:
     # …
 ```
 
-This follows the principle of least privilege.  Each job that needs write
+This follows the principle of least privilege. Each job that needs write
 access declares it explicitly.
 
 ### S10 — Personal scoped token in CI
+
 **File:** `.github/workflows/build_with_quantlib_latest.yml`
 **Line:** 30
 
-Uses `REPO_SCOPED_TOKEN` — a personal access token.  If this token has
-broad scopes it is a privilege escalation vector.  Prefer fine-grained
+Uses `REPO_SCOPED_TOKEN` — a personal access token. If this token has
+broad scopes it is a privilege escalation vector. Prefer fine-grained
 GitHub App tokens.
 
 **Possible fix:** Replace the personal access token with a GitHub App
@@ -286,6 +296,7 @@ installation token:
 This limits the token's scope and lifetime automatically.
 
 ### S11 — `SWIGTYPE` catch-all in `%typemap(javainterfaces)` may be ineffective
+
 **File:** `swig/QuantLibEntrypoint.i`
 **Line:** 16
 
@@ -293,14 +304,14 @@ This limits the token's scope and lifetime automatically.
 %typemap(javainterfaces) SWIGTYPE "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable";
 ```
 
-`SWIGTYPE` is a pseudo-type used by SWIG as a fallback.  Applying
+`SWIGTYPE` is a pseudo-type used by SWIG as a fallback. Applying
 `javainterfaces` to it is an attempt to add `AutoCloseable` to every
 generated proxy class, but behaviour depends on SWIG version and may not
-produce correct `close()` / `delete()` semantics on each class.  Per-class
+produce correct `close()` / `delete()` semantics on each class. Per-class
 typemaps or `%shared_ptr` wrappers would be more reliable.
 
 **Possible fix:** This actually works as intended in SWIG 4.4.x as a
-catch-all.  To make it more robust and self-documenting:
+catch-all. To make it more robust and self-documenting:
 
 1. Add a comment explaining the intent:
    ```swig
@@ -317,10 +328,11 @@ catch-all.  To make it more robust and self-documenting:
    ```
 
 ### S12 — No SWIG `%feature("director")` for callback classes
+
 **File:** `swig/QuantLibEntrypoint.i`
 
 If Java subclasses need to override C++ virtual methods (e.g. custom cost
-functions or pricing engines), SWIG directors must be enabled.  No
+functions or pricing engines), SWIG directors must be enabled. No
 `%feature("director")` directive is present, so any Java→C++ callback will
 silently call the base class instead of the Java override.
 
@@ -340,22 +352,24 @@ set_property(TARGET QuantLibJNI PROPERTY SWIG_COMPILE_OPTIONS
     -package org.quantlib -directors)
 ```
 
-Note: directors add overhead and complexity.  Only enable them for classes
-where Java subclassing is a real use case.  Document which classes support
+Note: directors add overhead and complexity. Only enable them for classes
+where Java subclassing is a real use case. Document which classes support
 Java-side subclassing.
 
 ### S13 — Thread safety of global `Settings::instance()`
+
 **File:** conceptual — affects all QuantLib calls via SWIG
 
 QuantLib's `Settings::instance()` holds global mutable state (evaluation
-date, etc.).  Concurrent Java threads calling into QuantLib can race on
-this singleton.  The SWIG layer provides no synchronization or
+date, etc.). Concurrent Java threads calling into QuantLib can race on
+this singleton. The SWIG layer provides no synchronization or
 documentation of thread-safety constraints.
 
 **Possible fix:** This is a fundamental QuantLib design constraint that
-cannot be fully fixed in the SWIG layer.  Mitigation options:
+cannot be fully fixed in the SWIG layer. Mitigation options:
 
 1. **Document it prominently** in the README and Javadoc:
+
    ```java
    /**
     * WARNING: QuantLib is NOT thread-safe. All calls to QuantLib
@@ -365,6 +379,7 @@ cannot be fully fixed in the SWIG layer.  Mitigation options:
    ```
 
 2. **Provide a Java-side synchronization wrapper** (optional convenience):
+
    ```java
    public final class QuantLibLock {
        private static final ReentrantLock LOCK = new ReentrantLock();
@@ -390,7 +405,9 @@ cannot be fully fixed in the SWIG layer.  Mitigation options:
 ## Performance
 
 ### ~~P1 — Native resource leaks in tests (missing try-with-resources)~~
+
 **Files:**
+
 - `java/src/test/java/org/quantlib/ZigguratXoshiro256StarStarGaussianTest.java` — `rng`, `gaussianRng`, `gaussianRsg`, `sample` never closed
 - `java/src/test/java/org/quantlib/QuantLibDateToLocalDateTest.java:16` — `Date.of(localDate)` inside `assertEquals`, never closed
 - `java/src/test/java/org/quantlib/InstrumentTest.java` — `flatRate()` / `flatVol()` helpers create `SimpleQuote`, `QuoteHandle`, `NullCalendar`, `FlatForward` etc. that are never closed
@@ -399,10 +416,10 @@ cannot be fully fixed in the SWIG layer.  Mitigation options:
 - `java/src/test/java/org/quantlib/DatesTest.java` — `testCanHash` puts `Date` objects into `HashSet`; after `startDate.close()` the set holds a dangling native reference
 
 Each leaked SWIG object retains a C++ heap allocation until the GC
-finalizer runs (if ever, see S7).  In large test suites this can exhaust
+finalizer runs (if ever, see S7). In large test suites this can exhaust
 native memory.
 
-**Possible fix:** Wrap every SWIG object in `try-with-resources`.  Example
+**Possible fix:** Wrap every SWIG object in `try-with-resources`. Example
 for `ZigguratXoshiro256StarStarGaussianTest`:
 
 ```java
@@ -437,6 +454,7 @@ returning a composite `AutoCloseable` that closes all intermediate objects,
 or restructure the helpers to accept pre-created objects.
 
 ### P2 — `QL_JAVA_INTERFACES` macro concatenation is fragile
+
 **File:** `swig/QuantLibEntrypoint.i`
 **Line:** 15
 
@@ -445,7 +463,7 @@ or restructure the helpers to accept pre-created objects.
 ```
 
 The trailing `, ` requires that the downstream consumer always appends
-something after it.  If the external SWIG template changes, this will
+something after it. If the external SWIG template changes, this will
 silently produce an invalid Java `implements` clause or a compile error.
 
 **Possible fix:** Remove the trailing `, ` from the macro and adjust the
@@ -467,16 +485,17 @@ This way the macro is a self-contained value and the concatenation point
 is explicit.
 
 ### P3 — No `%apply` / bulk typemaps for large numeric vectors
+
 **File:** `swig/QuantLibEntrypoint.i`
 
 `stl.i` is included for `std::vector` support, but there are no targeted
 `%apply` directives to convert `std::vector<double>` / `std::vector<Real>`
-to Java `double[]` efficiently.  Every element crosses the JNI boundary
+to Java `double[]` efficiently. Every element crosses the JNI boundary
 individually, which is a significant overhead for large time series,
 volatility surfaces, and cashflow vectors.
 
 **Possible fix:** Add bulk array typemaps using SWIG's `arrays_java.i` and
-custom JNI code.  Example for `std::vector<double>`:
+custom JNI code. Example for `std::vector<double>`:
 
 ```swig
 %include "arrays_java.i"
@@ -510,6 +529,7 @@ This copies the entire vector in one JNI call instead of element-by-element.
 ## Modern C++ / CMake Best Practices
 
 ### C1 — Directory-scoped `add_compile_options` instead of target-scoped
+
 **File:** `CMakeLists.txt`
 **Line:** 60
 
@@ -517,7 +537,7 @@ This copies the entire vector in one JNI call instead of element-by-element.
 add_compile_options(-isystem ${Boost_INCLUDE_DIRS})
 ```
 
-Affects all targets in the directory.  Modern CMake: use
+Affects all targets in the directory. Modern CMake: use
 `target_compile_options` / `target_include_directories(… SYSTEM …)` on the
 specific target.
 
@@ -537,6 +557,7 @@ target_link_libraries(QuantLibJNI PRIVATE Boost::headers)
 ```
 
 ### C2 — Old-style `${Boost_INCLUDE_DIRS}` instead of imported target
+
 **Files:** `CMakeLists.txt:60`, `swig/CMakeLists.txt:50`
 
 Modern CMake provides `Boost::headers` (header-only) and component targets.
@@ -563,6 +584,7 @@ target_link_libraries(QuantLibJNI PRIVATE
 propagates all necessary properties.
 
 ### C3 — Global `CMAKE_CXX_STANDARD` instead of per-target
+
 **File:** `CMakeLists.txt`
 **Line:** 15
 
@@ -589,11 +611,12 @@ set_target_properties(QuantLibJNI PROPERTIES
 ```
 
 ### C4 — Global `BUILD_SHARED_LIBS OFF`
+
 **File:** `CMakeLists.txt`
 **Line:** 19
 
 This is a global variable that affects all `add_library()` calls, including
-any added via `FetchContent` or subdirectories.  Prefer setting the library
+any added via `FetchContent` or subdirectories. Prefer setting the library
 type explicitly on the target.
 
 **Possible fix:** Remove the global setting and set the library type
@@ -617,6 +640,7 @@ add_subdirectory(external/QuantLib)
 ```
 
 ### C5 — `${JNI_INCLUDE_DIRS}` variable instead of `JNI::JNI` target
+
 **File:** `swig/CMakeLists.txt`
 **Line:** 50
 
@@ -625,7 +649,7 @@ target_include_directories(QuantLibJNI PRIVATE ${JNI_INCLUDE_DIRS})
 ```
 
 Since CMake 3.24, `FindJNI` provides imported targets (`JNI::JNI`,
-`JNI::JVM`).  With `cmake_minimum_required(VERSION 4.0.0)` these are
+`JNI::JVM`). With `cmake_minimum_required(VERSION 4.0.0)` these are
 available and preferred.
 
 **Possible fix:** Replace the variable with the imported target:
@@ -642,6 +666,7 @@ target_link_libraries(QuantLibJNI PRIVATE JNI::JNI)
 handles platform-specific linking.
 
 ### C6 — POST_BUILD step runs Maven from CMake
+
 **File:** `swig/CMakeLists.txt`
 **Lines:** 69–74
 
@@ -650,9 +675,9 @@ add_custom_command(TARGET QuantLibJNI POST_BUILD
     COMMAND ./mvnw clean verify …)
 ```
 
-Couples the C++ build to a Maven installation.  Uses relative path `./mvnw`
-which depends on working directory.  If Maven is unavailable, the CMake
-build fails with a confusing error.  Consider making this an optional
+Couples the C++ build to a Maven installation. Uses relative path `./mvnw`
+which depends on working directory. If Maven is unavailable, the CMake
+build fails with a confusing error. Consider making this an optional
 target or a separate step.
 
 **Possible fix:** Replace the `POST_BUILD` custom command with an optional
@@ -684,6 +709,7 @@ This makes the Maven step opt-in (`cmake -DQL_MVN_BUILD_JAVA=OFF`), uses
 absolute paths, and provides a clear warning if Maven is unavailable.
 
 ### C7 — Generic variable name `ARCH` in global scope
+
 **File:** `cmake/CreateJavaLibraryDirectory.cmake`
 
 `set(ARCH …)` without a project prefix risks collision with other CMake
@@ -702,6 +728,7 @@ set(QL_MVN_ARCH ...)
 ```
 
 ### C8 — No `cmake_minimum_required` version range
+
 **File:** `CMakeLists.txt`
 **Line:** 1
 
@@ -709,7 +736,7 @@ set(QL_MVN_ARCH ...)
 cmake_minimum_required(VERSION 4.0.0)
 ```
 
-Version 4.0.0 is very new (2025).  A version range like
+Version 4.0.0 is very new (2025). A version range like
 `VERSION 3.28...4.0` would allow building with slightly older CMake while
 still benefiting from 4.0 policies.
 
@@ -720,13 +747,14 @@ cmake_minimum_required(VERSION 3.28...4.0)
 ```
 
 This allows CMake 3.28+ to configure the project while applying 4.0
-policies when available.  Check that all CMake features used are available
+policies when available. Check that all CMake features used are available
 in 3.28 (JNI imported targets require 3.24, presets require 3.21).
 
 ### C9 — No test or workflow presets in CMakePresets.json
+
 **File:** `CMakePresets.json`
 
-Only configure + build presets are defined.  Adding test presets and
+Only configure + build presets are defined. Adding test presets and
 workflow presets (configure → build → test) would streamline CI and local
 development.
 
@@ -746,8 +774,8 @@ development.
       "name": "release",
       "steps": [
         { "type": "configure", "name": "release" },
-        { "type": "build",     "name": "release" },
-        { "type": "test",      "name": "release" }
+        { "type": "build", "name": "release" },
+        { "type": "test", "name": "release" }
       ]
     }
   ]
@@ -757,6 +785,7 @@ development.
 Then CI and developers can run: `cmake --workflow --preset release`.
 
 ### C10 — `FORCE` on cache variables overrides user settings
+
 **File:** `CMakeLists.txt`
 **Lines:** 20–22
 
@@ -765,11 +794,11 @@ set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "..." FORCE)
 ```
 
 Using `FORCE` prevents users from overriding these values via `-D` flags or
-the CMake GUI.  Prefer `option()` or `set(… CACHE …)` without `FORCE`
+the CMake GUI. Prefer `option()` or `set(… CACHE …)` without `FORCE`
 unless the override is truly mandatory.
 
 **Possible fix:** If these values are truly project requirements (not user
-preferences), document why `FORCE` is needed.  Otherwise, replace with
+preferences), document why `FORCE` is needed. Otherwise, replace with
 non-forced cache variables:
 
 ```cmake
@@ -784,6 +813,7 @@ option(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN
 ```
 
 ### C11 — All SWIG target includes marked `SYSTEM` — suppresses own-header warnings
+
 **File:** `swig/CMakeLists.txt`
 **Line:** 59
 
@@ -794,7 +824,7 @@ target_include_directories(QuantLibJNI SYSTEM PRIVATE
 ```
 
 Marking project-owned generated headers as `SYSTEM` suppresses compiler
-warnings in those headers.  Only third-party includes (`Boost`, `JNI`)
+warnings in those headers. Only third-party includes (`Boost`, `JNI`)
 should be `SYSTEM`; project headers should remain non-`SYSTEM` so that
 warnings are visible.
 
@@ -824,11 +854,12 @@ target_link_libraries(QuantLibJNI PRIVATE
 ```
 
 ### ~~C12 — Source-tree mutation during configure~~
+
 **File:** `cmake/CreateJavaLibraryDirectory.cmake`
 **Lines:** 31–32
 
 `file(MAKE_DIRECTORY …)` creates directories under `java/target/` in the
-source tree during CMake configure.  Generated artifacts and directories
+source tree during CMake configure. Generated artifacts and directories
 are better placed under `${CMAKE_BINARY_DIR}` to keep the source tree
 clean.
 
@@ -847,13 +878,14 @@ set_target_properties(QuantLibJNI PROPERTIES
 ```
 
 This keeps the source tree clean and makes out-of-source builds truly
-out-of-source.  The Maven build would then need a property to locate the
+out-of-source. The Maven build would then need a property to locate the
 native libraries from the build directory.
 
 ### C13 — Missing SWIG include guard
+
 **File:** `swig/QuantLibEntrypoint.i`
 
-No `%ifndef` / `%define` guard around the file contents.  Repeated
+No `%ifndef` / `%define` guard around the file contents. Repeated
 inclusion in complex SWIG include trees could produce duplicate directives
 or macro redefinition warnings.
 
@@ -873,6 +905,7 @@ or macro redefinition warnings.
 ## Modern Java / JDK 21 Best Practices
 
 ### J1 — Old-style `switch` statements instead of switch expressions
+
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 **Lines:** 88–100, 106–118
 
@@ -904,6 +937,7 @@ The arrow syntax eliminates fall-through bugs and the compiler verifies
 exhaustiveness.
 
 ### J2 — `final static` modifier ordering
+
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 **Lines:** 14–17
 
@@ -921,6 +955,7 @@ static final String LIBRARY_NAME = "QuantLibJNI";
 Apply to all four fields on lines 14–17.
 
 ### J3 — Enum constants not `UPPER_SNAKE_CASE`
+
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 
 `OperatingSystem.Linux`, `MacOs`, `Windows` — Java convention is
@@ -938,9 +973,10 @@ Update all references in `getPrefix()`, `getExtension()`,
 `getOperatingSystem()`, and switch expressions accordingly.
 
 ### J4 — Duplicated logic in `getLibraryPath()`
+
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 
-Both `getPrefix()` and `getExtension()` switch on OS.  A single method or
+Both `getPrefix()` and `getExtension()` switch on OS. A single method or
 a record per OS with `(prefix, extension)` would be DRYer.
 
 **Possible fix:** Use a record to encapsulate OS-specific library naming:
@@ -972,9 +1008,10 @@ private static String getLibraryPath() {
 ```
 
 ### J5 — `module-info.java` does not export `org.quantlib.helpers` or `cz.adamh.utils`
+
 **File:** `java/src/main/java/module-info.java`
 
-Only `org.quantlib` is exported.  If downstream code needs
+Only `org.quantlib` is exported. If downstream code needs
 `QuantLibJNIHelpers.AutoCloseable` (which SWIG-generated code references),
 it's not accessible.
 
@@ -990,12 +1027,13 @@ module org.quantlib {
 ```
 
 If `QuantLibJNIHelpers.AutoCloseable` is referenced in generated proxy
-classes (which are in `org.quantlib`), it must be accessible.  Since the
+classes (which are in `org.quantlib`), it must be accessible. Since the
 interface is in the same module, a same-module access works without
 `exports`, but explicit export makes the API contract clear for downstream
 consumers.
 
 ### J6 — Javadoc links to JDK 11 instead of JDK 17+
+
 **File:** `java/pom.xml`
 **Line:** 228
 
@@ -1012,6 +1050,7 @@ Project targets JDK 17+.
 ```
 
 ### J7 — `<source>` / `<target>` instead of `<release>` in compiler plugin
+
 **File:** `java/pom.xml`
 
 `<release>17</release>` (JDK 9+) is the modern replacement — it also
@@ -1032,10 +1071,11 @@ validates against the correct API surface.
 ```
 
 ### J8 — Maven enforcer `requireJavaVersion` range `[17,18)` rejects JDK 21+
+
 **File:** `java/pom.xml`
 
-The default enforcer range only accepts JDK 17.  JDK 21 and 25 support
-depends on profile activation by exact JDK match.  If no profile matches,
+The default enforcer range only accepts JDK 17. JDK 21 and 25 support
+depends on profile activation by exact JDK match. If no profile matches,
 the build is rejected.
 
 **Possible fix:** Widen the enforcer version range to accept all supported
@@ -1048,15 +1088,16 @@ JDKs:
 </requireJavaVersion>
 ```
 
-The `[17,)` range accepts JDK 17, 21, 25, and any future version.  The
+The `[17,)` range accepts JDK 17, 21, 25, and any future version. The
 JDK-specific profiles can still activate for version-specific settings
 without rejecting other JDKs.
 
 ### J9 — Javadoc `maxmemory` missing unit suffix
+
 **File:** `java/pom.xml`
 **Line:** 220
 
-`<maxmemory>512</maxmemory>` — should be `512m`.  Behaviour without the
+`<maxmemory>512</maxmemory>` — should be `512m`. Behaviour without the
 suffix is undefined.
 
 **Possible fix:** Add the unit suffix:
@@ -1066,11 +1107,12 @@ suffix is undefined.
 ```
 
 ### J10 — Version mismatch between POM and CMake
+
 **File:** `java/pom.xml` (`0.1.0-SNAPSHOT`) vs `CMakeLists.txt` (`project(VERSION 1.41.0)`)
 
 The two version numbers are unrelated, which will confuse consumers.
 
-**Possible fix:** Align the versions.  Option A — derive the Maven version
+**Possible fix:** Align the versions. Option A — derive the Maven version
 from CMake:
 
 ```cmake
@@ -1105,9 +1147,10 @@ Option C (simplest) — manually keep them in sync and add a CI check:
 ```
 
 ### J11 — Reflection in tests to access private methods
+
 **File:** `java/src/test/java/org/quantlib/helpers/QuantLibJNIHelpersTest.java`
 
-Uses `setAccessible(true)` to test private helper methods.  This is
+Uses `setAccessible(true)` to test private helper methods. This is
 fragile with the module system (will fail if module boundaries are
 enforced), and is generally a test smell — consider package-private
 visibility or testing via public API.
@@ -1139,12 +1182,13 @@ Alternatively, test indirectly via the public `loadLibrary()` API if the
 methods are truly implementation details that shouldn't be tested directly.
 
 ### J12 — `DatesTest.testCanHash` — dangling native reference in HashSet
+
 **File:** `java/src/test/java/org/quantlib/DatesTest.java`
 **Lines:** 326–327
 
 A `Date` SWIG object is added to a `HashSet`, then `startDate.close()` is
-called.  The `HashSet` still holds a reference to the now-deleted native
-object.  Any subsequent operation on the set entry (e.g. iteration, contains
+called. The `HashSet` still holds a reference to the now-deleted native
+object. Any subsequent operation on the set entry (e.g. iteration, contains
 check) will access freed memory.
 
 **Possible fix:** Remove the `Date` from the `HashSet` before closing it,
@@ -1175,6 +1219,7 @@ void testCanHash() {
 ## CI/CD
 
 ### ~~CI1 — Deploy job only builds for JDK 17~~
+
 **File:** `.github/workflows/build_maven_artefact.yml`
 
 The `build-for-deploy` job only runs the `jdk17` matrix entry.
@@ -1186,21 +1231,22 @@ JDK 21/25 artifacts are not deployed.
 build-for-deploy:
   strategy:
     matrix:
-      java-version: ['17', '21', '25']
+      java-version: ["17", "21", "25"]
   steps:
     # … build and deploy for each JDK version
 ```
 
 If the artifact is JDK-version-independent (compiled with `--release 17`),
-a single deploy is correct but should be validated against all JDKs.  Add
+a single deploy is correct but should be validated against all JDKs. Add
 a separate test job that runs the test suite on JDK 21 and 25 before
 deploying.
 
 ### ~~CI2 — `ubuntu-22.04` runner for deploy~~
+
 **File:** `.github/workflows/build_maven_artefact.yml`
 **Line:** 53
 
-Ubuntu 22.04 reaches end of standard support in April 2027.  Consider
+Ubuntu 22.04 reaches end of standard support in April 2027. Consider
 `ubuntu-24.04` for longer support.
 
 **Possible fix:** Update the runner:
@@ -1216,11 +1262,12 @@ Test that the build works on 24.04 first (Boost, SWIG, and CMake package
 availability).
 
 ### ~~CI3 — Submodule checkout uses `master` branch without pinning~~
+
 **File:** `.github/workflows/build_with_quantlib_latest.yml`
 
 `git checkout master && git pull` fetches whatever is currently on master.
 A breaking change upstream will break this project's CI without any change
-on this side.  Consider pinning to a tag or SHA.
+on this side. Consider pinning to a tag or SHA.
 
 **Possible fix:** Pin the submodule to a specific tag or commit SHA:
 
