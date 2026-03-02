@@ -1,12 +1,10 @@
 package org.quantlib.helpers;
 
-import cz.adamh.utils.NativeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.Map;
 
 public class QuantLibJNIHelpers {
 
@@ -15,7 +13,6 @@ public class QuantLibJNIHelpers {
     private final static String OS_ARCH = System.getProperty("os.arch");
     private final static String OS_VERSION = System.getProperty("os.version");
     private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
-    private static boolean libraryIsLoaded = false;
 
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
@@ -27,24 +24,7 @@ public class QuantLibJNIHelpers {
     }
 
     public static void loadLibrary() {
-        try {
-            if (libraryIsLoaded) {
-                LOGGER.warn("QuantLib native library for {} was already loaded, " +
-                        "skipping reloading", OS);
-                return;
-            }
-
-            LOGGER.debug("Trying to load QuantLib native library for {}", OS);
-            traceLogAllSystemProperties();
-
-            var libraryPath = getLibraryPath();
-            NativeUtils.loadLibraryFromJar(libraryPath);
-            libraryIsLoaded = true;
-
-            LOGGER.debug("Native library loaded");
-        } catch (IOException e) {
-            throw new UnsupportedOperatingSystemException(e);
-        }
+        NativeLibraryLoader.initialize();
     }
 
     public static class UnsupportedOperatingSystemException extends RuntimeException {
@@ -144,5 +124,39 @@ public class QuantLibJNIHelpers {
         properties.entrySet().stream()
                 .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
                 .forEach(entry -> LOGGER.trace("\t{}: {}", entry.getKey(), entry.getValue()));
+    }
+
+    private static final class NativeLibraryLoader {
+        static {
+            String libraryPath = null;
+            try {
+                LOGGER.debug("Trying to load QuantLib native library for {}", OS);
+                traceLogAllSystemProperties();
+
+                libraryPath = getLibraryPath();
+                NativeUtils.loadLibraryFromJar(libraryPath);
+
+                LOGGER.debug("Native library '{}' loaded", libraryPath);
+            } catch (IOException ioException) {
+                throw new NativeLibraryLoaderException(libraryPath, ioException);
+            }
+        }
+
+        public static void initialize() {
+            // intentionally empty
+        }
+    }
+
+    public static final class NativeLibraryLoaderException extends RuntimeException {
+        private final String nativeLibraryPath;
+
+        public NativeLibraryLoaderException(String nativeLibraryPath, IOException ioException) {
+            super("Cannot load native library '" + nativeLibraryPath + "'", ioException);
+            this.nativeLibraryPath = nativeLibraryPath;
+        }
+
+        public String getNativeLibraryPath() {
+            return nativeLibraryPath;
+        }
     }
 }
