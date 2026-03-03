@@ -55,7 +55,6 @@ import java.util.EnumSet;
  */
 class NativeUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeUtils.class);
-    private static final int MIN_PREFIX_LENGTH = 3;
     private static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils.";
 
     /**
@@ -71,19 +70,19 @@ class NativeUtils {
      * with {@link System#load(String)}.</p>
      *
      * @param path absolute classpath resource path to the native library
-     *             (must start with {@code '/'})
      * @throws IOException              if the resource cannot be found or copied
      * @throws IllegalArgumentException if {@code path} is not absolute or filename is too short
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
+    public static void loadLibraryFromJar(Path path) throws IOException {
         var filename = getFilename(path);
 
         var temporaryDir = createTempDirectory();
         var temporaryFile = Path.of(temporaryDir.toString(), filename);
 
-        try (var inputStream = NativeUtils.class.getResourceAsStream(path)) {
+        var javaCompliantPathString = path.toString().replace('\\', '/');
+        try (var inputStream = NativeUtils.class.getResourceAsStream(javaCompliantPathString)) {
             if (inputStream == null) {
-                throw new FileNotFoundException("File '" + path + "' was not found inside JAR.");
+                throw new FileNotFoundException("File '" + javaCompliantPathString + "' was not found inside JAR.");
             }
             Files.copy(inputStream, temporaryFile);
         }
@@ -132,20 +131,11 @@ class NativeUtils {
      * @return filename portion of the path
      * @throws IllegalArgumentException if the path is not absolute or filename is too short
      */
-    private static String getFilename(String path) {
+    private static String getFilename(Path path) {
         if (null == path || !path.startsWith("/")) {
-            throw new IllegalArgumentException("The path has to be absolute (start with '/').");
+            throw new IllegalArgumentException("The path '" + path + "' has to be absolute.");
         }
-
-        // Obtain filename from path
-        var parts = path.split("/");
-        var filename = (parts.length > 1) ? parts[parts.length - 1] : null;
-
-        // Check if the filename is okay
-        if (filename == null || filename.length() < MIN_PREFIX_LENGTH) {
-            throw new IllegalArgumentException("The filename has to be at least 3 characters long.");
-        }
-        return filename;
+        return path.getFileName().toString();
     }
 
     /**
