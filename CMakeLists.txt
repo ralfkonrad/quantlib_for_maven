@@ -21,6 +21,9 @@ set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "Needed for java's garb
 set(QL_THROW_IN_CYCLES ON CACHE BOOL "Throw an exception when a notification loop is detected")
 set(QL_FASTER_LAZY_OBJECTS OFF CACHE BOOL "Cause lazy objects to forward just the first notification instead of every one")
 
+# Make the `./mvnw clean verify` build step optional
+option(QL_MVN_BUILD_JAVA "Build Java artifacts after native build" ON)
+
 # paths needed throughout the build
 cmake_path(SET QL_MVN_QUANTLIB_ROOT external/QuantLib)
 

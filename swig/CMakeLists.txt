@@ -58,17 +58,29 @@ endif ()
 
 target_include_directories(QuantLibJNI SYSTEM PRIVATE
         ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR}
-        ${QL_MVN_QUANTLIB_ROOT_DIR}
-        ${Boost_INCLUDE_DIRS}
-        ${JNI_INCLUDE_DIRS})
+        ${QL_MVN_QUANTLIB_ROOT_DIR})
 
-target_link_libraries(QuantLibJNI
+target_link_libraries(QuantLibJNI PRIVATE
         ql_library
-        Threads::Threads)
+        Threads::Threads
+        Boost::headers
+        JNI::JNI)
 
-add_custom_command(
-        TARGET QuantLibJNI POST_BUILD
-        COMMAND ./mvnw --batch-mode --show-version clean verify
-        WORKING_DIRECTORY ${QL_MVN_SWIG_JAVA_DIR}
-        COMMENT "Running './mvnw --batch-mode --show-version clean verify'."
-        VERBATIM)
+if (QL_MVN_BUILD_JAVA)
+    find_program(QL_MVN_EXECUTABLE
+            mvnw
+            PATHS ${CMAKE_SOURCE_DIR}/java
+            NO_DEFAULT_PATH)
+
+    if (QL_MVN_EXECUTABLE)
+        add_custom_target(java_build
+                ALL
+                COMMAND ${QL_MVN_EXECUTABLE} --batch-mode --show-version clean verify
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/java
+                DEPENDS QuantLibJNI
+                USES_TERMINAL
+                COMMENT "Building Java artifacts with Maven")
+    else ()
+        message(WARNING "Maven wrapper not found; skipping Java build target")
+    endif ()
+endif ()
