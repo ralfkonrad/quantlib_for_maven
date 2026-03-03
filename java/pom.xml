@@ -42,8 +42,6 @@
     </issueManagement>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -131,8 +129,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.15.0</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
+                        <release>17</release>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -216,16 +213,14 @@
                     <version>3.12.0</version>
                     <configuration>
                         <doclint>all,-missing</doclint>
-                        <minmemory>128m</minmemory>
-                        <maxmemory>512</maxmemory>
                         <breakiterator>true</breakiterator>
                         <quiet>true</quiet>
-                        <source>${maven.compiler.source}</source>
+                        <source>17</source>
                         <verbose>true</verbose>
                         <linksource>true</linksource>
                         <links>
                             <!-- JSE -->
-                            <link>https://docs.oracle.com/en/java/javase/11/docs/api/</link>
+                            <link>https://docs.oracle.com/en/java/javase/17/docs/api/</link>
                         </links>
                     </configuration>
                     <executions>
@@ -360,13 +355,16 @@
             <activation>
                 <jdk>21</jdk>
             </activation>
-            <properties>
-                <maven.compiler.source>21</maven.compiler.source>
-                <maven.compiler.target>21</maven.compiler.target>
-            </properties>
             <build>
                 <pluginManagement>
                     <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <release>21</release>
+                            </configuration>
+                        </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-enforcer-plugin</artifactId>
@@ -395,13 +393,16 @@
             <activation>
                 <jdk>25</jdk>
             </activation>
-            <properties>
-                <maven.compiler.source>25</maven.compiler.source>
-                <maven.compiler.target>25</maven.compiler.target>
-            </properties>
             <build>
                 <pluginManagement>
                     <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <release>25</release>
+                            </configuration>
+                        </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-enforcer-plugin</artifactId>

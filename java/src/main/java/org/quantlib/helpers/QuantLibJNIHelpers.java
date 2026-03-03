@@ -4,15 +4,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Comparator;
 
 public class QuantLibJNIHelpers {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuantLibJNIHelpers.class);
-    private final static String OS_NAME = System.getProperty("os.name");
-    private final static String OS_ARCH = System.getProperty("os.arch");
-    private final static String OS_VERSION = System.getProperty("os.version");
-    private final static String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
+    private static final String OS_NAME = System.getProperty("os.name");
+    private static final String OS_ARCH = System.getProperty("os.arch");
+    private static final String OS_VERSION = System.getProperty("os.version");
+    private static final String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
+    private static final OperatingSystem OS_SYSTEM = getOS();
+
+    static {
+        Path libraryPath = null;
+        try {
+            LOGGER.debug("Trying to load QuantLib native library for {}", OS);
+            traceLogAllSystemProperties();
+
+            libraryPath = getLibraryPath();
+            NativeUtils.loadLibraryFromJar(libraryPath);
+
+            LOGGER.debug("Native library '{}' loaded", libraryPath);
+        } catch (IOException ioException) {
+            throw new NativeLibraryLoaderException(libraryPath, ioException);
+        }
+    }
 
     public interface AutoCloseable extends java.lang.AutoCloseable {
         void delete();
@@ -24,7 +41,6 @@ public class QuantLibJNIHelpers {
     }
 
     public static void loadLibrary() {
-        NativeLibraryLoader.initialize();
     }
 
     public static class UnsupportedOperatingSystemException extends RuntimeException {
@@ -44,8 +60,18 @@ public class QuantLibJNIHelpers {
         }
     }
 
-    private static final OperatingSystem OS_SYSTEM = getOS();
-    private static final String ARCH = System.getProperty("os.arch").toLowerCase();
+    public static final class NativeLibraryLoaderException extends RuntimeException {
+        private final Path nativeLibraryPath;
+
+        public NativeLibraryLoaderException(Path nativeLibraryPath, IOException ioException) {
+            super("Cannot load native library '" + nativeLibraryPath + "'", ioException);
+            this.nativeLibraryPath = nativeLibraryPath;
+        }
+
+        public Path getNativeLibraryPath() {
+            return nativeLibraryPath;
+        }
+    }
 
     private QuantLibJNIHelpers() {
     }
@@ -65,40 +91,26 @@ public class QuantLibJNIHelpers {
     }
 
     private static String getLibraryName() {
-        switch (OS_SYSTEM) {
-            case Linux:
-                return "libQuantLibJNI.so";
-
-            case MacOs:
-                return "libQuantLibJNI.jnilib";
-
-            case Windows:
-                return "QuantLibJNI.dll";
-
-            default:
-                throw new UnsupportedOperatingSystemException();
-        }
+        return switch (OS_SYSTEM) {
+            case Linux -> "libQuantLibJNI.so";
+            case MacOs -> "libQuantLibJNI.jnilib";
+            case Windows -> "QuantLibJNI.dll";
+        };
     }
 
-    private static String getLibraryPath() {
+    private static Path getLibraryPath() {
+        var libraryName = getLibraryName();
         var rootPath = "/native";
-        var path = String.join("/", rootPath, OS_SYSTEM.name().toLowerCase());
-        switch (OS_SYSTEM) {
-            case Linux:
-                return String.join("/", path, normalizeArchitecture(ARCH), getLibraryName());
-
-            case MacOs:
-                return String.join("/", path, getLibraryName());
-
-            case Windows:
-                return String.join("/", path, normalizeArchitecture(ARCH), getLibraryName());
-
-            default:
-                throw new UnsupportedOperatingSystemException();
-        }
+        var path = Path.of(rootPath, OS_SYSTEM.name().toLowerCase());
+        return switch (OS_SYSTEM) {
+            case Linux, Windows ->
+                Path.of(path.toString(), normalizeArchitecture(), libraryName);
+            case MacOs -> Path.of(path.toString(), libraryName);
+        };
     }
 
-    private static String normalizeArchitecture(String arch) {
+    private static String normalizeArchitecture() {
+        var arch = OS_ARCH.toLowerCase();
         if (arch.equals("x86_64") || arch.equals("amd64")) {
             return "amd64";
         }
@@ -124,39 +136,5 @@ public class QuantLibJNIHelpers {
         properties.entrySet().stream()
                 .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
                 .forEach(entry -> LOGGER.trace("\t{}: {}", entry.getKey(), entry.getValue()));
-    }
-
-    private static final class NativeLibraryLoader {
-        static {
-            String libraryPath = null;
-            try {
-                LOGGER.debug("Trying to load QuantLib native library for {}", OS);
-                traceLogAllSystemProperties();
-
-                libraryPath = getLibraryPath();
-                NativeUtils.loadLibraryFromJar(libraryPath);
-
-                LOGGER.debug("Native library '{}' loaded", libraryPath);
-            } catch (IOException ioException) {
-                throw new NativeLibraryLoaderException(libraryPath, ioException);
-            }
-        }
-
-        public static void initialize() {
-            // intentionally empty
-        }
-    }
-
-    public static final class NativeLibraryLoaderException extends RuntimeException {
-        private final String nativeLibraryPath;
-
-        public NativeLibraryLoaderException(String nativeLibraryPath, IOException ioException) {
-            super("Cannot load native library '" + nativeLibraryPath + "'", ioException);
-            this.nativeLibraryPath = nativeLibraryPath;
-        }
-
-        public String getNativeLibraryPath() {
-            return nativeLibraryPath;
-        }
     }
 }

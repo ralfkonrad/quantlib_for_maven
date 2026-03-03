@@ -904,7 +904,7 @@ or macro redefinition warnings.
 
 ## Modern Java / JDK 21 Best Practices
 
-### J1 — Old-style `switch` statements instead of switch expressions
+### ~~J1 — Old-style `switch` statements instead of switch expressions~~
 
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 **Lines:** 88–100, 106–118
@@ -936,7 +936,7 @@ private static String getExtension(OperatingSystem os) {
 The arrow syntax eliminates fall-through bugs and the compiler verifies
 exhaustiveness.
 
-### J2 — `final static` modifier ordering
+### ~~J2 — `final static` modifier ordering~~
 
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 **Lines:** 14–17
@@ -954,7 +954,7 @@ static final String LIBRARY_NAME = "QuantLibJNI";
 
 Apply to all four fields on lines 14–17.
 
-### J3 — Enum constants not `UPPER_SNAKE_CASE`
+### ~~J3 — Enum constants not `UPPER_SNAKE_CASE`~~
 
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 
@@ -972,7 +972,7 @@ enum OperatingSystem {
 Update all references in `getPrefix()`, `getExtension()`,
 `getOperatingSystem()`, and switch expressions accordingly.
 
-### J4 — Duplicated logic in `getLibraryPath()`
+### ~~J4 — Duplicated logic in `getLibraryPath()`~~
 
 **File:** `java/src/main/java/org/quantlib/helpers/QuantLibJNIHelpers.java`
 
@@ -1007,7 +1007,7 @@ private static String getLibraryPath() {
 }
 ```
 
-### J5 — `module-info.java` does not export `org.quantlib.helpers` or `cz.adamh.utils`
+### ~~J5 — `module-info.java` does not export `org.quantlib.helpers` or `cz.adamh.utils`~~
 
 **File:** `java/src/main/java/module-info.java`
 
@@ -1032,7 +1032,7 @@ interface is in the same module, a same-module access works without
 `exports`, but explicit export makes the API contract clear for downstream
 consumers.
 
-### J6 — Javadoc links to JDK 11 instead of JDK 17+
+### ~~J6 — Javadoc links to JDK 11 instead of JDK 17+~~
 
 **File:** `java/pom.xml`
 **Line:** 228
@@ -1049,7 +1049,7 @@ Project targets JDK 17+.
 <link>https://docs.oracle.com/en/java/javase/17/docs/api/</link>
 ```
 
-### J7 — `<source>` / `<target>` instead of `<release>` in compiler plugin
+### ~~J7 — `<source>` / `<target>` instead of `<release>` in compiler plugin~~
 
 **File:** `java/pom.xml`
 
@@ -1070,7 +1070,7 @@ validates against the correct API surface.
 </plugin>
 ```
 
-### J8 — Maven enforcer `requireJavaVersion` range `[17,18)` rejects JDK 21+
+### ~~J8 — Maven enforcer `requireJavaVersion` range `[17,18)` rejects JDK 21+~~
 
 **File:** `java/pom.xml`
 
@@ -1092,7 +1092,7 @@ The `[17,)` range accepts JDK 17, 21, 25, and any future version. The
 JDK-specific profiles can still activate for version-specific settings
 without rejecting other JDKs.
 
-### J9 — Javadoc `maxmemory` missing unit suffix
+### ~~J9 — Javadoc `maxmemory` missing unit suffix~~
 
 **File:** `java/pom.xml`
 **Line:** 220
