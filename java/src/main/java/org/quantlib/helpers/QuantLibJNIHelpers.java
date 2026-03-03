@@ -79,22 +79,22 @@ public class QuantLibJNIHelpers {
     private static OperatingSystem getOS() {
         var os = OS_NAME.toLowerCase();
         if (os.startsWith("linux")) {
-            return OperatingSystem.LINUX;
+            return OperatingSystem.Linux;
         }
         if (os.startsWith("mac")) {
-            return OperatingSystem.MAC_OS;
+            return OperatingSystem.MacOs;
         }
         if (os.startsWith("win")) {
-            return OperatingSystem.WINDOWS;
+            return OperatingSystem.Windows;
         }
         throw new UnsupportedOperatingSystemException();
     }
 
     private static String getLibraryName() {
         return switch (OS_SYSTEM) {
-            case LINUX -> "libQuantLibJNI.so";
-            case MAC_OS -> "libQuantLibJNI.jnilib";
-            case WINDOWS -> "QuantLibJNI.dll";
+            case Linux -> "libQuantLibJNI.so";
+            case MacOs -> "libQuantLibJNI.jnilib";
+            case Windows -> "QuantLibJNI.dll";
         };
     }
 
@@ -103,9 +103,9 @@ public class QuantLibJNIHelpers {
         var rootPath = "/native";
         var path = Path.of(rootPath, OS_SYSTEM.name().toLowerCase());
         return switch (OS_SYSTEM) {
-            case LINUX, WINDOWS ->
+            case Linux, Windows ->
                 Path.of(path.toString(), normalizeArchitecture(), libraryName);
-            case MAC_OS -> Path.of(path.toString(), libraryName);
+            case MacOs -> Path.of(path.toString(), libraryName);
         };
     }
 
@@ -121,9 +121,9 @@ public class QuantLibJNIHelpers {
     }
 
     private enum OperatingSystem {
-        LINUX,
-        MAC_OS,
-        WINDOWS
+        Linux,
+        MacOs,
+        Windows
     }
 
     private static void traceLogAllSystemProperties() {
