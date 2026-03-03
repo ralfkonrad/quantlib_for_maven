@@ -1,3 +1,6 @@
+#ifndef ql_mvn_quantlib_entrypoint_i
+#define ql_mvn_quantlib_entrypoint_i
+
 #if defined(SWIGJAVA)
 // QuantLibJNI class does not have to public
 %pragma(java) jniclassclassmodifiers="class"
@@ -26,3 +29,5 @@
 #endif
 
 %include quantlib.i
+
+#endif // ql_mvn_quantlib_entrypoint_i
