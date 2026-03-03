@@ -14,6 +14,7 @@ public class QuantLibJNIHelpers {
     private static final String OS_ARCH = System.getProperty("os.arch");
     private static final String OS_VERSION = System.getProperty("os.version");
     private static final String OS = OS_NAME + " (arch: " + OS_ARCH + ", version: " + OS_VERSION + ")";
+    private static final OperatingSystem OS_SYSTEM = getOS();
 
     static {
         Path libraryPath = null;
@@ -59,7 +60,6 @@ public class QuantLibJNIHelpers {
         }
     }
 
-
     public static final class NativeLibraryLoaderException extends RuntimeException {
         private final Path nativeLibraryPath;
 
@@ -72,9 +72,6 @@ public class QuantLibJNIHelpers {
             return nativeLibraryPath;
         }
     }
-
-    private static final OperatingSystem OS_SYSTEM = getOS();
-    private static final String ARCH = System.getProperty("os.arch").toLowerCase();
 
     private QuantLibJNIHelpers() {
     }
@@ -107,12 +104,13 @@ public class QuantLibJNIHelpers {
         var path = Path.of(rootPath, OS_SYSTEM.name().toLowerCase());
         return switch (OS_SYSTEM) {
             case LINUX, WINDOWS ->
-                    Path.of(path.toString(), normalizeArchitecture(ARCH), libraryName);
+                Path.of(path.toString(), normalizeArchitecture(), libraryName);
             case MAC_OS -> Path.of(path.toString(), libraryName);
         };
     }
 
-    private static String normalizeArchitecture(String arch) {
+    private static String normalizeArchitecture() {
+        var arch = OS_ARCH.toLowerCase();
         if (arch.equals("x86_64") || arch.equals("amd64")) {
             return "amd64";
         }
