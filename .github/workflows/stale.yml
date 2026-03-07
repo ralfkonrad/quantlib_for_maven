@@ -1,0 +1,41 @@
+name: Close stale issues and pull requests
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark and close stale items
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.REPO_SCOPED_TOKEN }}
+
+          exempt-all-milestones: true
+
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-label: 'stale'
+          exempt-issue-labels: "help wanted,in progress,no-stale"
+          stale-issue-message: >
+            This issue has been automatically marked as stale due to inactivity.
+            It will be closed in two weeks if no further activity occurs.
+          close-issue-message: >
+            This issue was automatically closed after being marked stale and receiving no activity.
+
+          days-before-pr-stale: 60
+          days-before-pr-close: 14
+          stale-pr-label: 'stale'
+          exempt-pr-labels: "help wanted,in progress,no-stale"
+          stale-pr-message: >
+            This pull request has been automatically marked as stale due to inactivity.
+            It will be closed in two weeks if no further activity occurs.
+          close-pr-message: >
+            This pull request was automatically closed after being marked stale and receiving no activity.
