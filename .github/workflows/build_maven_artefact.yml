@@ -76,7 +76,7 @@ jobs:
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
 
       - name: Delete native library artifacts
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         with:
           name: native-library-*
           failOnError: true
