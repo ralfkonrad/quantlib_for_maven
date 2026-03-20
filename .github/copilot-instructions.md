@@ -3,136 +3,53 @@
 This repository contains Java bindings for the QuantLib C++ library, built with SWIG and CMake,
 and published as a Maven artifact.
 
-## Project Overview
+**Canonical reference**: See `AGENTS.md` in the repository root for the full project guide
+(structure, build commands, test commands, all conventions). This file provides Copilot-specific
+guidance and quick context for code generation.
 
-- **Repository**: `quantlib_for_maven`
-- **Purpose**: Java bindings for the QuantLib C++ library
-- **Maven coordinates**: `io.github.ralfkonrad.quantlib_for_maven:quantlib`
+## Quick Context
+
 - **Languages**: C++17 (native), Java 17+ (bindings/tests)
-- **SWIG entrypoint**: `swig/QuantLibEntrypoint.i`
-- **Generated sources**:
-  - Java: `java/target/generated-sources/swig/`
-  - Native libraries: `java/target/generated-resources/swig/native/`
-- **Important**: Submodules in `external/` are read-only, never edit them
+- **Test framework**: JUnit 5 (Jupiter)
+- **Java module**: `io.github.ralfkonrad.quantlib` (see `java/src/main/java/module-info.java`)
+- **Maven coordinates**: `io.github.ralfkonrad.quantlib_for_maven:quantlib`
+- **Supported platforms**: Linux (amd64/arm64), macOS (arm64), Windows (amd64)
 
-## Build Commands
+## Do NOT
 
-### Prerequisites
+- Edit files under `external/` — these are read-only git submodules
+- Edit SWIG-generated files in `java/target/`
+- Call `System.loadLibrary()` manually — JNI loads automatically
+- Use wildcard imports in Java
+- Use `std::make_shared` in C++ — use `ext::make_shared` instead
+- Suppress type errors or swallow exceptions
 
-CMake 4.0.0+, SWIG 4.4.1 (exact), Boost 1.90.0, JDK 17/21/25, Maven 3.8+, Ninja
-
-### Full Build (C++ + SWIG + Java)
+## Build & Test (Quick Reference)
 
 ```bash
+# Full build (C++ + SWIG + Java)
 cmake --preset release -L
 cmake --build --preset release -v
+
+# Java-only (after native build)
+cd java && ./mvnw compile
+
+# Run all tests
+cd java && ./mvnw test
+
+# Run single test class
+cd java && ./mvnw test -Dtest=QuantLibDateToLocalDateTest
+
+# POM validation (sortpom ordering)
+cd java && ./mvnw validate
 ```
 
-### Java-Only Build (after native build)
+## Code Generation Patterns
 
-```bash
-cd java
-./mvnw compile
-```
+### Java: AutoCloseable + try-with-resources (CRITICAL)
 
-### Install to Local Maven Repository
-
-```bash
-cd java
-./mvnw install
-```
-
-## Test Commands
-
-### Run All Java Tests
-
-```bash
-cd java
-./mvnw test
-```
-
-### Run a Single Test Class
-
-```bash
-cd java
-./mvnw test -Dtest=QuantLibDateToLocalDateTest
-```
-
-### Run a Single Test Method
-
-```bash
-cd java
-./mvnw test -Dtest=QuantLibDateToLocalDateTest#testQuantLibDateToLocalDate
-```
-
-### Verbose Test Output
-
-```bash
-cd java
-./mvnw test -Dsurefire.useFile=false
-```
-
-## Code Style Guidelines
-
-### C++ Style (QuantLib conventions)
-
-- Standard: C++17
-- Indent: 4 spaces; line limit 100
-- Pointer/reference alignment: `T& x`, `T* p`
-- Namespace blocks are indented
-- Template declarations: break line after `template <...>`
-
-#### C++ Include Order
-
-```cpp
-#include "local_header.hpp"     // 1. Local headers
-#include <ql/something.hpp>     // 2. QuantLib headers
-#include <boost/something.hpp>  // 3. Boost headers
-#include <standard_header>      // 4. Standard library
-```
-
-#### C++ Naming
-
-- Types/classes: `PascalCase`
-- Methods/functions: `camelCase`
-- Members: trailing underscore (`payoff_`)
-- Namespaces: `PascalCase` (e.g., `QuantLib`)
-
-#### C++ Error Handling
-
-- Use `QL_REQUIRE(condition, message)` for preconditions
-- Throw/propagate `QuantLib::Error`
-
-### Java Style
-
-- Indent: 4 spaces; line limit 100; final newline required
-- Imports: no wildcard imports; group by standard, third-party, project
-- Types: prefer interfaces (`List`, `Map`) in signatures
-- Formatting: IntelliJ defaults; keep chaining readable
-
-#### Java Naming
-
-- Classes: `PascalCase`
-- Methods/fields: `camelCase`
-- Constants: `UPPER_SNAKE_CASE`
-- Packages: lowercase (`org.quantlib`)
-- Tests: suffix `Test` and mirror class under test
-
-#### Java Error Handling
-
-- Use project-specific exceptions (e.g., `UnsupportedOperatingSystemException`)
-- Wrap native resources in try-with-resources (SWIG classes are AutoCloseable)
-- Avoid swallowing exceptions; log or rethrow with context
-
-### XML/YAML/Markdown
-
-- Indent: 2 spaces; line limit 100
-
-## Important Patterns
-
-### AutoCloseable Pattern (Java)
-
-SWIG-generated classes implement `AutoCloseable`:
+Every QuantLib Java object holds a native C++ pointer invisible to the JVM garbage collector.
+Always use `try-with-resources`:
 
 ```java
 try (var date = new Date(14, Month.April, 2023)) {
@@ -140,45 +57,52 @@ try (var date = new Date(14, Month.April, 2023)) {
 }
 ```
 
-### Prefer the `var` keyword (Java)
+### Java: Prefer `var` keyword
 
-The minimum JDK version is 17, so use `var` for local variable type inference.
+The minimum JDK version is 17. Use `var` for local variable type inference.
 
-### Prefer LocalDate over org.quantlib.Date (Java)
+### Java: Prefer LocalDate for dates in new tests
 
-When writing JUnit tests, define dates as `java.time.LocalDate`.
-Use `Date.of(LocalDate)` and `Date.toLocalDate()` to convert between them.
+When writing new JUnit tests, define dates as `java.time.LocalDate`.
+Use `Date.of(LocalDate)` and `Date.toLocalDate()` to convert:
 
-### JNI Library Loading
-
-The native library loads automatically when any QuantLib class is first used.
-Do not call `System.loadLibrary()` manually.
-
-### SWIG Interface Files
-
-- Project-specific SWIG code: `swig/QuantLibEntrypoint.i`
-- SWIG-generated files are in `java/target/` directories
-- These directories are automatically added to the Maven build path
-- Generated files are preserved during `mvn clean` to avoid rebuilding native code
-- Never edit `external/QuantLib-SWIG/SWIG/`
-
-## Linting and Static Checks
-
-### C++ (QuantLib clang-tidy)
-
-- Check groups: `bugprone-*`, `clang-analyzer-*`, `cppcoreguidelines-*`, `misc-*`,
-  `modernize-*`, `performance-*`, `readability-*` (with exclusions)
-- Notable rule: prefer `ext::make_shared` instead of `std::make_shared`
-
-### Maven POM Validation
-
-```bash
-cd java
-./mvnw validate
+```java
+var localDate = LocalDate.of(2023, 4, 14);
+try (var qlDate = Date.of(localDate)) {
+    assertEquals(localDate, qlDate.toLocalDate());
+}
 ```
 
-- `sortpom-maven-plugin` enforces POM ordering
+### Java: Error handling
 
-## Additional Resources
+Use project-specific exceptions from `org.quantlib.helpers.QuantLibJNIHelpers`:
+- `UnsupportedOperatingSystemException` — unsupported OS
+- `NativeLibraryLoaderException` — JNI library load failure
 
-For more detailed information, see `AGENTS.md` in the repository root.
+### Java: No wildcard imports
+
+Enforced via `ij_java_class_count_to_use_import_on_demand = 9999` in `.editorconfig`.
+
+### C++: QuantLib conventions
+
+- Indent: 4 spaces; line limit 100
+- Include order: local → QuantLib → Boost → standard library
+- Naming: `PascalCase` types, `camelCase` methods, trailing underscore members (`payoff_`)
+- Error handling: `QL_REQUIRE(condition, message)`, throw `QuantLib::Error`
+
+### XML/YAML/Markdown
+
+- Indent: 2 spaces; line limit 100
+
+## Path-Specific Instructions
+
+See `.github/instructions/` for scoped guidance:
+- `java-tests.instructions.md` — JUnit test conventions
+- `swig.instructions.md` — SWIG interface file rules
+- `external.instructions.md` — read-only submodule guard
+
+## Additional Context
+
+- Known issues and design decisions: `code-smells.md`
+- Full project guide: `AGENTS.md`
+- Build from source: `HOWTO-BUILD-FROM-SOURCE.md`
