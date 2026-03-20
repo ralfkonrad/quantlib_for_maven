@@ -93,14 +93,29 @@ To use the QuantLib SWIG Java binding in your Maven-based project, follow these 
 To use the QuantLib SWIG Java binding in your project, import the necessary classes and packages
 from the QuantLib library. You can then use the QuantLib functionality in your Java code.
 
-Here's an example of an unit test using the QuantLib SWIG Java binding to calculate the price of an
+Here's an example of a unit test using the QuantLib SWIG Java binding to calculate the price of a
 European call option:
 
 ```java
 package io.github.ralfkonrad;
 
 import org.junit.jupiter.api.Test;
-import org.quantlib.*;
+import org.quantlib.Actual360;
+import org.quantlib.AnalyticEuropeanEngine;
+import org.quantlib.BlackConstantVol;
+import org.quantlib.BlackScholesProcess;
+import org.quantlib.BlackVolTermStructureHandle;
+import org.quantlib.Date;
+import org.quantlib.EuropeanExercise;
+import org.quantlib.EuropeanOption;
+import org.quantlib.FlatForward;
+import org.quantlib.NullCalendar;
+import org.quantlib.Option;
+import org.quantlib.PlainVanillaPayoff;
+import org.quantlib.QuoteHandle;
+import org.quantlib.Settings;
+import org.quantlib.SimpleQuote;
+import org.quantlib.YieldTermStructureHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,44 +127,50 @@ public class EuropeanOptionTest {
     @Test
     public void testEuropeanOption() {
         var localDate = LocalDate.of(2023, 7, 28);
-        var today = Date.of(localDate);
-        Settings.instance().setEvaluationDate(today);
 
-        // Set up the option parameters
-        var strikePrice = 105.0;
-        var maturityDate = LocalDate.of(2023, 12, 31);
+        try (var today = Date.of(localDate)) {
+            Settings.instance().setEvaluationDate(today);
 
-        // Create the option objects
-        var payoff = new PlainVanillaPayoff(Option.Type.Call, strikePrice);
-        var exercise = new EuropeanExercise(Date.of(maturityDate));
-        var europeanOption = new EuropeanOption(payoff, exercise);
+            // Set up the option parameters
+            var strikePrice = 105.0;
+            var maturityDate = LocalDate.of(2023, 12, 31);
 
-        // Create the market data object
-        var dayCounter = new Actual360();
-        var calendar = new NullCalendar();
+            // Create the option objects
+            try (var payoff = new PlainVanillaPayoff(Option.Type.Call, strikePrice);
+                 var exercise = new EuropeanExercise(Date.of(maturityDate));
+                 var europeanOption = new EuropeanOption(payoff, exercise)) {
 
-        var spotPrice = 100.0;
-        var spotPriceHandle = new QuoteHandle(new SimpleQuote(spotPrice));
+                // Create the market data objects
+                var dayCounter = new Actual360();
+                var calendar = new NullCalendar();
 
-        var riskFreeRate = 0.05;
-        var riskFreeRateHandle = new QuoteHandle(new SimpleQuote(riskFreeRate));
+                var spotPrice = 100.0;
+                var spotPriceHandle = new QuoteHandle(new SimpleQuote(spotPrice));
 
-        var volatility = 0.2;
-        var volatilityHandle = new QuoteHandle(new SimpleQuote(volatility));
+                var riskFreeRate = 0.05;
+                var riskFreeRateHandle = new QuoteHandle(new SimpleQuote(riskFreeRate));
 
-        var yieldTermStructure = new YieldTermStructureHandle(new FlatForward(today, riskFreeRateHandle, dayCounter));
-        var blackVolTermStructure = new BlackVolTermStructureHandle(new BlackConstantVol(today, calendar, volatilityHandle, dayCounter));
+                var volatility = 0.2;
+                var volatilityHandle = new QuoteHandle(new SimpleQuote(volatility));
 
-        // Create the AnalyticEuropeanEngine
-        var process = new BlackScholesProcess(spotPriceHandle, yieldTermStructure, blackVolTermStructure);
-        var engine = new AnalyticEuropeanEngine(process);
+                var yieldTermStructure = new YieldTermStructureHandle(
+                        new FlatForward(today, riskFreeRateHandle, dayCounter));
+                var blackVolTermStructure = new BlackVolTermStructureHandle(
+                        new BlackConstantVol(today, calendar, volatilityHandle, dayCounter));
 
-        // Calculate the NPV for the European option
-        europeanOption.setPricingEngine(engine);
-        var npv = europeanOption.NPV();
+                // Create the AnalyticEuropeanEngine
+                var process = new BlackScholesProcess(
+                        spotPriceHandle, yieldTermStructure, blackVolTermStructure);
+                var engine = new AnalyticEuropeanEngine(process);
 
-        // Print the result
-        LOGGER.info("Option price: {}", npv);
+                // Calculate the NPV for the European option
+                europeanOption.setPricingEngine(engine);
+                var npv = europeanOption.NPV();
+
+                // Print the result
+                LOGGER.info("Option price: {}", npv);
+            }
+        }
     }
 }
 ```
@@ -182,7 +203,7 @@ The QuantLib SWIG Java binding supports the following platforms:
 
 - Linux (`arm64` architecture is supported since `1.42.0-SNAPSHOT`)
 - macOS (`arm64` architecture is supported since `1.36.0-SNAPSHOT`)
-- Windows
+- Windows (`amd64` only)
 
 The binding should work on these platforms as long as the required dependencies are available for
 your specific operating system.
@@ -190,8 +211,8 @@ your specific operating system.
 ## Build the maven artifact from source code
 
 Have a look [here](./HOWTO-BUILD-FROM-SOURCE.md)
-if you are interested in build the maven artifact yourself
-using `c++`, `cmake` and `maven`. 
+if you are interested in building the maven artifact yourself
+using `c++`, `cmake` and `maven`.
 
 ## Contributing
 
@@ -218,13 +239,13 @@ in both commercial and non-commercial projects. However, please note that the Qu
 itself has its own licensing terms, and you should consult the
 official [QuantLib documentation](https://github.com/lballabio/QuantLib) for further information.
 
-Also, the module uses [functionality](java/src/main/java/cz/adamh/utils/NativeUtils.java) by Adam
-Heinrich which is provided under the MIT License.
+Also, the module uses [functionality](java/src/main/java/org/quantlib/helpers/NativeUtils.java) by
+Adam Heinrich which is provided under the MIT License.
 
 
 
 [^1]: You find SNAPSHOT builds
-at https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/ralfkonrad/quantlib_for_maven/quantlib/
+at https://central.sonatype.com/artifact/io.github.ralfkonrad.quantlib_for_maven/quantlib/versions
 
 [^2]: Look at https://github.com/lballabio/QuantLib/releases
 and https://github.com/lballabio/QuantLib-SWIG/releases

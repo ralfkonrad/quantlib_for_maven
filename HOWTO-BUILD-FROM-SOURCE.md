@@ -103,7 +103,7 @@ installed on your system:
   We are trying to use the latest version of the SWIG binaries.
   Currently, we build the maven artifact using version `v4.4.1`.
 
-  See the [SWIG](http://www.swig.org/) website for more information.
+  See the [SWIG](https://swig.org/) website for more information.
 
 - **The Boost C++ libraries**:
   The QuantLib library depends on the Boost C++ libraries. Therefore, you need to have the Boost C++
@@ -119,19 +119,21 @@ installed on your system:
 
   We are supporting the latest LTS versions of the JDK which are currently `jdk17`, `jdk21` and `jdk25`.
 
-  We recommend using the Temurin JDK. See the [AdoptOpenJDK](https://adoptopenjdk.net/) website
-  for more information.
+  We recommend using the Adoptium Temurin JDK.
+  See the [Eclipse Adoptium](https://adoptium.net/) website for more information.
 
 - **Apache Maven**:
   We are using Apache Maven to build the Maven artifact.
 
   See the [Apache Maven](https://maven.apache.org/) website for more information.
 
-- **Ninja** (optional):
+- **Ninja**:
   We are using the Ninja cpp build system to build the QuantLib library and the Java bindings.
 
-  If you want to use the given cmake presets `release` and `debug`,
-  you need to have Ninja installed.
+  Ninja is **required** when using the cmake presets `release` and `debug`
+  (which is the recommended way to build).
+  If you prefer to invoke cmake manually (without presets),
+  you can use a different generator.
 
   See the [Ninja](https://ninja-build.org/) website for more information.
 
