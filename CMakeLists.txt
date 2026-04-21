@@ -8,7 +8,7 @@ if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Target architectures for Apple platforms" FORCE)
 endif()
 
-project(quantlib_for_maven VERSION 1.42.0 LANGUAGES CXX)
+project(quantlib_for_maven VERSION 1.42.1 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use
 # to ensure compatibility across linux, macos and windows builds

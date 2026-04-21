@@ -101,7 +101,7 @@ jobs:
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
       - name: Deploy the maven module
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
