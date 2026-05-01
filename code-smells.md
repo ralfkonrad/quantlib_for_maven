@@ -33,30 +33,6 @@ Excludes `external/` (read-only submodules).
 
 ## Critical / Security
 
-### S7 — `JAVA_FINALIZER` relies on deprecated finalization
-
-**File:** `swig/QuantLibEntrypoint.i`
-**Line:** 26
-
-`target_compile_definitions(QuantLibJNI PRIVATE JAVA_FINALIZER)` enables
-calling the C++ destructor from Java's `finalize()`. Finalization has been
-deprecated since JDK 9 and is targeted for removal (JEP 421). On JDK 21+
-finalizers may run unpredictably or not at all.
-
-**Possible fix:** Remove the `JAVA_FINALIZER` compile definition from
-`swig/CMakeLists.txt` line 26:
-
-```cmake
-# Remove this line:
-# target_compile_definitions(QuantLibJNI PRIVATE JAVA_FINALIZER)
-```
-
-The project already provides `AutoCloseable` via the `SWIGTYPE` typemap
-(S11) and the `QuantLibJNIHelpers.AutoCloseable` interface. Rely solely
-on `try-with-resources` / explicit `close()` for deterministic cleanup.
-Update the project README (already done) and Javadoc to emphasize
-`try-with-resources` usage.
-
 ### S8 — No SWIG `%exception` directive for C++ exceptions
 
 **File:** `swig/QuantLibEntrypoint.i`

@@ -60,6 +60,9 @@ build tools like Gradle, sbt which can include maven modules.
 >
 > Therefore, every QuantLib Java object implements `AutoCloseable`.
 > Use `try-with-resources` so `close()` releases the native `c++` memory promptly.
+> The binding is built without SWIG's `JAVA_FINALIZER` support, so Java finalizers will not
+> call native destructors as a fallback. Unclosed objects therefore keep their native memory
+> until process exit; always close them explicitly.
 >
 > ##### Underlying process in simple terms
 >
