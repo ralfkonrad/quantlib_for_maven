@@ -21,9 +21,8 @@ Excludes `external/` (read-only submodules).
     - C3 — Global `CMAKE_CXX_STANDARD` instead of per-target
     - C8 — No `cmake_minimum_required` version range
     - C9 — No test or workflow presets in CMakePresets.json
-    - C10 — `FORCE` on cache variables overrides user settings
-    - C11 — All SWIG target includes marked `SYSTEM` — suppresses own-header warnings
-    - C13 — Missing SWIG include guard
+    - C10 — `FORCE` on cache variable overrides user settings
+    - C11 — Project-owned SWIG target includes marked `SYSTEM`
   - Modern Java / JDK 21 Best Practices
     - J10 — Version mismatch between POM and CMake
     - J12 — `DatesTest.testCanHash` — dangling native reference in HashSet
@@ -70,8 +69,9 @@ exceptions into Java `RuntimeException` instances with the original message.
 
 **File:** `.github/workflows/build_maven_artefact.yml`
 
-Only the `deploy` job specifies `permissions: contents: read, packages: write`.
-Other jobs inherit the repository default, which may be `write-all`.
+Only the `deploy-quantlib-snapshot` job specifies
+`permissions: contents: read, packages: write`. Other jobs inherit the
+repository default, which may be `write-all`.
 Best practice: set `permissions: read-all` at workflow top level and grant
 write only where needed.
 
@@ -133,7 +133,7 @@ This limits the token's scope and lifetime automatically.
 ### S11 — `SWIGTYPE` catch-all in `%typemap(javainterfaces)` may be ineffective
 
 **File:** `swig/QuantLibEntrypoint.i`
-**Line:** 16
+**Line:** 19
 
 ```
 %typemap(javainterfaces) SWIGTYPE "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable";
@@ -242,7 +242,7 @@ cannot be fully fixed in the SWIG layer. Mitigation options:
 ### P2 — `QL_JAVA_INTERFACES` macro concatenation is fragile
 
 **File:** `swig/QuantLibEntrypoint.i`
-**Line:** 15
+**Line:** 18
 
 ```
 #define QL_JAVA_INTERFACES "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable, "
@@ -317,7 +317,7 @@ This copies the entire vector in one JNI call instead of element-by-element.
 ### C3 — Global `CMAKE_CXX_STANDARD` instead of per-target
 
 **File:** `CMakeLists.txt`
-**Line:** 15
+**Line:** 51
 
 ```cmake
 set(CMAKE_CXX_STANDARD 17)
@@ -398,18 +398,20 @@ development.
 
 Then CI and developers can run: `cmake --workflow --preset release`.
 
-### C10 — `FORCE` on cache variables overrides user settings
+### C10 — `FORCE` on cache variable overrides user settings
 
 **File:** `CMakeLists.txt`
-**Lines:** 20–22
+**Line:** 20
 
 ```cmake
 set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "..." FORCE)
 ```
 
-Using `FORCE` prevents users from overriding these values via `-D` flags or
-the CMake GUI. Prefer `option()` or `set(… CACHE …)` without `FORCE`
-unless the override is truly mandatory.
+Using `FORCE` prevents users from overriding this value via `-D` flags or
+the CMake GUI. Prefer `option()` or `set(... CACHE ...)` without `FORCE`
+unless the override is truly mandatory. The adjacent QuantLib options are
+cache variables too, but only `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`
+currently uses `FORCE`.
 
 **Possible fix:** If these values are truly project requirements (not user
 preferences), document why `FORCE` is needed. Otherwise, replace with
@@ -426,21 +428,22 @@ option(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN
     "Enable thread-safe observer pattern" ON)
 ```
 
-### C11 — All SWIG target includes marked `SYSTEM` — suppresses own-header warnings
+### C11 — Project-owned SWIG target includes marked `SYSTEM`
 
 **File:** `swig/CMakeLists.txt`
-**Line:** 59
+**Line:** 58
 
 ```cmake
 target_include_directories(QuantLibJNI SYSTEM PRIVATE
-    ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR} ${QL_MVN_QUANTLIB_ROOT_DIR}
-    ${Boost_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS})
+    ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR}
+    ${QL_MVN_QUANTLIB_ROOT_DIR})
 ```
 
 Marking project-owned generated headers as `SYSTEM` suppresses compiler
-warnings in those headers. Only third-party includes (`Boost`, `JNI`)
-should be `SYSTEM`; project headers should remain non-`SYSTEM` so that
-warnings are visible.
+warnings in those headers. Third-party includes now come through imported
+targets (`Boost::headers`, `JNI::JNI`), so the remaining issue is limited to
+project-owned QuantLib source and generated headers being marked `SYSTEM`.
+Project headers should remain non-`SYSTEM` so that warnings are visible.
 
 **Possible fix:** Split into `SYSTEM` and non-`SYSTEM` include directories:
 
@@ -473,7 +476,7 @@ target_link_libraries(QuantLibJNI PRIVATE
 
 ### J10 — Version mismatch between POM and CMake
 
-**File:** `java/pom.xml` (`0.1.0-SNAPSHOT`) vs `CMakeLists.txt` (`project(VERSION 1.41.0)`)
+**File:** `java/pom.xml` (`0.1.0-SNAPSHOT`) vs `CMakeLists.txt` (`project(VERSION 1.42.1)`)
 
 The two version numbers are unrelated, which will confuse consumers.
 
@@ -517,9 +520,11 @@ Option C (simplest) — manually keep them in sync and add a CI check:
 **Lines:** 326–327
 
 A `Date` SWIG object is added to a `HashSet`, then `startDate.close()` is
-called. The `HashSet` still holds a reference to the now-deleted native
-object. Any subsequent operation on the set entry (e.g. iteration, contains
-check) will access freed memory.
+called by the try-with-resources block while the local `HashSet` still holds
+that Java proxy. The current test does not access the set after close, so it
+does not currently trigger a post-close native access. It is still a fragile
+pattern: any later operation on the set entry (e.g. iteration or `contains`)
+would access the closed native object.
 
 **Possible fix:** Remove the `Date` from the `HashSet` before closing it,
 or restructure the test to close after all set operations:
