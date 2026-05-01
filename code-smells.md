@@ -8,7 +8,6 @@ Excludes `external/` (read-only submodules).
 ## Table of Contents
 - Code Smells
   - Critical / Security
-    - S7 — `JAVA_FINALIZER` relies on deprecated finalization
     - S8 — No SWIG `%exception` directive for C++ exceptions
     - S9 — CI workflow uses overly broad default permissions
     - S10 — Personal scoped token in CI
