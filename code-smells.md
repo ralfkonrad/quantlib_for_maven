@@ -1,550 +1,239 @@
 # Code Smells
 
 Code smell audit of project-owned files in `quantlib_for_maven`.
-Excludes `external/` (read-only submodules).
+Excludes generated files and treats `external/` as read-only upstream code.
+
+This audit intentionally separates real project risks from intentional design
+choices. The project is a thin Maven packaging layer around upstream QuantLib
+and QuantLib-SWIG, so items that would require adding new QuantLib-SWIG
+functionality are not listed unless they affect this repository's packaging,
+build, or documented behavior.
 
 ---
 
 ## Table of Contents
 - Code Smells
-  - Critical / Security
-    - S8 — No SWIG `%exception` directive for C++ exceptions
-    - S9 — CI workflow uses overly broad default permissions
-    - S10 — Personal scoped token in CI
-    - S11 — `SWIGTYPE` catch-all in `%typemap(javainterfaces)` may be ineffective
-    - S12 — No SWIG `%feature("director")` for callback classes
-    - S13 — Thread safety of global `Settings::instance()`
-  - Performance
-    - P2 — `QL_JAVA_INTERFACES` macro concatenation is fragile
-    - P3 — No `%apply` / bulk typemaps for large numeric vectors
-  - Modern C++ / CMake Best Practices
-    - C3 — Global `CMAKE_CXX_STANDARD` instead of per-target
-    - C8 — No `cmake_minimum_required` version range
-    - C9 — No test or workflow presets in CMakePresets.json
-    - C10 — `FORCE` on cache variable overrides user settings
-    - C11 — Project-owned SWIG target includes marked `SYSTEM`
-  - Modern Java / JDK 21 Best Practices
-    - J10 — Version mismatch between POM and CMake
-    - J12 — `DatesTest.testCanHash` — dangling native reference in HashSet
+  - Security / CI
+    - S9 - CI workflow uses overly broad default permissions
+    - S10 - Repository-scoped token use is not scope-documented
+  - SWIG / JNI Maintainability
+    - S11 - AutoCloseable catch-all lacks a local regression guard
+    - S13 - QuantLib global state thread-safety is under-documented
+    - P2 - `QL_JAVA_INTERFACES` macro concatenation is fragile
+  - CMake Maintainability
+    - C3 - Global C++ standard setting instead of target-scoped features
 
 ---
 
-## Critical / Security
+## Security / CI
 
-### S8 — No SWIG `%exception` directive for C++ exceptions
-
-**File:** `swig/QuantLibEntrypoint.i`
-
-There is no `%exception` block to translate C++ exceptions
-(`QuantLib::Error`, `std::exception`) into Java exceptions. An uncaught C++
-exception propagating through JNI will crash the JVM with no diagnostic.
-
-**Possible fix:** Add a `%exception` block in `swig/QuantLibEntrypoint.i`
-before the `%include "quantlib.i"` line:
-
-```swig
-%exception {
-    try {
-        $action
-    } catch (QuantLib::Error& e) {
-        SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException,
-                                e.what());
-        return $null;
-    } catch (std::exception& e) {
-        SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException,
-                                e.what());
-        return $null;
-    } catch (...) {
-        SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException,
-                                "Unknown C++ exception");
-        return $null;
-    }
-}
-```
-
-This ensures every JNI call is wrapped in a try/catch that translates C++
-exceptions into Java `RuntimeException` instances with the original message.
-
-### S9 — CI workflow uses overly broad default permissions
+### S9 - CI workflow uses overly broad default permissions
 
 **File:** `.github/workflows/build_maven_artefact.yml`
 
 Only the `deploy-quantlib-snapshot` job specifies
 `permissions: contents: read, packages: write`. Other jobs inherit the
-repository default, which may be `write-all`.
-Best practice: set `permissions: read-all` at workflow top level and grant
-write only where needed.
+repository default, which may be broader than needed. Best practice is to set
+least-privilege permissions at workflow level and grant write permissions only
+where required.
 
 **Possible fix:** Add a top-level `permissions` block at the workflow level:
 
 ```yaml
 name: Build the QuantLib maven artefact
 
-on: [push, pull_request]
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch: {}
 
 permissions:
   contents: read
 
 jobs:
-  # …
-  deploy:
+  deploy-quantlib-snapshot:
     permissions:
       contents: read
       packages: write
-    # …
 ```
 
-This follows the principle of least privilege. Each job that needs write
-access declares it explicitly.
+This follows the principle of least privilege. Each job that needs write access
+declares it explicitly.
 
-### S10 — Personal scoped token in CI
+### S10 - Repository-scoped token use is not scope-documented
 
-**File:** `.github/workflows/build_with_quantlib_latest.yml`
-**Line:** 30
+**Files:**
 
-Uses `REPO_SCOPED_TOKEN` — a personal access token. If this token has
-broad scopes it is a privilege escalation vector. Prefer fine-grained
-GitHub App tokens.
+- `.github/workflows/build_with_quantlib_latest.yml`
+- `.github/workflows/stale.yml`
 
-**Possible fix:** Replace the personal access token with a GitHub App
-installation token:
+Both workflows use `secrets.REPO_SCOPED_TOKEN`. This may be a fine-grained token
+with appropriate permissions, but the workflow does not document the required
+minimal scopes or why `GITHUB_TOKEN` is insufficient. That makes privilege review
+harder and can lead to over-scoped long-lived credentials.
 
-1. Create a GitHub App with only the required permissions
-   (e.g., `contents: write` on this repo only).
-2. Install the app on the repository.
-3. Use `actions/create-github-app-token@v1` in the workflow:
+**Possible fix:** Prefer a GitHub App installation token for automation that
+needs cross-workflow or branch-update permissions. If a personal or fine-grained
+token remains necessary, document its exact required permissions next to the
+workflow use, for example:
 
 ```yaml
-- name: Generate token
-  id: app-token
-  uses: actions/create-github-app-token@v1
-  with:
-    app-id: ${{ secrets.APP_ID }}
-    private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-- name: Checkout with app token
-  uses: actions/checkout@v4
-  with:
-    token: ${{ steps.app-token.outputs.token }}
+# Required token permissions:
+# - contents: write, for creating update branches
+# - pull-requests: write, for opening update PRs
+# Prefer a fine-grained token or GitHub App installation token.
+token: ${{ secrets.REPO_SCOPED_TOKEN }}
 ```
 
-This limits the token's scope and lifetime automatically.
+---
 
-### S11 — `SWIGTYPE` catch-all in `%typemap(javainterfaces)` may be ineffective
+## SWIG / JNI Maintainability
+
+### S11 - AutoCloseable catch-all lacks a local regression guard
 
 **File:** `swig/QuantLibEntrypoint.i`
 **Line:** 19
 
-```
+```swig
 %typemap(javainterfaces) SWIGTYPE "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable";
 ```
 
-`SWIGTYPE` is a pseudo-type used by SWIG as a fallback. Applying
-`javainterfaces` to it is an attempt to add `AutoCloseable` to every
-generated proxy class, but behaviour depends on SWIG version and may not
-produce correct `close()` / `delete()` semantics on each class. Per-class
-typemaps or `%shared_ptr` wrappers would be more reliable.
+The `SWIGTYPE` catch-all is intentional and matches the repository guidance that
+all generated QuantLib proxy classes implement `AutoCloseable`. Upstream
+QuantLib-SWIG uses the same broad `SWIGTYPE` pattern for Java autoclose support.
 
-**Possible fix:** This actually works as intended in SWIG 4.4.x as a
-catch-all. To make it more robust and self-documenting:
+The maintainability risk is not that the pattern is wrong; it is that this
+project depends on broad SWIG typemap behavior for native-memory safety without
+a small local regression check or explanatory comment in the entrypoint.
 
-1. Add a comment explaining the intent:
-   ```swig
-   // Apply AutoCloseable to ALL generated proxy classes.
-   // SWIGTYPE matches any wrapped C++ type in SWIG 4.4+.
-   ```
-2. Add a SWIG test (`.i` file that wraps a dummy class) to verify the
-   `AutoCloseable` interface is correctly applied.
-3. For critical classes that need guaranteed `close()` behaviour, add
-   explicit per-class typemaps as insurance:
-   ```swig
-   %typemap(javainterfaces) QuantLib::Date
-       "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable";
-   ```
-
-### S12 — No SWIG `%feature("director")` for callback classes
-
-**File:** `swig/QuantLibEntrypoint.i`
-
-If Java subclasses need to override C++ virtual methods (e.g. custom cost
-functions or pricing engines), SWIG directors must be enabled. No
-`%feature("director")` directive is present, so any Java→C++ callback will
-silently call the base class instead of the Java override.
-
-**Possible fix:** Identify C++ classes that users may want to subclass in
-Java and enable directors for them in `swig/QuantLibEntrypoint.i`:
+**Possible fix:** Add a short comment and a focused test that verifies a generated
+proxy class implements `AutoCloseable` and that `close()` delegates to `delete()`:
 
 ```swig
-%feature("director") CostFunction;
-%feature("director") PricingEngine;
-%feature("director") StochasticProcess;
+// Apply AutoCloseable to all generated proxy classes. SWIGTYPE is the generic
+// fallback typemap used by SWIG and upstream QuantLib-SWIG for this purpose.
+%typemap(javainterfaces) SWIGTYPE "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable";
 ```
 
-Also pass the `-directors` flag to SWIG in `swig/CMakeLists.txt`:
+### S13 - QuantLib global state thread-safety is under-documented
 
-```cmake
-set_property(TARGET QuantLibJNI PROPERTY SWIG_COMPILE_OPTIONS
-    -package org.quantlib -directors)
+**File:** conceptual, affects QuantLib calls through SWIG
+
+QuantLib's `Settings::instance()` holds global mutable state such as the
+evaluation date. Concurrent Java threads calling into QuantLib can observe or
+mutate that global state unexpectedly. `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`
+is enabled for observer-pattern behavior, but it does not make all QuantLib
+global state or all pricing calls thread-safe.
+
+This is not a local implementation bug in the SWIG entrypoint. It is a usage
+hazard that should be documented clearly because Java users may assume library
+calls are safe to run concurrently.
+
+**Possible fix:** Document the constraint prominently in the README and Javadocs:
+
+```java
+/**
+ * WARNING: QuantLib contains process-wide mutable state such as Settings.
+ * Applications that use Settings.instance() from multiple Java threads must
+ * serialize access or isolate calculations to avoid cross-thread interference.
+ */
 ```
 
-Note: directors add overhead and complexity. Only enable them for classes
-where Java subclassing is a real use case. Document which classes support
-Java-side subclassing.
+Optionally provide a small Java-side synchronization helper for users that want
+to serialize calls explicitly.
 
-### S13 — Thread safety of global `Settings::instance()`
-
-**File:** conceptual — affects all QuantLib calls via SWIG
-
-QuantLib's `Settings::instance()` holds global mutable state (evaluation
-date, etc.). Concurrent Java threads calling into QuantLib can race on
-this singleton. The SWIG layer provides no synchronization or
-documentation of thread-safety constraints.
-
-**Possible fix:** This is a fundamental QuantLib design constraint that
-cannot be fully fixed in the SWIG layer. Mitigation options:
-
-1. **Document it prominently** in the README and Javadoc:
-
-   ```java
-   /**
-    * WARNING: QuantLib is NOT thread-safe. All calls to QuantLib
-    * must be serialized. Use a single-threaded executor or explicit
-    * synchronization when calling from multiple Java threads.
-    */
-   ```
-
-2. **Provide a Java-side synchronization wrapper** (optional convenience):
-
-   ```java
-   public final class QuantLibLock {
-       private static final ReentrantLock LOCK = new ReentrantLock();
-
-       public static void run(Runnable task) {
-           LOCK.lock();
-           try { task.run(); } finally { LOCK.unlock(); }
-       }
-
-       public static <T> T call(Callable<T> task) throws Exception {
-           LOCK.lock();
-           try { return task.call(); } finally { LOCK.unlock(); }
-       }
-   }
-   ```
-
-3. **Enable `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`** (already set in
-   `CMakeLists.txt` line 20) — but note this only protects the observer
-   pattern, not `Settings::instance()` or other global state.
-
----
-
-## Performance
-
-### P2 — `QL_JAVA_INTERFACES` macro concatenation is fragile
+### P2 - `QL_JAVA_INTERFACES` macro concatenation is fragile
 
 **File:** `swig/QuantLibEntrypoint.i`
 **Line:** 18
 
-```
+```swig
 #define QL_JAVA_INTERFACES "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable, "
 ```
 
-The trailing `, ` requires that the downstream consumer always appends
-something after it. If the external SWIG template changes, this will
-silently produce an invalid Java `implements` clause or a compile error.
+The trailing comma is intentional because the macro is concatenated with
+`java.util.RandomAccess` for `std::vector` wrappers. However, the macro is not a
+self-contained interface list. Any future use that does not append another
+interface would generate an invalid Java `implements` clause.
 
-**Possible fix:** Remove the trailing `, ` from the macro and adjust the
-downstream usage to handle concatenation:
+**Possible fix:** Make the macro self-contained and move comma placement to the
+call site:
 
 ```swig
 #define QL_JAVA_INTERFACES "org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable"
+
+%extend std::vector {
+    %typemap(javainterfaces) std::vector QL_JAVA_INTERFACES ", java.util.RandomAccess";
+};
 ```
 
-Then in the `%typemap(javainterfaces)` for `std::vector` (or wherever it's
-concatenated), use a comma prefix:
-
-```swig
-%typemap(javainterfaces) std::vector
-    QL_JAVA_INTERFACES ", java.util.RandomAccess";
-```
-
-This way the macro is a self-contained value and the concatenation point
-is explicit.
-
-### P3 — No `%apply` / bulk typemaps for large numeric vectors
-
-**File:** `swig/QuantLibEntrypoint.i`
-
-`stl.i` is included for `std::vector` support, but there are no targeted
-`%apply` directives to convert `std::vector<double>` / `std::vector<Real>`
-to Java `double[]` efficiently. Every element crosses the JNI boundary
-individually, which is a significant overhead for large time series,
-volatility surfaces, and cashflow vectors.
-
-**Possible fix:** Add bulk array typemaps using SWIG's `arrays_java.i` and
-custom JNI code. Example for `std::vector<double>`:
-
-```swig
-%include "arrays_java.i"
-
-%typemap(jtype)   std::vector<double> "double[]"
-%typemap(jstype)  std::vector<double> "double[]"
-%typemap(jni)     std::vector<double> "jdoubleArray"
-%typemap(javain)  std::vector<double> "$javainput"
-%typemap(javaout) std::vector<double> { return $jnicall; }
-
-%typemap(in) std::vector<double> (jdouble *jarr) {
-    if (!$input) { SWIG_JavaThrowException(jenv,
-        SWIG_JavaNullPointerException, "null array"); return $null; }
-    jsize sz = jenv->GetArrayLength($input);
-    jarr = jenv->GetDoubleArrayElements($input, nullptr);
-    $1.assign(jarr, jarr + sz);
-    jenv->ReleaseDoubleArrayElements($input, jarr, JNI_ABORT);
-}
-
-%typemap(out) std::vector<double> {
-    jsize sz = static_cast<jsize>($1.size());
-    $result = jenv->NewDoubleArray(sz);
-    jenv->SetDoubleArrayRegion($result, 0, sz, $1.data());
-}
-```
-
-This copies the entire vector in one JNI call instead of element-by-element.
+If keeping the current pattern for consistency with upstream QuantLib-SWIG,
+add a comment explaining that the macro intentionally includes a trailing comma
+and must only be used before another interface name.
 
 ---
 
-## Modern C++ / CMake Best Practices
+## CMake Maintainability
 
-### C3 — Global `CMAKE_CXX_STANDARD` instead of per-target
+### C3 - Global C++ standard setting instead of target-scoped features
 
 **File:** `CMakeLists.txt`
-**Line:** 51
+**Lines:** 49-51
 
 ```cmake
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 ```
 
-Modern CMake: `target_compile_features(mylib PUBLIC cxx_std_17)` per target,
-which also propagates to dependents.
+Modern CMake generally prefers target-scoped features such as
+`target_compile_features(QuantLibJNI PRIVATE cxx_std_17)`. In this repository,
+the global setting is understandable because upstream QuantLib is added as a
+subdirectory and also needs the same standard. The maintainability issue is that
+global settings are easier to leak to unrelated future targets.
 
-**Possible fix:** Replace the global variables with per-target compile
-features:
+**Possible fix:** Keep the global setting only if it is required by the upstream
+QuantLib subdirectory. For project-owned targets, also document or enforce the
+requirement locally:
 
 ```cmake
-# Remove these global lines:
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
-
-# In swig/CMakeLists.txt, after add_library:
 target_compile_features(QuantLibJNI PRIVATE cxx_std_17)
-set_target_properties(QuantLibJNI PROPERTIES
-    CXX_EXTENSIONS OFF)
-```
-
-### C8 — No `cmake_minimum_required` version range
-
-**File:** `CMakeLists.txt`
-**Line:** 1
-
-```cmake
-cmake_minimum_required(VERSION 4.0.0)
-```
-
-Version 4.0.0 is very new (2025). A version range like
-`VERSION 3.28...4.0` would allow building with slightly older CMake while
-still benefiting from 4.0 policies.
-
-**Possible fix:** Use a version range:
-
-```cmake
-cmake_minimum_required(VERSION 3.28...4.0)
-```
-
-This allows CMake 3.28+ to configure the project while applying 4.0
-policies when available. Check that all CMake features used are available
-in 3.28 (JNI imported targets require 3.24, presets require 3.21).
-
-### C9 — No test or workflow presets in CMakePresets.json
-
-**File:** `CMakePresets.json`
-
-Only configure + build presets are defined. Adding test presets and
-workflow presets (configure → build → test) would streamline CI and local
-development.
-
-**Possible fix:** Add test and workflow presets to `CMakePresets.json`:
-
-```json
-{
-  "testPresets": [
-    {
-      "name": "release",
-      "configurePreset": "release",
-      "output": { "outputOnFailure": true }
-    }
-  ],
-  "workflowPresets": [
-    {
-      "name": "release",
-      "steps": [
-        { "type": "configure", "name": "release" },
-        { "type": "build", "name": "release" },
-        { "type": "test", "name": "release" }
-      ]
-    }
-  ]
-}
-```
-
-Then CI and developers can run: `cmake --workflow --preset release`.
-
-### C10 — `FORCE` on cache variable overrides user settings
-
-**File:** `CMakeLists.txt`
-**Line:** 20
-
-```cmake
-set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL "..." FORCE)
-```
-
-Using `FORCE` prevents users from overriding this value via `-D` flags or
-the CMake GUI. Prefer `option()` or `set(... CACHE ...)` without `FORCE`
-unless the override is truly mandatory. The adjacent QuantLib options are
-cache variables too, but only `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN`
-currently uses `FORCE`.
-
-**Possible fix:** If these values are truly project requirements (not user
-preferences), document why `FORCE` is needed. Otherwise, replace with
-non-forced cache variables:
-
-```cmake
-# If the value MUST be ON for correctness:
-set(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN ON CACHE BOOL
-    "Required for Java thread safety (see S13)" FORCE)
-# Add a comment explaining why FORCE is necessary
-
-# If the value is a default that users should be able to override:
-option(QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN
-    "Enable thread-safe observer pattern" ON)
-```
-
-### C11 — Project-owned SWIG target includes marked `SYSTEM`
-
-**File:** `swig/CMakeLists.txt`
-**Line:** 58
-
-```cmake
-target_include_directories(QuantLibJNI SYSTEM PRIVATE
-    ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR}
-    ${QL_MVN_QUANTLIB_ROOT_DIR})
-```
-
-Marking project-owned generated headers as `SYSTEM` suppresses compiler
-warnings in those headers. Third-party includes now come through imported
-targets (`Boost::headers`, `JNI::JNI`), so the remaining issue is limited to
-project-owned QuantLib source and generated headers being marked `SYSTEM`.
-Project headers should remain non-`SYSTEM` so that warnings are visible.
-
-**Possible fix:** Split into `SYSTEM` and non-`SYSTEM` include directories:
-
-```cmake
-# Project headers (warnings enabled):
-target_include_directories(QuantLibJNI PRIVATE
-    ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR}
-    ${QL_MVN_QUANTLIB_ROOT_DIR})
-
-# Third-party headers (warnings suppressed):
-target_include_directories(QuantLibJNI SYSTEM PRIVATE
-    ${Boost_INCLUDE_DIRS}
-    ${JNI_INCLUDE_DIRS})
-```
-
-Or, combined with C2 and C5, use imported targets which handle `SYSTEM`
-automatically:
-
-```cmake
-target_include_directories(QuantLibJNI PRIVATE
-    ${QL_MVN_QUANTLIB_GENERATED_HEADERS_DIR}
-    ${QL_MVN_QUANTLIB_ROOT_DIR})
-target_link_libraries(QuantLibJNI PRIVATE
-    Boost::headers JNI::JNI)
+set_target_properties(QuantLibJNI PROPERTIES CXX_EXTENSIONS OFF)
 ```
 
 ---
 
-## Modern Java / JDK 21 Best Practices
+## Removed After Re-evaluation
 
-### J10 — Version mismatch between POM and CMake
+The following previous entries were removed because I do not agree they are
+current project code smells:
 
-**File:** `java/pom.xml` (`0.1.0-SNAPSHOT`) vs `CMakeLists.txt` (`project(VERSION 1.42.1)`)
-
-The two version numbers are unrelated, which will confuse consumers.
-
-**Possible fix:** Align the versions. Option A — derive the Maven version
-from CMake:
-
-```cmake
-# In CMakeLists.txt, after project():
-set(QL_MVN_VERSION
-    "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-configure_file(java/pom.xml.in java/pom.xml @ONLY)
-```
-
-Option B — use a Maven property set during the CMake build:
-
-```cmake
-add_custom_command(TARGET QuantLibJNI POST_BUILD
-    COMMAND ${MVN_EXECUTABLE} versions:set
-        -DnewVersion=${PROJECT_VERSION}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/java)
-```
-
-Option C (simplest) — manually keep them in sync and add a CI check:
-
-```yaml
-# In CI workflow:
-- name: Check version alignment
-  run: |
-    cmake_ver=$(grep 'project.*VERSION' CMakeLists.txt \
-                | grep -oP '\d+\.\d+\.\d+')
-    mvn_ver=$(./mvnw help:evaluate \
-              -Dexpression=project.version -q -DforceStdout \
-              | sed 's/-SNAPSHOT//')
-    [ "$cmake_ver" = "$mvn_ver" ] || \
-      (echo "Version mismatch: CMake=$cmake_ver Maven=$mvn_ver"; exit 1)
-```
-
-### J12 — `DatesTest.testCanHash` — dangling native reference in HashSet
-
-**File:** `java/src/test/java/org/quantlib/DatesTest.java`
-**Lines:** 326–327
-
-A `Date` SWIG object is added to a `HashSet`, then `startDate.close()` is
-called by the try-with-resources block while the local `HashSet` still holds
-that Java proxy. The current test does not access the set after close, so it
-does not currently trigger a post-close native access. It is still a fragile
-pattern: any later operation on the set entry (e.g. iteration or `contains`)
-would access the closed native object.
-
-**Possible fix:** Remove the `Date` from the `HashSet` before closing it,
-or restructure the test to close after all set operations:
-
-```java
-@Test
-void testCanHash() {
-    var set = new HashSet<Date>();
-    try (var startDate = new Date(1, Month.January, 2020);
-         var endDate = new Date(31, Month.December, 2020)) {
-        set.add(startDate);
-        set.add(endDate);
-
-        assertTrue(set.contains(startDate));
-        assertEquals(2, set.size());
-
-        // Remove from set BEFORE close() is called by try-with-resources
-        set.remove(startDate);
-        set.remove(endDate);
-    }
-    // Now the set is empty and the dates are closed — no dangling refs
-}
-```
+- **S8 - No SWIG `%exception` directive for C++ exceptions:** upstream
+  `external/QuantLib-SWIG/SWIG/quantlib.i`, which `QuantLibEntrypoint.i`
+  includes, already includes `exception.i` and defines a global `%exception`.
+- **S12 - No SWIG `%feature("director")` for callback classes:** upstream
+  QuantLib-SWIG enables Java directors at module level and provides delegate
+  wrappers such as `CostFunctionDelegate`. General Java subclassing is not a
+  stated goal for this Maven packaging repository.
+- **P3 - No `%apply` / bulk typemaps for large numeric vectors:** this is a
+  speculative optimization and could change generated Java APIs. No local
+  bottleneck or requirement justifies tracking it as a smell.
+- **C8 - No `cmake_minimum_required` version range:** the repository explicitly
+  requires CMake 4.0.0+ in its documented prerequisites and presets.
+- **C9 - No test or workflow presets in CMakePresets.json:** tests are Maven
+  based and there is no project-owned CTest wiring. CMake test presets would not
+  add much until such wiring exists.
+- **C10 - `FORCE` on cache variable overrides user settings:** the forced
+  `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN` option is documented as required for
+  this build's QuantLib/SWIG behavior.
+- **C11 - Project-owned SWIG target includes marked `SYSTEM`:** the marked paths
+  are generated QuantLib headers and the read-only upstream QuantLib source tree,
+  not ordinary project-owned headers. Suppressing upstream/generated warnings is
+  reasonable with warnings-as-errors enabled.
+- **J10 - Version mismatch between POM and CMake:** the checked-in POM keeps a
+  snapshot placeholder and the release workflow sets the Maven artifact version
+  before deployment. The split is intentional, though release/versioning docs
+  should remain clear.
+- **J12 - `DatesTest.testCanHash` dangling native reference:** the `HashSet` is
+  local and is used only before the try-with-resources block closes `startDate`.
+  There is no post-close access or escaping reference in the current test.
