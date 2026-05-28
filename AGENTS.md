@@ -5,13 +5,13 @@ This file is the canonical reference for agentic coding tools working in this re
 
 ## Project Overview
 
+See [README.md](README.md) for Maven coordinates, versioning, and supported platforms.
+
 - Repository: `quantlib_for_maven`
 - Purpose: Java bindings for the QuantLib C++ library
-- Maven coordinates: `io.github.ralfkonrad.quantlib_for_maven:quantlib`
 - Languages: C++17 (native), Java 17+ (bindings/tests)
 - Test framework: JUnit 5 (Jupiter)
 - Java module: `io.github.ralfkonrad.quantlib` (see `java/src/main/java/module-info.java`)
-- Supported platforms: Linux (amd64/arm64), macOS (arm64), Windows (amd64)
 
 ## Project Structure
 
@@ -238,8 +238,9 @@ The native library loads automatically when any QuantLib class is first used
 
 ## Additional Context
 
-- Known issues and design decisions are documented in `code-smells.md`
-- Detailed build instructions: `HOWTO-BUILD-FROM-SOURCE.md`
+- Project overview, installation, usage examples, and supported platforms: [`README.md`](README.md)
+- Known issues and design decisions are documented in [`code-smells.md`](code-smells.md)
+- Detailed build instructions: [`HOWTO-BUILD-FROM-SOURCE.md`](HOWTO-BUILD-FROM-SOURCE.md)
 
 ## Tool-Specific Configuration
 
