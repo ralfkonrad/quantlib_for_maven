@@ -2,7 +2,7 @@
 
 ## First PR for new release
 
-- Create a new release branch from `master`
+- Create a new release branch `prepare_release_v1.xx` from `master`
 - Checkout the release tags for `QuantLib` and `QuantLib-SWIG` for the git submodules in the
   folder `external`
 - Update the version in `README.md`
