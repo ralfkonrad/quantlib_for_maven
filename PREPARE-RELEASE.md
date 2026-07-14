@@ -13,6 +13,7 @@
   the CI workflow sets the actual version via `mvn versions:set` using `QUANTLIB_VERSION`
 - Verify that the CI build passes on the release branch
 - Merge Pull Request
+- Tag the new release `git tag v1.xx`
 
 ## Update the repository
 
