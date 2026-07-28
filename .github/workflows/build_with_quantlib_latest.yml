@@ -3,7 +3,8 @@ name: Build with the latest QuantLib and QuantLib-SWIG changes
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '23 2 * * *'
+    - cron: '23 1 * * *'
+      timezone: "Europe/Berlin"
 
 jobs:
   push-latest:
