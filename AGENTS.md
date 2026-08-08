@@ -58,7 +58,7 @@ quantlib_for_maven/
 
 ### Prerequisites
 
-- CMake 4.0.0+, SWIG 4.4.1 (exact), Boost 1.90.0, JDK 17/21/25, Maven 3.8+, Ninja
+- CMake 4.0.0+, SWIG 4.5.0 (exact), Boost 1.90.0, JDK 17/21/25, Maven 3.8+, Ninja
 
 ### Full Build (C++ + SWIG + Java)
 
