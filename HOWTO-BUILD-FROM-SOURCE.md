@@ -7,7 +7,7 @@
 - an up-to-date cpp compiler
 - an up-to-date cmake 
 - Swig version `v4.5.0`
-- Boost C++ libraries version `v1.90.0`
+- Boost C++ libraries version `v1.92.0`
 - OpenJDK version `jdk17`, `jdk21` or `jdk25`
 - an up-to-date Apache Maven
 - an up-to-date ninja build system
@@ -110,7 +110,7 @@ installed on your system:
   libraries installed on your system. Only the header files are required to build the QuantLib SWIG.
 
   We are trying to use the latest version of the Boost C++ libraries.
-  Currently, we build the maven artifact using version `v1.90.0`.
+  Currently, we build the maven artifact using version `v1.92.0`.
 
   See the [Boost C++ Libraries](https://www.boost.org/) website for more information.
 
