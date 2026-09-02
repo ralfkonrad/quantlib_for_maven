@@ -41,13 +41,41 @@ runs:
         brew update
         brew install boost cmake swig
 
+    # The runner images preinstall third-party taps that Homebrew now refuses to load: aws/tap on
+    # every image and hashicorp/tap on the Intel one, whose vagrant formula fails to import and is
+    # reported as a failed annotation on runs that otherwise succeed. Nothing here uses either tap,
+    # so untap them rather than setting HOMEBREW_NO_REQUIRE_TAP_TRUST, which Homebrew announces it
+    # will remove.
+    #
+    # The images also already ship boost, cmake, ninja and swig, so install only what is missing
+    # and upgrade only what is outdated. Running 'brew install' over all four warned about every
+    # preinstalled one, and an unconditional 'brew upgrade' warned about the dependents check.
     - name: Setup macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
+        for tap in aws/tap hashicorp/tap; do
+          brew untap "${tap}" || true
+        done
+
         brew update
-        brew install boost cmake ninja swig
-        brew upgrade boost cmake ninja swig
+
+        formulae="boost cmake ninja swig"
+
+        missing=""
+        for formula in ${formulae}; do
+          if ! brew list --formula --versions "${formula}" > /dev/null 2>&1; then
+            missing="${missing} ${formula}"
+          fi
+        done
+        if [ -n "${missing}" ]; then
+          brew install --formula ${missing}
+        fi
+
+        outdated="$(brew outdated --formula --quiet ${formulae})"
+        if [ -n "${outdated}" ]; then
+          brew upgrade --formula ${outdated}
+        fi
 
     - name: Restore the cached Boost installer on Windows
       id: cache-boost-installer
@@ -127,8 +155,12 @@ runs:
     # A restore key matches by prefix, so no runner's key may be a prefix of another runner's key.
     # Without the trailing architecture 'Linux-ubuntu-22.04' also matches the entries written by
     # 'Linux-ubuntu-22.04-arm', and the x64 job would restore aarch64 objects it cannot use.
+    #
+    # Pin the patch version instead of tracking the floating 'v1.2' tag: that tag still points at a
+    # commit declaring 'using: node20', so every run was annotated with a Node.js 20 deprecation
+    # warning. Upstream moved the action to node24 in v1.2.24.
     - name: Setup CCache
-      uses: hendrikmuhs/ccache-action@v1.2
+      uses: hendrikmuhs/ccache-action@v1.2.24
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
         key: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
