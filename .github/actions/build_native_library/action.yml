@@ -10,6 +10,10 @@ inputs:
     description: The java jdk version to setup
     default: ''
     required: true
+  save-ccache:
+    description: Whether this job writes the compiler cache when it runs on master
+    default: 'true'
+    required: false
   gpg-secret-key:
     description: The gpg secret key
     default: ''
@@ -34,6 +38,7 @@ runs:
       with:
         runner-name:    ${{ inputs.runner-name }}
         java-version:   ${{ inputs.java-version }}
+        save-ccache:    ${{ inputs.save-ccache }}
         gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
     - name: Build
