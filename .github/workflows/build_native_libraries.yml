@@ -2,10 +2,16 @@ name: Build for different runners
 
 on:
   push:
-    branches-ignore:
+    branches:
       - master
   pull_request: {}
   workflow_dispatch: {}
+
+# Do not let a new push race the previous run's jobs, but never cancel a run on master: that is
+# the branch whose ccache entries every other branch and pull request restores from.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   build-native:
@@ -29,16 +35,21 @@ jobs:
             java-version: 25
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
 
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: "true"
 
+      # Of the three jdk jobs on a runner only the jdk17 one writes the compiler cache: the jdk
+      # version affects the SWIG wrapper translation unit alone, so the other two would store a
+      # near-identical copy of the same cache. Keep this in step with the matrix baseline above.
       - name: Build native library for ${{ matrix.os }} and jdk${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ${{ matrix.os }}
           java-version: ${{ matrix.java-version }}
+          save-ccache: ${{ matrix.java-version == 17 }}
           gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}

@@ -1,9 +1,17 @@
 name: Build the QuantLib maven artefact
 
 on:
-  push: {}
+  push:
+    branches:
+      - master
   pull_request: {}
   workflow_dispatch: {}
+
+# Do not let a new push race the previous run's jobs, but never cancel a run on master:
+# that is the branch the maven artefact is deployed from.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
   QUANTLIB_VERSION: 1.44.0-SNAPSHOT
@@ -24,16 +32,19 @@ jobs:
           - ubuntu-22.04-arm
           - windows-2022
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: "true"
 
+      # Only the jdk17 job of a runner writes the compiler cache; see build_native_libraries.yml.
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ${{ matrix.os }}
           java-version: ${{ matrix.java-version }}
+          save-ccache: ${{ matrix.java-version == 17 }}
           gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           upload-path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
@@ -52,6 +63,7 @@ jobs:
         os:
           - ubuntu-22.04
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
@@ -92,11 +104,13 @@ jobs:
         run: |
           ./mvnw --batch-mode --show-version versions:set -DnewVersion=${{ env.QUANTLIB_VERSION }}
 
+      # Only the jdk17 job of a runner writes the compiler cache; see build_native_libraries.yml.
       - name: Build native library for ${{ runner.os }} and jdk ${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:
           runner-name: ${{ matrix.os }}
           java-version: ${{ matrix.java-version }}
+          save-ccache: ${{ matrix.java-version == 17 }}
           gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 

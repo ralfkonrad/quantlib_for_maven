@@ -2,30 +2,44 @@ name: Delete workflow caches
 
 on:
   workflow_dispatch: {}
+  workflow_call:
+    inputs:
+      ref:
+        description: The ref whose caches to delete; every cache of the repository if left empty
+        type: string
+        default: ''
+        required: false
 
 permissions:
   actions: write
 
 jobs:
   delete-workflow-caches:
-    name: Delete all workflow caches
+    name: Delete the workflow caches
     runs-on: ubuntu-latest
     steps:
-      - name: Delete all caches
+      - name: Delete the caches
         uses: actions/github-script@v9
+        env:
+          CACHE_REF: ${{ inputs.ref }}
         with:
           script: |
+            const ref = process.env.CACHE_REF;
+            const scope = ref ? `for ${ref}` : 'in the repository';
+
             const caches = await github.paginate(
               github.rest.actions.getActionsCacheList,
               {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
+                ...(ref ? { ref } : {}),
               },
               (response) => response.data
             );
 
-            core.info(`Found ${caches.length} cache entries.`);
+            core.info(`Found ${caches.length} cache entries ${scope}.`);
 
+            const undeleted = [];
             for (const cache of caches) {
               try {
                 await github.rest.actions.deleteActionsCacheById({
@@ -35,6 +49,20 @@ jobs:
                 });
                 core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
               } catch (error) {
-                core.warning(`Could not delete cache id ${cache.id} (${cache.key}): ${error.message}`);
+                // Only a concurrent deletion of the same entry is harmless. Every other failure,
+                // a token without 'actions: write' above all, leaves the caches in place and must
+                // not pass as a green run that deleted nothing.
+                if (error.status === 404) {
+                  core.info(`Cache id ${cache.id} (${cache.key}) was already deleted.`);
+                } else {
+                  undeleted.push(cache);
+                  core.error(`Could not delete cache id ${cache.id}: ${error.message}`);
+                }
               }
+            }
+
+            if (undeleted.length > 0) {
+              core.setFailed(
+                `Could not delete ${undeleted.length} of ${caches.length} cache entries.`
+              );
             }
