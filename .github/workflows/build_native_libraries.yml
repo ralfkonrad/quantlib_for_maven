@@ -2,15 +2,16 @@ name: Build for different runners
 
 on:
   push:
-    branches-ignore:
+    branches:
       - master
   pull_request: {}
   workflow_dispatch: {}
 
-# Do not let a new push race the previous run's jobs.
+# Do not let a new push race the previous run's jobs, but never cancel a run on master: that is
+# the branch whose ccache entries every other branch and pull request restores from.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   build-native:

@@ -1,7 +1,9 @@
 name: Build the QuantLib maven artefact
 
 on:
-  push: {}
+  push:
+    branches:
+      - master
   pull_request: {}
   workflow_dispatch: {}
 

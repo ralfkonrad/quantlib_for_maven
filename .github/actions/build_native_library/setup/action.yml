@@ -114,14 +114,21 @@ runs:
         java-version:   ${{ inputs.java-version }}
         gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
+    # Compiler caches are only written on master, because GitHub scopes a cache to the branch that
+    # created it: only the default branch's entries are restorable from every other branch and pull
+    # request. Writing them on topic branches filled the 10GB repository quota with entries no other
+    # run could ever read, which evicted master's entries and cost the hits it was meant to save.
+    # Of the three jdk jobs on a runner only jdk17 writes: the jdk version affects the SWIG wrapper
+    # translation unit alone, so the other two would store a near-identical copy of the same cache.
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
         key: ${{ runner.os }}-${{ inputs.runner-name }}
-        restore-keys: |
-          ${{ runner.os }}-${{ inputs.runner-name }}
-          ${{ runner.os }}
+        restore-keys: ${{ runner.os }}-${{ inputs.runner-name }}
+        max-size: 250M
+        evict-old-files: 7d
+        save: ${{ github.ref == 'refs/heads/master' && inputs.java-version == '17' }}
 
     - name: Set up Visual Studio shell on Windows
       uses: TheMrMilchmann/setup-msvc-dev@v4
