@@ -45,14 +45,64 @@ runs:
         brew install boost cmake ninja swig
         brew upgrade boost cmake ninja swig
 
+    - name: Restore the cached Boost installer on Windows
+      id: cache-boost-installer
+      if: runner.os == 'Windows'
+      uses: actions/cache@v6
+      with:
+        path: ${{ env.BOOST_INSTALLER_PATH }}
+        key: boost-installer-${{ env.BOOST_DOWNLOAD_URI }}
+
+    - name: Restore the cached SWIG archive on Windows
+      id: cache-swig-archive
+      if: runner.os == 'Windows'
+      uses: actions/cache@v6
+      with:
+        path: ${{ env.SWIG_ZIP_FILE_PATH }}
+        key: swig-archive-${{ env.SWIG_DOWNLOAD_URI }}
+
     - name: Setup Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Start-BitsTransfer -Source $env:BOOST_DOWNLOAD_URI -Destination $env:BOOST_INSTALLER_PATH
+        # Boost and SWIG are downloaded from SourceForge, whose mirrors regularly drop the
+        # connection. Retry each download instead of failing the whole build on the first error,
+        # and bound how long BITS keeps retrying transient errors so a dead mirror fails fast.
+        function Invoke-DownloadWithRetry {
+            param(
+                [Parameter(Mandatory = $true)] [string] $Uri,
+                [Parameter(Mandatory = $true)] [string] $Destination
+            )
+
+            $maxAttempts = 3
+            for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+                try {
+                    Write-Host "Downloading $Uri (attempt $attempt of $maxAttempts)"
+                    Start-BitsTransfer -Source $Uri -Destination $Destination `
+                        -RetryInterval 60 -RetryTimeout 300 -ErrorAction Stop
+                    return
+                }
+                catch {
+                    Write-Warning "Downloading $Uri failed: $($_.Exception.Message)"
+                    Remove-Item -Path $Destination -Force -ErrorAction SilentlyContinue
+                    if ($attempt -eq $maxAttempts) {
+                        throw
+                    }
+                    Start-Sleep -Seconds (30 * $attempt)
+                }
+            }
+        }
+
+        if ('${{ steps.cache-boost-installer.outputs.cache-hit }}' -ne 'true') {
+            Invoke-DownloadWithRetry -Uri $env:BOOST_DOWNLOAD_URI `
+                -Destination $env:BOOST_INSTALLER_PATH
+        }
         Start-Process -Wait -FilePath "$env:BOOST_INSTALLER_PATH" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_INSTALL_DIR"
-        
-        Start-BitsTransfer -Source $env:SWIG_DOWNLOAD_URI -Destination $env:SWIG_ZIP_FILE_PATH
+
+        if ('${{ steps.cache-swig-archive.outputs.cache-hit }}' -ne 'true') {
+            Invoke-DownloadWithRetry -Uri $env:SWIG_DOWNLOAD_URI `
+                -Destination $env:SWIG_ZIP_FILE_PATH
+        }
         Expand-Archive $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
         swig -version
 
