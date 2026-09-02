@@ -5,6 +5,12 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 
+# Do not let a new push race the previous run's jobs, but never cancel a run on master:
+# that is the branch the maven artefact is deployed from.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 env:
   QUANTLIB_VERSION: 1.44.0-SNAPSHOT
   JAVA_PATH: java
@@ -24,6 +30,7 @@ jobs:
           - ubuntu-22.04-arm
           - windows-2022
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
         with:
@@ -52,6 +59,7 @@ jobs:
         os:
           - ubuntu-22.04
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
