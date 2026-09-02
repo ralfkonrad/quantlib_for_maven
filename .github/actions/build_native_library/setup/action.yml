@@ -47,6 +47,12 @@ runs:
     # so untap them rather than setting HOMEBREW_NO_REQUIRE_TAP_TRUST, which Homebrew announces it
     # will remove.
     #
+    # Untapping needs both guards. Homebrew writes a GitHub error annotation of its own whenever it
+    # refuses a tap, so discarding the exit status would hide the failure but keep the annotation
+    # this step exists to remove. It refuses a tap holding installed formulae - hashicorp/tap ships
+    # packer everywhere and vagrant on the Intel image - hence --force, which uninstalls those
+    # first; nothing here uses them. It also refuses a tap that is not installed, hence the check.
+    #
     # The images also already ship boost, cmake, ninja and swig, so install only what is missing
     # and upgrade only what is outdated. Running 'brew install' over all four warned about every
     # preinstalled one, and an unconditional 'brew upgrade' warned about the dependents check.
@@ -54,8 +60,14 @@ runs:
       if: runner.os == 'macOs'
       shell: bash
       run: |
+        # List the taps once instead of piping 'brew tap' into 'grep -q' per tap: '-q' exits on the
+        # first match and can leave 'brew tap' writing to a closed pipe, which 'pipefail' would
+        # turn into a failing condition on exactly the taps that do need untapping.
+        installed_taps="$(brew tap)"
         for tap in aws/tap hashicorp/tap; do
-          brew untap "${tap}" || true
+          if grep -qxF "${tap}" <<< "${installed_taps}"; then
+            brew untap --force "${tap}"
+          fi
         done
 
         brew update
@@ -72,7 +84,10 @@ runs:
           brew install --formula ${missing}
         fi
 
-        outdated="$(brew outdated --formula --quiet ${formulae})"
+        # 'brew outdated' sets a failing exit status when it is given names and one of them is
+        # outdated, and the runner runs this step under 'bash -eo pipefail', where a command
+        # substitution failing inside an assignment aborts the whole step.
+        outdated="$(brew outdated --formula --quiet ${formulae} || true)"
         if [ -n "${outdated}" ]; then
           brew upgrade --formula ${outdated}
         fi
