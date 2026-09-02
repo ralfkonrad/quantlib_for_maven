@@ -1,27 +1,56 @@
 name: Delete workflow caches
 
+# GitHub never reclaims the caches of a merged pull request or a deleted branch on its own, so they
+# keep counting against the 10GB repository quota until they are evicted. Once evicted, the entries
+# that are still in use go with them, and the next build recompiles from scratch.
+#
+# The pull request trigger is 'pull_request_target' and not 'pull_request': for a pull request from
+# a fork the 'pull_request' token stays read-only no matter what the workflow asks for in
+# 'permissions', and every deletion would fail with 403. Nothing from the pull request is checked
+# out or run here.
+#
+# 'workflow_dispatch' deletes the caches of one ref, or every cache of the repository when the input
+# is left empty.
 on:
-  workflow_dispatch: {}
-  workflow_call:
+  workflow_dispatch:
     inputs:
       ref:
         description: The ref whose caches to delete; every cache of the repository if left empty
         type: string
         default: ''
         required: false
+  pull_request_target:
+    types:
+      - closed
+  delete: {}
 
 permissions:
   actions: write
 
+# Deleting the caches of one ref must not race a second run for the same ref. The group is keyed by
+# ref rather than by workflow: with a single repository-wide group, merging two pull requests in a
+# row cancels the queued run of the first one, and its caches are never deleted.
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ github.event.pull_request.number
+    || github.event.ref || inputs.ref || github.ref }}
+
 jobs:
   delete-workflow-caches:
     name: Delete the workflow caches
+    # A deleted tag has no caches of its own; only branch deletions are worth a run.
+    if: github.event_name != 'delete' || github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
       - name: Delete the caches
         uses: actions/github-script@v9
         env:
-          CACHE_REF: ${{ inputs.ref }}
+          CACHE_REF: >-
+            ${{ github.event_name == 'delete'
+            && format('refs/heads/{0}', github.event.ref)
+            || github.event_name == 'pull_request_target'
+            && format('refs/pull/{0}/merge', github.event.pull_request.number)
+            || inputs.ref }}
         with:
           script: |
             const ref = process.env.CACHE_REF;
