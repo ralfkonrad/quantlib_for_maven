@@ -3,8 +3,12 @@ name: Cleanup workflow caches
 # GitHub never reclaims the caches of a merged pull request or a deleted branch on its own, so they
 # keep counting against the 10GB repository quota until they are evicted. Once evicted, the entries
 # that are still in use go with them, and the next build recompiles from scratch.
+#
+# The trigger is 'pull_request_target' and not 'pull_request': for a pull request from a fork the
+# 'pull_request' token stays read-only no matter what the workflow asks for in 'permissions', and
+# every deletion would fail with 403. Nothing from the pull request is checked out or run here.
 on:
-  pull_request:
+  pull_request_target:
     types:
       - closed
   delete: {}
@@ -12,45 +16,19 @@ on:
 permissions:
   actions: write
 
-# Deleting caches for one ref must not race the deletion for another ref.
+# Deleting the caches of one ref must not race a second run for the same ref. The group is keyed by
+# ref rather than by workflow: with a single repository-wide group, merging two pull requests in a
+# row cancels the queued run of the first one, and its caches are never deleted.
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.ref }}
 
 jobs:
   cleanup-workflow-caches:
     name: Delete the caches of the closed pull request or the deleted branch
     if: github.event_name != 'delete' || github.event.ref_type == 'branch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete the caches of the obsolete ref
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const ref = context.eventName === 'delete'
-              ? `refs/heads/${context.payload.ref}`
-              : `refs/pull/${context.issue.number}/merge`;
-
-            const caches = await github.paginate(
-              github.rest.actions.getActionsCacheList,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: ref,
-              },
-              (response) => response.data
-            );
-
-            core.info(`Found ${caches.length} cache entries for ${ref}.`);
-
-            for (const cache of caches) {
-              try {
-                await github.rest.actions.deleteActionsCacheById({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  cache_id: cache.id,
-                });
-                core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
-              } catch (error) {
-                core.warning(`Could not delete cache id ${cache.id} (${cache.key}): ${error.message}`);
-              }
-            }
+    uses: ./.github/workflows/delete_workflow_caches.yml
+    with:
+      ref: >-
+        ${{ github.event_name == 'delete'
+        && format('refs/heads/{0}', github.event.ref)
+        || format('refs/pull/{0}/merge', github.event.pull_request.number) }}

@@ -10,6 +10,10 @@ inputs:
     description: The java jdk version to setup
     default: ''
     required: true
+  save-ccache:
+    description: Whether this job writes the compiler cache when it runs on master
+    default: 'true'
+    required: false
   gpg-secret-key:
     description: The gpg secret key
     default: ''
@@ -118,17 +122,20 @@ runs:
     # created it: only the default branch's entries are restorable from every other branch and pull
     # request. Writing them on topic branches filled the 10GB repository quota with entries no other
     # run could ever read, which evicted master's entries and cost the hits it was meant to save.
-    # Of the three jdk jobs on a runner only jdk17 writes: the jdk version affects the SWIG wrapper
-    # translation unit alone, so the other two would store a near-identical copy of the same cache.
+    # Which of a runner's jdk jobs writes is decided by the caller, next to the matrix defining it.
+    #
+    # A restore key matches by prefix, so no runner's key may be a prefix of another runner's key.
+    # Without the trailing architecture 'Linux-ubuntu-22.04' also matches the entries written by
+    # 'Linux-ubuntu-22.04-arm', and the x64 job would restore aarch64 objects it cannot use.
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
-        key: ${{ runner.os }}-${{ inputs.runner-name }}
-        restore-keys: ${{ runner.os }}-${{ inputs.runner-name }}
+        key: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
+        restore-keys: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
         max-size: 250M
         evict-old-files: 7d
-        save: ${{ github.ref == 'refs/heads/master' && inputs.java-version == '17' }}
+        save: ${{ github.ref == 'refs/heads/master' && inputs.save-ccache == 'true' }}
 
     - name: Set up Visual Studio shell on Windows
       uses: TheMrMilchmann/setup-msvc-dev@v4
