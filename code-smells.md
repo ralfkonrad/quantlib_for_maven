@@ -29,36 +29,28 @@ build, or documented behavior.
 
 ### S9 - CI workflow uses overly broad default permissions
 
-**File:** `.github/workflows/build_maven_artefact.yml`
+**Status:** addressed.
 
-Only the `deploy-quantlib-snapshot` job specifies
-`permissions: contents: read, packages: write`. Other jobs inherit the
-repository default, which may be broader than needed. Best practice is to set
-least-privilege permissions at workflow level and grant write permissions only
-where required.
+**Files:**
 
-**Possible fix:** Add a top-level `permissions` block at the workflow level:
+- `.github/workflows/build_maven_artefact.yml`
+- `.github/workflows/build_native_libraries.yml`
+- `.github/workflows/build_with_quantlib_latest.yml`
 
-```yaml
-name: Build the QuantLib maven artefact
+The repository default is a read-write `GITHUB_TOKEN`
+(`default_workflow_permissions: "write"`), so any job without a `permissions`
+block was handed `contents: write` and `actions: write` while only compiling and
+running third-party actions and Maven plugins.
 
-on:
-  push: {}
-  pull_request: {}
-  workflow_dispatch: {}
+Each workflow now declares least privilege:
 
-permissions:
-  contents: read
-
-jobs:
-  deploy-quantlib-snapshot:
-    permissions:
-      contents: read
-      packages: write
-```
-
-This follows the principle of least privilege. Each job that needs write access
-declares it explicitly.
+- `build_native_libraries.yml` and `build_with_quantlib_latest.yml` set
+  `permissions: contents: read` at workflow level.
+- `build_maven_artefact.yml` sets `contents: read` on `build-for-deploy` and on
+  `deploy-quantlib-snapshot`. The latter's `packages: write` was dropped: the
+  publish path is `central-publishing-maven-plugin` against Maven Central, and
+  `java/pom.xml` declares no `<distributionManagement>`, so nothing targeted
+  GitHub Packages.
 
 ### S10 - Repository-scoped token use is not scope-documented
 

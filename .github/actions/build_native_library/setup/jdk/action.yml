@@ -18,18 +18,25 @@ runs:
       if: inputs.java-version == ''
       shell: bash
       run: |
-        echo "The variable 'java-version' was not set"  
+        echo "The variable 'java-version' was not set"
         exit 1
 
-    - name: Check if gpg-secret-key variable is Set
+    # Warn, do not fail. Both build workflows run on 'pull_request', and a pull request from a
+    # fork is given no secrets, so a hard failure here would break every external contribution
+    # over a key that only the deploy job needs - 'actions/setup-java' just skips the gpg import
+    # when the key is empty. 'deploy-quantlib-snapshot' checks for the signing secrets itself.
+    - name: Warn if gpg-secret-key variable is not Set
       if: inputs.gpg-secret-key == ''
       shell: bash
       run: |
-        echo "The variable 'gpg-secret-key' was not set"  
-        exit 1
+        echo "::warning::The variable 'gpg-secret-key' was not set; skipping the gpg key import"
 
+    # The latch is keyed by the requested jdk version, not by a bare boolean: a job that sets up
+    # one jdk and then asks this action for a different one has to run 'setup-java' again. Keyed
+    # only on a boolean the second request was skipped silently, and the build ran against
+    # the first jdk while the step name announced the second.
     - uses: actions/setup-java@v6
-      if: env.JAVA_IS_SETUP != 'true'
+      if: env.JAVA_IS_SETUP != inputs.java-version
       with:
         java-version:            ${{ inputs.java-version }}
         distribution:            "temurin"
@@ -40,7 +47,9 @@ runs:
         gpg-passphrase-env-var:  MAVEN_GPG_PASSPHRASE
         cache:                   maven
 
-    - id: set_JAVA_IS_SETUP_var
+    - name: Remember which jdk version is set up
       shell: bash
+      env:
+        JAVA_VERSION: ${{ inputs.java-version }}
       run: |
-        echo "JAVA_IS_SETUP=true" >> $GITHUB_ENV
+        echo "JAVA_IS_SETUP=${JAVA_VERSION}" >> "$GITHUB_ENV"

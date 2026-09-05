@@ -13,6 +13,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
+# Without this the jobs get the repository default, which is a read-write GITHUB_TOKEN. Nothing
+# here writes anything through the API, but every job runs cmake, mvnw (which downloads and
+# executes plugins from Maven Central), brew/apt/choco and four third-party actions, so the token
+# they are handed should not be able to push to master or delete caches.
+permissions:
+  contents: read
+
 jobs:
   build-native:
     name: Build on ${{ matrix.os }} for jdk${{ matrix.java-version }}

@@ -48,10 +48,15 @@ runs:
         cmake --preset release -L
         cmake --build --parallel --preset release --verbose
 
+    # 'if-no-files-found' has to be 'error'. CreateJavaLibraryDirectory.cmake creates the output
+    # tree at configure time, so it exists even when the build wrote nothing into it: with the
+    # default 'warn' this job would stay green while creating no artifact, and the failure would
+    # only surface in the deploy job as a missing 'native-library-<os>'.
     - name: Upload native library
       if: ${{ inputs.upload-path != '' }}
       uses: actions/upload-artifact@v7
       with:
         name: native-library-${{ runner.os }}
         path: ${{ inputs.upload-path }}
+        if-no-files-found: error
         retention-days: 1

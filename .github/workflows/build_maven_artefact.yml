@@ -22,6 +22,10 @@ env:
 jobs:
   build-for-deploy:
     name: Build for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
+    # This job only compiles and uploads an artifact, so it does not need the repository default,
+    # which is a read-write GITHUB_TOKEN. 'deploy-quantlib-snapshot' below narrows it too.
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -52,9 +56,13 @@ jobs:
   deploy-quantlib-snapshot:
     name: Build for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
     needs: [build-for-deploy]
+    # Publishing goes to Maven Central through central-publishing-maven-plugin, authenticated with
+    # MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD; java/pom.xml declares no
+    # <distributionManagement>, so nothing here targets GitHub Packages. This job holds the Central
+    # credentials and the gpg key and runs plugins downloaded from Central, so it should not also
+    # carry a write scope no step consumes.
     permissions:
       contents: read
-      packages: write
     strategy:
       fail-fast: true
       matrix:
@@ -65,6 +73,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
+      # Fail before the build rather than inside maven-gpg-plugin at the very end of it. Neither
+      # secret is validated anywhere else: composite actions do not enforce 'required: true', and
+      # the build path deliberately tolerates a missing key so that pull requests from forks,
+      # which are given no secrets at all, can still run.
+      - name: Check the signing secrets are available
+        if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+        env:
+          GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          GPG_SECRET_KEY_PASSWORD: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
+        run: |
+          missing=""
+          [ -n "${GPG_SECRET_KEY}" ] || missing="${missing} GPG_SECRET_KEY"
+          [ -n "${GPG_SECRET_KEY_PASSWORD}" ] || missing="${missing} GPG_SECRET_KEY_PASSWORD"
+          if [ -n "${missing}" ]; then
+            echo "Cannot deploy, these secrets are not set:${missing}"
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
         with:
           submodules: "true"
@@ -86,12 +112,6 @@ jobs:
         with:
           name: native-library-Windows
           path: ${{ env.JAVA_RESOURCES_NATIVE_LIBS_PATH }}
-
-      - name: Delete native library artifacts
-        uses: geekyeggo/delete-artifact@v6
-        with:
-          name: native-library-*
-          failOnError: true
 
       - name: Set up JDK ${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library/setup/jdk
@@ -117,7 +137,6 @@ jobs:
       - name: Deploy the maven module
         if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -134,3 +153,13 @@ jobs:
             ${{ env.JAVA_TARGET_PATH }}/*.pom
             ${{ env.JAVA_TARGET_PATH }}/*.jar
             ${{ env.JAVA_TARGET_PATH }}/*.asc
+
+      # Delete the per-platform artifacts only once everything that consumes them has succeeded.
+      # Deleting them before the build and the deploy made 'Re-run failed jobs' impossible: the
+      # re-run starts again at the download steps above, and they would no longer find anything.
+      # A failed run leaves them in place instead, where 'retention-days: 1' reclaims them.
+      - name: Delete native library artifacts
+        uses: geekyeggo/delete-artifact@v6
+        with:
+          name: native-library-*
+          failOnError: true
