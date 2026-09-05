@@ -48,17 +48,32 @@ runs:
       run: |
         echo "CXXFLAGS=-stdlib=libc++" >> "$GITHUB_ENV"
 
-    # The Boost and SWIG versions have to match the ones CMakeLists.txt pins in
-    # QL_MVN_BOOST_VERSION / QL_MVN_SWIG_VERSION, because both are looked up with an EXACT
-    # find_package(). Keep them in one variable each rather than spread over the URLs and paths
-    # below: bumping SWIG once already missed a copy here and broke every Windows job.
+    # Read both versions out of CMakeLists.txt instead of repeating them here. They are looked up
+    # with an EXACT find_package(), so a copy that drifts from QL_MVN_BOOST_VERSION /
+    # QL_MVN_SWIG_VERSION breaks the Windows build at configure time - bumping SWIG once already
+    # missed a copy in this file and broke every Windows job. CMakeLists.txt is the single source
+    # of truth, which is also the only file 'bump_toolchain_versions.yml' has to edit.
     - name: Setup installation directories on Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        $boostVersion = "1.92.0"
+        $cmakeLists = Get-Content "${env:GITHUB_WORKSPACE}\CMakeLists.txt" -Raw
+
+        # Fail here rather than letting an empty version through: an unmatched regex would
+        # otherwise build 'swigwin-.zip' URLs that 404 much later in the Setup step.
+        $boostVersion = [regex]::Match(
+            $cmakeLists, 'QL_MVN_BOOST_VERSION "([^"]+)"').Groups[1].Value
+        if (-not $boostVersion) {
+            throw "Could not read QL_MVN_BOOST_VERSION from CMakeLists.txt"
+        }
+
+        $swigVersion = [regex]::Match(
+            $cmakeLists, 'QL_MVN_SWIG_VERSION "([^"]+)"').Groups[1].Value
+        if (-not $swigVersion) {
+            throw "Could not read QL_MVN_SWIG_VERSION from CMakeLists.txt"
+        }
+
         $boostUnderscored = $boostVersion.Replace(".", "_")
-        $swigVersion = "4.5.1"
 
         $sourceforge = "https://downloads.sourceforge.net/project"
         $boostFile = "boost_${boostUnderscored}-msvc-14.3-64.exe"

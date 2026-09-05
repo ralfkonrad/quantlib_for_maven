@@ -297,6 +297,19 @@
                         </execution>
                     </executions>
                 </plugin>
+                <!--
+                    Only ever invoked from the command line, as 'versions:set' in the deploy job.
+                    Declared here so that goal prefix resolves to a pinned version instead of
+                    whatever is newest on Central at that moment: the job that runs it holds the
+                    Central credentials and the gpg key, and rewrites the pom immediately before
+                    the artifact is signed and published. Declaring it also brings it under the
+                    existing Dependabot maven entry, like every other plugin in this file.
+                -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.21.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
