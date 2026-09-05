@@ -7,7 +7,7 @@ applyTo: "swig/**/*.i"
 - The project entrypoint is `swig/QuantLibEntrypoint.i` — this is the only SWIG file you
   should edit in this repository
 - Never edit files in `external/QuantLib-SWIG/SWIG/` — those belong to the upstream submodule
-- SWIG version must be exactly 4.5.0 (enforced by CMake `find_package(SWIG ... EXACT)`)
+- SWIG version must be exactly 4.5.1 (enforced by CMake `find_package(SWIG ... EXACT)`)
 - All generated proxy classes implement `AutoCloseable` via the `SWIGTYPE` typemap
   and `org.quantlib.helpers.QuantLibJNIHelpers.AutoCloseable`
 - The `QL_JAVA_INTERFACES` macro adds `AutoCloseable` to `std::vector` wrappers
