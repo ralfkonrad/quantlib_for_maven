@@ -97,6 +97,53 @@ runs:
           brew upgrade --formula ${outdated}
         fi
 
+    # Homebrew always installs the current formula, but both find_package() calls ask for the
+    # pinned version with EXACT, so the day a formula moves ahead of CMakeLists.txt every Linux and
+    # macOS job fails - which is what the last SWIG bump was. Compare them here, where the message
+    # can say what to do, rather than letting it surface as an opaque CMake discovery error deep in
+    # the Build step. 'bump_toolchain_versions.yml' opens the bump pull request nightly, so this
+    # normally only fires while that pull request is still open.
+    #
+    # Homebrew appends a revision suffix such as '1.92.0_2' when it rebuilds a formula without an
+    # upstream version change, which is still the same release, so compare only the part before the
+    # underscore. 'grep -P' is GNU-only and the macOS runners ship BSD grep, hence sed.
+    - name: Check the toolchain matches the versions CMakeLists.txt pins
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        read_pin() {
+          sed -n "s/.*${1} \"\([^\"]*\)\".*/\1/p" "${GITHUB_WORKSPACE}/CMakeLists.txt"
+        }
+
+        mismatch=""
+
+        # The runner runs this step under 'bash -eo pipefail', where a failing command
+        # substitution aborts the whole step, so absorb the failure and report the empty result
+        # below: a missing formula should reach the message this step exists to print.
+        boost_want="$(read_pin QL_MVN_BOOST_VERSION)"
+        boost_have="$(brew list --versions boost | awk '{ print $2 }' | cut -d '_' -f 1 || true)"
+        if [ -z "${boost_have}" ]; then
+          mismatch="${mismatch} boost (not installed, pinned ${boost_want})"
+        elif [ "${boost_want}" != "${boost_have}" ]; then
+          mismatch="${mismatch} boost (installed ${boost_have}, pinned ${boost_want})"
+        fi
+
+        swig_want="$(read_pin QL_MVN_SWIG_VERSION)"
+        swig_have="$(swig -version | awk '/SWIG Version/ { print $3 }' || true)"
+        if [ -z "${swig_have}" ]; then
+          mismatch="${mismatch} swig (not on PATH, pinned ${swig_want})"
+        elif [ "${swig_want}" != "${swig_have}" ]; then
+          mismatch="${mismatch} swig (installed ${swig_have}, pinned ${swig_want})"
+        fi
+
+        if [ -n "${mismatch}" ]; then
+          message="Homebrew does not match CMakeLists.txt:${mismatch}."
+          message="${message} Bump QL_MVN_BOOST_VERSION / QL_MVN_SWIG_VERSION in CMakeLists.txt,"
+          message="${message} or merge the pull request bump_toolchain_versions.yml opened."
+          echo "::error::${message}"
+          exit 1
+        fi
+
     - name: Restore the cached Boost installer on Windows
       id: cache-boost-installer
       if: runner.os == 'Windows'
