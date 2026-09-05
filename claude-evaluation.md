@@ -71,7 +71,7 @@ quantlib_for_maven/
 
 `CMakeLists.txt` is concise at 67 lines and does exactly what it needs to:
 
-- Requires **CMake 4.0.0**, **C++17**, **Boost 1.90.0** (headers only), **SWIG 4.5.0**
+- Requires **CMake 4.0.0**, **C++17**, **Boost 1.90.0** (headers only), **SWIG 4.5.1**
 - Pins exact versions for Boost and SWIG — unusual but intentional: SWIG's Java output is sensitive to minor version differences, and Boost's CMake integration changed behaviour at 3.30
 - Enables `QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN=ON` — this is load-bearing; the JVM's GC runs on separate threads and will call destructors concurrently with QuantLib's observer notifications if this is off
 - Disables `QL_FASTER_LAZY_OBJECTS` — trades some runtime performance for correctness under concurrent access
@@ -260,7 +260,7 @@ The solution — making every generated type `AutoCloseable` and requiring try-w
 
 ### Exact Dependency Pinning
 
-Boost 1.90.0 and SWIG 4.5.0 are pinned exactly, not to version ranges. For a project producing binary artifacts that must be bit-for-bit consistent across runners and releases, this is correct. The cost is periodic manual bumps; the benefit is reproducible builds.
+Boost 1.90.0 and SWIG 4.5.1 are pinned exactly, not to version ranges. For a project producing binary artifacts that must be bit-for-bit consistent across runners and releases, this is correct. The cost is periodic manual bumps; the benefit is reproducible builds.
 
 ### Bundled Multi-Platform Natives
 
