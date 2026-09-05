@@ -13,7 +13,8 @@ guidance and quick context for code generation.
 - **Test framework**: JUnit 5 (Jupiter)
 - **Java module**: `io.github.ralfkonrad.quantlib` (see `java/src/main/java/module-info.java`)
 - **Maven coordinates**: `io.github.ralfkonrad.quantlib_for_maven:quantlib`
-- **Supported platforms**: Linux (amd64/arm64), macOS (arm64), Windows (amd64)
+- **Supported platforms**: Linux (amd64/arm64), macOS (universal arm64+x86_64), Windows (amd64)
+  — see `README.md`, which is the source of truth for this list
 
 ## Do NOT
 

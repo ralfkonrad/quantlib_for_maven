@@ -26,7 +26,7 @@ runs:
       if: inputs.runner-name == ''
       shell: bash
       run: |
-        echo "The variable 'runner-name' was not set"  
+        echo "The variable 'runner-name' was not set"
         exit 1
 
     - name: Setup Linux
@@ -37,7 +37,12 @@ runs:
         sudo apt-get install -y ccache ninja-build
         sudo apt-get remove -y cmake swig swig4.0
 
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        # Assign first, then eval. 'eval "$(...)"' hides a failing command substitution from
+        # 'set -e' - eval of an empty string exits 0 - so a moved Homebrew prefix would leave
+        # HOMEBREW_PREFIX unset and the step green, and surface later as a CMake discovery error.
+        brew_shellenv="$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        eval "${brew_shellenv}"
+
         brew update
         brew install boost cmake swig
 
@@ -144,14 +149,31 @@ runs:
             Invoke-DownloadWithRetry -Uri $env:BOOST_DOWNLOAD_URI `
                 -Destination $env:BOOST_INSTALLER_PATH
         }
-        Start-Process -Wait -FilePath "$env:BOOST_INSTALLER_PATH" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_INSTALL_DIR"
+
+        # Check the installer's exit code. A SourceForge mirror that answers with an HTML error
+        # page is reported as a successful transfer by BITS, and without this the step would pass
+        # having installed nothing - the failure would then surface much later as an unrelated
+        # 'Could not find Boost' in the Build step.
+        $boostInstall = Start-Process -Wait -PassThru -FilePath "$env:BOOST_INSTALLER_PATH" `
+            -ArgumentList "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_INSTALL_DIR"
+        if ($boostInstall.ExitCode -ne 0) {
+            throw "The Boost installer failed with exit code $($boostInstall.ExitCode)"
+        }
 
         if ('${{ steps.cache-swig-archive.outputs.cache-hit }}' -ne 'true') {
             Invoke-DownloadWithRetry -Uri $env:SWIG_DOWNLOAD_URI `
                 -Destination $env:SWIG_ZIP_FILE_PATH
         }
-        Expand-Archive $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
+        Expand-Archive -Force $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
+
+        # Check the exit status here rather than relying on the step's own. Only the *last* native
+        # command decides that, so a swig.exe unpacked from a truncated archive would report a
+        # non-zero status, have it overwritten by 'choco install' below, and surface much later as
+        # a SWIG codegen error.
         swig -version
+        if ($LASTEXITCODE -ne 0) {
+            throw "'swig -version' failed with exit code $LASTEXITCODE"
+        }
 
         choco install -y cmake ninja
 

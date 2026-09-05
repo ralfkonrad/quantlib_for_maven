@@ -15,7 +15,9 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: The ref whose caches to delete; every cache of the repository if left empty
+        description: >-
+          The ref whose caches to delete, e.g. 'refs/heads/my-branch' or just 'my-branch';
+          every cache of the repository if left empty
         type: string
         default: ''
         required: false
@@ -30,10 +32,19 @@ permissions:
 # Deleting the caches of one ref must not race a second run for the same ref. The group is keyed by
 # ref rather than by workflow: with a single repository-wide group, merging two pull requests in a
 # row cancels the queued run of the first one, and its caches are never deleted.
+#
+# Pick the ref by event, the same way CACHE_REF below does, instead of chaining '||' over the
+# contexts. 'ref' is also a top-level field of the workflow_dispatch payload - it holds the ref the
+# run was started from - so an unguarded '|| inputs.ref' is never reached on a manual run: every
+# dispatch grouped as the dispatching branch, and cleaning up two branches in a row cancelled the
+# queued second one.
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ github.event.pull_request.number
-    || github.event.ref || inputs.ref || github.ref }}
+    ${{ github.workflow }}-${{ github.event_name == 'pull_request_target'
+    && github.event.pull_request.number
+    || github.event_name == 'delete'
+    && format('refs/heads/{0}', github.event.ref)
+    || inputs.ref || github.ref }}
 
 jobs:
   delete-workflow-caches:
@@ -53,7 +64,17 @@ jobs:
             || inputs.ref }}
         with:
           script: |
-            const ref = process.env.CACHE_REF;
+            // The caches API matches a ref only in its fully qualified form: '?ref=master'
+            // answers 200 with an empty list while '?ref=refs/heads/master' returns the entries.
+            // A hand-typed branch name would therefore produce a green run that deleted nothing,
+            // so qualify anything that is not already a ref.
+            const input = process.env.CACHE_REF;
+            const ref = input && !input.startsWith('refs/')
+              ? `refs/heads/${input}`
+              : input;
+            if (ref !== input) {
+              core.info(`Interpreted '${input}' as the branch ref '${ref}'.`);
+            }
             const scope = ref ? `for ${ref}` : 'in the repository';
 
             const caches = await github.paginate(
