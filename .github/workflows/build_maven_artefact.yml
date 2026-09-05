@@ -5,6 +5,9 @@ on:
     branches:
       - master
   pull_request: {}
+  # A manual run builds on whatever ref it is started from, but only a run on master deploys: the
+  # steps below require 'github.ref' to be master instead of accepting any dispatch. Picking a
+  # branch in the 'Run workflow' dropdown must not publish the snapshot from unreviewed code.
   workflow_dispatch: {}
 
 # Do not let a new push race the previous run's jobs, but never cancel a run on master:
@@ -21,7 +24,11 @@ env:
 
 jobs:
   build-for-deploy:
-    name: Build for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
+    # Named distinctly from 'deploy-quantlib-snapshot' below, which branch protection requires by
+    # name as 'Build for deployment (jdk17 on ubuntu-22.04)'. Both jobs rendered this one template
+    # and stayed distinguishable only because their matrices happened to use disjoint 'os' values,
+    # so adding ubuntu-22.04 here would have made the required check ambiguous.
+    name: Build native library for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
     # This job only compiles and uploads an artifact, so it does not need the repository default,
     # which is a read-write GITHUB_TOKEN. 'deploy-quantlib-snapshot' below narrows it too.
     permissions:
@@ -78,7 +85,7 @@ jobs:
       # the build path deliberately tolerates a missing key so that pull requests from forks,
       # which are given no secrets at all, can still run.
       - name: Check the signing secrets are available
-        if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master'
         env:
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
           GPG_SECRET_KEY_PASSWORD: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
@@ -135,7 +142,7 @@ jobs:
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
 
       - name: Deploy the maven module
-        if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master'
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -144,7 +151,11 @@ jobs:
         run: |
           ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
 
+      # Gated like the deploy step above. Ungated, every pull request run left a 78 MiB artifact
+      # named exactly like the published snapshot but with no '.asc' signatures, because the deploy
+      # step that produces them is gated - a look-alike for anyone who downloaded it.
       - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v7
         with:
           name: quantlib-${{ env.QUANTLIB_VERSION }}
