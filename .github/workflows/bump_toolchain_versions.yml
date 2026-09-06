@@ -1,26 +1,21 @@
 name: Bump the pinned toolchain versions
 
 # CMakeLists.txt pins Boost and SWIG and both are looked up with an EXACT find_package(), while
-# Homebrew always installs the current formula. The day a formula moves ahead of the pin, every
-# Linux and macOS job fails at configure time - which is what the last SWIG bump was. This opens
-# the bump as a reviewable pull request the morning Homebrew publishes it, so the change arrives
-# deliberately instead of as a red build on somebody else's unrelated push.
+# Homebrew always installs the current formula. When a formula moves ahead of the pin, every
+# Linux and macOS job fails at configure time, so open the bump as a reviewable pull request.
 #
-# Only CMakeLists.txt is rewritten. It is the single source of truth for the build: the Windows
-# download URLs read the versions back out of it. The prerequisite documentation states the
-# versions in prose and is left to the reviewer, who is pointed at the exact places by the body of
-# the pull request.
+# Only CMakeLists.txt is rewritten; it is the single source of truth for the pinned versions.
+# The prose in the prerequisite documentation is left to the reviewer.
 
 on:
   workflow_dispatch: {}
   schedule:
-    # Deliberately clear of the Dependabot window (01:00-03:00) and of
-    # build_with_quantlib_latest.yml at 01:23, so a failure here is easy to attribute.
+    # Clear of the Dependabot window (01:00-03:00) and of build_with_quantlib_latest.yml at
+    # 01:23, so a failure here is easy to attribute.
     - cron: '37 4 * * *'
       timezone: "Europe/Berlin"
 
-# The pull request is opened with REPO_SCOPED_TOKEN, so the GITHUB_TOKEN only has to check the
-# repository out. Without this it would get the repository default, which is read-write.
+# The pull request is opened with REPO_SCOPED_TOKEN, so GITHUB_TOKEN only has to check out.
 permissions:
   contents: read
 
@@ -30,14 +25,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      # No submodules: only CMakeLists.txt is read and rewritten, and checking out QuantLib and
-      # QuantLib-SWIG would cost minutes for nothing.
+      # No submodules: only CMakeLists.txt is read and rewritten.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Compare the pinned versions with Homebrew
         id: compare
         run: |
-          # Assign first, then eval. 'eval "$(...)"' hides a failing command substitution from
+          # Assign first, then eval: 'eval "$(...)"' hides a failing command substitution from
           # 'set -e', because eval of an empty string exits 0.
           brew_shellenv="$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           eval "${brew_shellenv}"

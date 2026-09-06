@@ -1,7 +1,9 @@
+# The globbed directories cover both the workflows and every nested composite action, so one entry
+# is enough and actions used in several places yield a single pull request. Minor and patch bumps
+# are grouped; majors stay separate so a breaking update can be reviewed and reverted on its own.
 version: 2
 updates:
 
-  # Maintain dependencies for GitHub Actions (workflows + composite actions)
   - package-ecosystem: "github-actions"
     directories:
       - "/"
@@ -18,7 +20,6 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain dependencies for maven
   - package-ecosystem: "maven"
     directory: "/java"
     schedule:

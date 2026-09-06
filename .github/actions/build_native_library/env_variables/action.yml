@@ -10,10 +10,9 @@ inputs:
 runs:
   using: composite
   steps:
-    # Pass the secret through the step environment instead of interpolating it into the command
-    # line, and write it with the heredoc form of $GITHUB_ENV. Interpolated, a passphrase holding a
-    # quote, a backtick or '$(...)' would break the step or run as shell, and one holding a newline
-    # would inject a second KEY=VALUE record into the job environment.
+    # Pass the secret through the step environment and write it with the heredoc form of
+    # $GITHUB_ENV. Interpolated, a passphrase holding a quote or a newline would break the step,
+    # run as shell, or inject a second record into the job environment.
     - name: Set the 'MAVEN_GPG_PASSPHRASE'
       shell: bash
       env:
@@ -38,21 +37,16 @@ runs:
       run: |
         echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
 
-    # No HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK here. It was added to silence the dependents-check
-    # warning from an unconditional 'brew upgrade' that the setup step no longer runs, and Homebrew
-    # warns on every invocation while the variable is set - roughly ten annotations per push, the
-    # exact noise the cleanup it outlived set out to remove.
+    # No HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK here: the unconditional 'brew upgrade' it silenced
+    # is gone, and Homebrew warns on every invocation while the variable is set.
     - name: Setup build variables on macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
         echo "CXXFLAGS=-stdlib=libc++" >> "$GITHUB_ENV"
 
-    # Read both versions out of CMakeLists.txt instead of repeating them here. They are looked up
-    # with an EXACT find_package(), so a copy that drifts from QL_MVN_BOOST_VERSION /
-    # QL_MVN_SWIG_VERSION breaks the Windows build at configure time - bumping SWIG once already
-    # missed a copy in this file and broke every Windows job. CMakeLists.txt is the single source
-    # of truth, which is also the only file 'bump_toolchain_versions.yml' has to edit.
+    # Read both versions out of CMakeLists.txt instead of repeating them: they are looked up with
+    # an EXACT find_package(), so a copy that drifts breaks the Windows build at configure time.
     - name: Setup installation directories on Windows
       if: runner.os == 'Windows'
       shell: pwsh

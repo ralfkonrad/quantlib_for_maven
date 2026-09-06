@@ -1,16 +1,13 @@
 name: Delete workflow caches
 
-# GitHub never reclaims the caches of a merged pull request or a deleted branch on its own, so they
-# keep counting against the 10GB repository quota until they are evicted. Once evicted, the entries
-# that are still in use go with them, and the next build recompiles from scratch.
+# GitHub never reclaims the caches of a merged pull request or a deleted branch, so they keep
+# counting against the 10GB quota until eviction takes the entries still in use with them.
 #
-# The pull request trigger is 'pull_request_target' and not 'pull_request': for a pull request from
-# a fork the 'pull_request' token stays read-only no matter what the workflow asks for in
-# 'permissions', and every deletion would fail with 403. Nothing from the pull request is checked
-# out or run here.
+# 'pull_request_target', not 'pull_request': a fork's 'pull_request' token stays read-only, so
+# every deletion would fail with 403. Nothing from the pull request is checked out or run here.
 #
-# 'workflow_dispatch' deletes the caches of one ref, or every cache of the repository when the input
-# is left empty.
+# 'workflow_dispatch' deletes the caches of one ref, or every cache when the input is empty.
+
 on:
   workflow_dispatch:
     inputs:
@@ -29,15 +26,11 @@ on:
 permissions:
   actions: write
 
-# Deleting the caches of one ref must not race a second run for the same ref. The group is keyed by
-# ref rather than by workflow: with a single repository-wide group, merging two pull requests in a
-# row cancels the queued run of the first one, and its caches are never deleted.
+# Key the group by ref, not by workflow: with one repository-wide group, merging two pull
+# requests in a row cancels the queued run of the first and its caches are never deleted.
 #
-# Pick the ref by event, the same way CACHE_REF below does, instead of chaining '||' over the
-# contexts. 'ref' is also a top-level field of the workflow_dispatch payload - it holds the ref the
-# run was started from - so an unguarded '|| inputs.ref' is never reached on a manual run: every
-# dispatch grouped as the dispatching branch, and cleaning up two branches in a row cancelled the
-# queued second one.
+# Pick the ref by event, the same way CACHE_REF below does. 'inputs.ref' cannot be chained with
+# '||' because the workflow_dispatch payload has a top-level 'ref' of its own.
 concurrency:
   group: >-
     ${{ github.workflow }}-${{ github.event_name == 'pull_request_target'
@@ -64,10 +57,8 @@ jobs:
             || inputs.ref }}
         with:
           script: |
-            // The caches API matches a ref only in its fully qualified form: '?ref=master'
-            // answers 200 with an empty list while '?ref=refs/heads/master' returns the entries.
-            // A hand-typed branch name would therefore produce a green run that deleted nothing,
-            // so qualify anything that is not already a ref.
+            // The caches API matches a ref only fully qualified: '?ref=master' answers 200 with
+            // an empty list, so qualify anything that is not already a ref.
             const input = process.env.CACHE_REF;
             const ref = input && !input.startsWith('refs/')
               ? `refs/heads/${input}`
@@ -99,9 +90,8 @@ jobs:
                 });
                 core.info(`Deleted cache id ${cache.id} (${cache.key}).`);
               } catch (error) {
-                // Only a concurrent deletion of the same entry is harmless. Every other failure,
-                // a token without 'actions: write' above all, leaves the caches in place and must
-                // not pass as a green run that deleted nothing.
+                // Only a concurrent deletion is harmless. Every other failure - a token without
+                // 'actions: write' above all - must not pass as a green run that deleted nothing.
                 if (error.status === 404) {
                   core.info(`Cache id ${cache.id} (${cache.key}) was already deleted.`);
                 } else {
