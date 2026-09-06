@@ -1,42 +1,24 @@
-# One entry per directory holding action references: Dependabot does not recurse into the nested
-# composite actions. The times are staggered so the pull requests do not all arrive at once.
+# The globbed directories cover both the workflows and every nested composite action, so one entry
+# is enough and actions used in several places yield a single pull request. Minor and patch bumps
+# are grouped; majors stay separate so a breaking update can be reviewed and reverted on its own.
 version: 2
 updates:
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/**"
     schedule:
       interval: "daily"
       time: "01:00"
       timezone: "Europe/Berlin"
-
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/build_native_library"
-    schedule:
-      interval: "daily"
-      time: "01:30"
-      timezone: "Europe/Berlin"
-
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/build_native_library/env_variables"
-    schedule:
-      interval: "daily"
-      time: "02:00"
-      timezone: "Europe/Berlin"
-
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/build_native_library/setup"
-    schedule:
-      interval: "daily"
-      time: "02:30"
-      timezone: "Europe/Berlin"
-
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/build_native_library/setup/jdk"
-    schedule:
-      interval: "daily"
-      time: "03:00"
-      timezone: "Europe/Berlin"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "maven"
     directory: "/java"
