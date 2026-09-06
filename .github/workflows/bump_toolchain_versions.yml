@@ -1,0 +1,130 @@
+name: Bump the pinned toolchain versions
+
+# CMakeLists.txt pins Boost and SWIG and both are looked up with an EXACT find_package(), while
+# Homebrew always installs the current formula. The day a formula moves ahead of the pin, every
+# Linux and macOS job fails at configure time - which is what the last SWIG bump was. This opens
+# the bump as a reviewable pull request the morning Homebrew publishes it, so the change arrives
+# deliberately instead of as a red build on somebody else's unrelated push.
+#
+# Only CMakeLists.txt is rewritten. It is the single source of truth for the build: the Windows
+# download URLs read the versions back out of it. The prerequisite documentation states the
+# versions in prose and is left to the reviewer, who is pointed at the exact places by the body of
+# the pull request.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Deliberately clear of the Dependabot window (01:00-03:00) and of
+    # build_with_quantlib_latest.yml at 01:23, so a failure here is easy to attribute.
+    - cron: '37 4 * * *'
+      timezone: "Europe/Berlin"
+
+# The pull request is opened with REPO_SCOPED_TOKEN, so the GITHUB_TOKEN only has to check the
+# repository out. Without this it would get the repository default, which is read-write.
+permissions:
+  contents: read
+
+jobs:
+  bump-toolchain-versions:
+    name: Compare the pinned versions with Homebrew
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # No submodules: only CMakeLists.txt is read and rewritten, and checking out QuantLib and
+      # QuantLib-SWIG would cost minutes for nothing.
+      - uses: actions/checkout@v7
+
+      - name: Compare the pinned versions with Homebrew
+        id: compare
+        run: |
+          # Assign first, then eval. 'eval "$(...)"' hides a failing command substitution from
+          # 'set -e', because eval of an empty string exits 0.
+          brew_shellenv="$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          eval "${brew_shellenv}"
+
+          brew update > /dev/null
+
+          read_pin() {
+            sed -n "s/.*${1} \"\([^\"]*\)\".*/\1/p" CMakeLists.txt
+          }
+
+          changed="no"
+          summary=""
+
+          compare_formula() {
+            variable="$1"
+            formula="$2"
+
+            want="$(read_pin "${variable}")"
+            have="$(brew info --json=v2 "${formula}" | jq -r '.formulae[0].versions.stable')"
+
+            # An unmatched pin or a renamed formula would otherwise write an empty version into
+            # CMakeLists.txt and open a pull request that breaks every job.
+            if [ -z "${want}" ]; then
+              echo "::error::Could not read ${variable} from CMakeLists.txt"
+              exit 1
+            fi
+            if [ -z "${have}" ] || [ "${have}" = "null" ]; then
+              echo "::error::Could not read the ${formula} version from Homebrew"
+              exit 1
+            fi
+
+            if [ "${want}" = "${have}" ]; then
+              echo "${variable} is up to date at ${want}"
+              return
+            fi
+
+            sed -i "s/\(${variable} \"\)[^\"]*\"/\1${have}\"/" CMakeLists.txt
+
+            # Confirm the rewrite landed rather than trusting sed: a pin whose formatting drifts
+            # from the pattern would leave the file untouched and open an empty pull request.
+            if [ "$(read_pin "${variable}")" != "${have}" ]; then
+              echo "::error::Failed to rewrite ${variable} in CMakeLists.txt"
+              exit 1
+            fi
+
+            echo "${variable}: ${want} -> ${have}"
+            changed="yes"
+            summary="${summary}- \`${variable}\`: \`${want}\` to \`${have}\`"$'\n'
+          }
+
+          compare_formula QL_MVN_BOOST_VERSION boost
+          compare_formula QL_MVN_SWIG_VERSION swig
+
+          {
+            echo "changed=${changed}"
+            echo "summary<<TOOLCHAIN_SUMMARY_EOF"
+            printf '%s' "${summary}"
+            echo "TOOLCHAIN_SUMMARY_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: peter-evans/create-pull-request@v8
+        if: steps.compare.outputs.changed == 'yes'
+        with:
+          token:     ${{ secrets.REPO_SCOPED_TOKEN }}
+          author:    github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          branch:    bump-toolchain-versions
+          delete-branch: true
+          commit-message: 'Bump the pinned Boost and SWIG versions to match Homebrew'
+          title: 'Bump the pinned Boost and SWIG versions to match Homebrew'
+          body: |
+            Homebrew has moved ahead of the versions `CMakeLists.txt` pins. Both are looked up with
+            an EXACT `find_package()`, so until this is merged every Linux and macOS job fails in
+            the `Check the toolchain matches the versions CMakeLists.txt pins` step.
+
+            ${{ steps.compare.outputs.summary }}
+            Only `CMakeLists.txt` is changed. The Windows download URLs read the versions back out
+            of it, so nothing else in the build needs editing.
+
+            The prerequisite documentation states these versions in prose and is **not** updated
+            automatically. Please check, and update in this pull request if they changed:
+
+            - [ ] `HOWTO-BUILD-FROM-SOURCE.md` (lines 9, 10, 54, 104, 113)
+            - [ ] `AGENTS.md` (prerequisites line)
+            - [ ] `.github/instructions/swig.instructions.md`
+
+            This is an automated PR generated by the
+            [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+
+            Please review the changes before merging.
