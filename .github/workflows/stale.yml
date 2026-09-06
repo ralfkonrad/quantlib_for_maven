@@ -1,5 +1,8 @@
 name: Close stale issues and pull requests
 
+# Marks issues and pull requests stale after 60 days without activity and closes them 14 days
+# later. Milestones and the labels listed below are exempt.
+
 on:
   workflow_dispatch: {}
   schedule:

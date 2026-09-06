@@ -10,6 +10,9 @@ inputs:
 runs:
   using: composite
   steps:
+    # Pass the secret through the step environment and write it with the heredoc form of
+    # $GITHUB_ENV. Interpolated, a passphrase holding a quote or a newline would break the step,
+    # run as shell, or inject a second record into the job environment.
     - name: Set the 'MAVEN_GPG_PASSPHRASE'
       shell: bash
       env:
@@ -34,18 +37,24 @@ runs:
       run: |
         echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
 
+    # No HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK here: the unconditional 'brew upgrade' it silenced
+    # is gone, and Homebrew warns on every invocation while the variable is set.
     - name: Setup build variables on macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
         echo "CXXFLAGS=-stdlib=libc++" >> "$GITHUB_ENV"
 
+    # Read both versions out of CMakeLists.txt instead of repeating them: they are looked up with
+    # an EXACT find_package(), so a copy that drifts breaks the Windows build at configure time.
     - name: Setup installation directories on Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
         $cmakeLists = Get-Content "${env:GITHUB_WORKSPACE}\CMakeLists.txt" -Raw
 
+        # Fail here rather than letting an empty version through: an unmatched regex would
+        # otherwise build 'swigwin-.zip' URLs that 404 much later in the Setup step.
         $boostVersion = [regex]::Match(
             $cmakeLists, 'QL_MVN_BOOST_VERSION "([^"]+)"').Groups[1].Value
         if (-not $boostVersion) {

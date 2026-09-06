@@ -1,6 +1,8 @@
 name: Build native library for the runner
 description: Build native library for the runner
 
+# Sets the environment up, installs the toolchain and runs the CMake build. Uploading the result
+# is optional and only the deploy pipeline asks for it.
 inputs:
   runner-name:
     description: The runner name to be used for ccache key name
@@ -48,6 +50,8 @@ runs:
         cmake --preset release -L
         cmake --build --parallel --preset release --verbose
 
+    # 'if-no-files-found' has to be 'error': CreateJavaLibraryDirectory.cmake creates the output
+    # tree at configure time, so it exists even when the build wrote nothing into it.
     - name: Upload native library
       if: ${{ inputs.upload-path != '' }}
       uses: actions/upload-artifact@v7

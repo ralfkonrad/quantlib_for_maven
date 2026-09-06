@@ -7,10 +7,14 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 
+# Cancel superseded runs, but never on master: that is the branch whose ccache entries every
+# other branch and pull request restores from.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
+# Nothing here writes through the API, but every job runs cmake, mvnw, package managers and
+# third-party actions, so do not hand them the read-write repository default.
 permissions:
   contents: read
 
@@ -43,6 +47,8 @@ jobs:
         with:
           submodules: "true"
 
+      # Of a runner's jdk jobs only the jdk17 one writes the compiler cache: the jdk version
+      # affects the SWIG wrapper translation unit alone. Keep in step with the matrix above.
       - name: Build native library for ${{ matrix.os }} and jdk${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:

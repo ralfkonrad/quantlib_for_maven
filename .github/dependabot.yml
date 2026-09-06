@@ -1,3 +1,5 @@
+# One entry per directory holding action references: Dependabot does not recurse into the nested
+# composite actions. The times are staggered so the pull requests do not all arrive at once.
 version: 2
 updates:
 

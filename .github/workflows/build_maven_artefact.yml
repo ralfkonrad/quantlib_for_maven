@@ -5,8 +5,11 @@ on:
     branches:
       - master
   pull_request: {}
+  # A manual run builds whatever ref it is started from, but only master deploys: the deploy
+  # steps below check 'github.ref' themselves.
   workflow_dispatch: {}
 
+# Cancel superseded runs, but never on master: that is the branch the artefact is deployed from.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
@@ -19,6 +22,8 @@ env:
 
 jobs:
   build-for-deploy:
+    # Keep this name distinct from 'deploy-quantlib-snapshot' below, which branch protection
+    # requires by name. Both jobs render the same template and only their matrices tell them apart.
     name: Build native library for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
     permissions:
       contents: read
@@ -38,6 +43,7 @@ jobs:
         with:
           submodules: "true"
 
+      # Only the jdk17 job of a runner writes the compiler cache; see build_native_libraries.yml.
       - name: Build native library for ${{ runner.os }}
         uses: ./.github/actions/build_native_library
         with:
@@ -51,6 +57,8 @@ jobs:
   deploy-quantlib-snapshot:
     name: Build for deployment (jdk${{ matrix.java-version }} on ${{ matrix.os }})
     needs: [build-for-deploy]
+    # Publishing goes to Maven Central through central-publishing-maven-plugin, not to GitHub
+    # Packages, so no step here needs a write scope on the repository.
     permissions:
       contents: read
     strategy:
@@ -63,6 +71,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
+      # Fail here rather than inside maven-gpg-plugin at the very end of the build. The build path
+      # tolerates a missing key on purpose, so that pull requests from forks - which get no
+      # secrets - still run.
       - name: Check the signing secrets are available
         if: github.ref == 'refs/heads/master'
         env:
@@ -129,6 +140,8 @@ jobs:
         run: |
           ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
 
+      # Gated like the deploy step above: ungated, every pull request left an unsigned artifact
+      # named exactly like the published snapshot.
       - name: Upload quantlib-${{ env.QUANTLIB_VERSION }}
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v7
@@ -140,6 +153,8 @@ jobs:
             ${{ env.JAVA_TARGET_PATH }}/*.jar
             ${{ env.JAVA_TARGET_PATH }}/*.asc
 
+      # Delete the per-platform artifacts only after everything consuming them succeeded, so that
+      # 'Re-run failed jobs' can still download them. A failed run leaves them to 'retention-days'.
       - name: Delete native library artifacts
         uses: geekyeggo/delete-artifact@v6
         with:

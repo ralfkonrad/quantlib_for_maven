@@ -21,12 +21,17 @@ runs:
         echo "The variable 'java-version' was not set"
         exit 1
 
+    # Warn, do not fail: a pull request from a fork is given no secrets, and a hard failure would
+    # break every external contribution over a key only the deploy job needs. 'actions/setup-java'
+    # skips the gpg import when the key is empty, and the deploy job checks for it itself.
     - name: Warn if gpg-secret-key variable is not Set
       if: inputs.gpg-secret-key == ''
       shell: bash
       run: |
         echo "::warning::The variable 'gpg-secret-key' was not set; skipping the gpg key import"
 
+    # The latch is keyed by the requested jdk version, not by a bare boolean: a job that sets up
+    # one jdk and then asks for another has to run 'setup-java' again.
     - uses: actions/setup-java@v6
       if: env.JAVA_IS_SETUP != inputs.java-version
       with:

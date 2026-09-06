@@ -37,16 +37,29 @@ runs:
         sudo apt-get install -y ccache ninja-build
         sudo apt-get remove -y cmake swig swig4.0
 
+        # Assign first, then eval: 'eval "$(...)"' hides a failing command substitution from
+        # 'set -e', so a moved Homebrew prefix would leave the step green and fail later in CMake.
         brew_shellenv="$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         eval "${brew_shellenv}"
 
         brew update
         brew install boost cmake swig
 
+    # The runner images preinstall taps Homebrew now refuses to load - aws/tap everywhere and
+    # hashicorp/tap on the Intel image - which shows up as a failed annotation on green runs.
+    # Untap them rather than setting HOMEBREW_NO_REQUIRE_TAP_TRUST, which Homebrew will remove.
+    # --force uninstalls the formulae those taps own; nothing here uses them. Guard on the tap
+    # being installed, because Homebrew annotates a refused untap too.
+    #
+    # The images also ship boost, cmake, ninja and swig, so install only what is missing and
+    # upgrade only what is outdated: doing either unconditionally warns about the rest.
     - name: Setup macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
+        # List the taps once instead of piping 'brew tap' into 'grep -q' per tap: '-q' exits on
+        # the first match and leaves 'brew tap' writing to a closed pipe, which 'pipefail' turns
+        # into a failing condition on exactly the taps that do need untapping.
         installed_taps="$(brew tap)"
         for tap in aws/tap hashicorp/tap; do
           if grep -qxF "${tap}" <<< "${installed_taps}"; then
@@ -68,11 +81,19 @@ runs:
           brew install --formula ${missing}
         fi
 
+        # 'brew outdated' fails when given names and one of them is outdated, and the runner runs
+        # this step under 'bash -eo pipefail'.
         outdated="$(brew outdated --formula --quiet ${formulae} || true)"
         if [ -n "${outdated}" ]; then
           brew upgrade --formula ${outdated}
         fi
 
+    # Homebrew installs the current formula but both find_package() calls ask for the pinned
+    # version with EXACT, so compare here, where the message can say what to do, rather than
+    # letting it surface as an opaque CMake discovery error in the Build step.
+    #
+    # Compare only the part before the underscore: Homebrew appends a revision suffix such as
+    # '1.92.0_2' for a rebuild of the same release. 'grep -P' is GNU-only, hence sed.
     - name: Check the toolchain matches the versions CMakeLists.txt pins
       if: runner.os != 'Windows'
       shell: bash
@@ -83,6 +104,8 @@ runs:
 
         mismatch=""
 
+        # The runner runs this step under 'bash -eo pipefail', so absorb a failing command
+        # substitution and report the empty result below instead of aborting the step.
         boost_want="$(read_pin QL_MVN_BOOST_VERSION)"
         boost_have="$(brew list --versions boost | awk '{ print $2 }' | cut -d '_' -f 1 || true)"
         if [ -z "${boost_have}" ]; then
@@ -127,6 +150,8 @@ runs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
+        # SourceForge mirrors regularly drop the connection. Retry each download, and bound how
+        # long BITS keeps retrying transient errors so a dead mirror fails fast.
         function Invoke-DownloadWithRetry {
             param(
                 [Parameter(Mandatory = $true)] [string] $Uri,
@@ -157,6 +182,8 @@ runs:
                 -Destination $env:BOOST_INSTALLER_PATH
         }
 
+        # Check the installer's exit code: BITS reports a mirror's HTML error page as a successful
+        # transfer, and the step would pass having installed nothing.
         $boostInstall = Start-Process -Wait -PassThru -FilePath "$env:BOOST_INSTALLER_PATH" `
             -ArgumentList "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=$env:BOOST_INSTALL_DIR"
         if ($boostInstall.ExitCode -ne 0) {
@@ -169,6 +196,8 @@ runs:
         }
         Expand-Archive -Force $env:SWIG_ZIP_FILE_PATH $env:RUNNER_TEMP
 
+        # Check the exit status here: only the *last* native command decides the step's own, so
+        # 'choco install' below would overwrite a failure from a truncated SWIG archive.
         swig -version
         if ($LASTEXITCODE -ne 0) {
             throw "'swig -version' failed with exit code $LASTEXITCODE"
@@ -182,6 +211,15 @@ runs:
         java-version:   ${{ inputs.java-version }}
         gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
+    # Compiler caches are only written on master, because GitHub makes only the default branch's
+    # entries restorable from every other branch. Writing them on topic branches filled the 10GB
+    # quota with unreadable entries and evicted master's. Which jdk job writes is up to the caller.
+    #
+    # A restore key matches by prefix, so no runner's key may be a prefix of another's: without
+    # the trailing architecture 'Linux-ubuntu-22.04' also matches the '-arm' runner's entries.
+    #
+    # Pin the patch version: the floating 'v1.2' tag still declares 'using: node20' and annotates
+    # every run with a deprecation warning. Upstream moved to node24 in v1.2.24.
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2.24
       with:

@@ -6,6 +6,7 @@ on:
     - cron: '23 1 * * *'
       timezone: "Europe/Berlin"
 
+# The pull request is opened with REPO_SCOPED_TOKEN, so GITHUB_TOKEN only has to check out.
 permissions:
   contents: read
 
