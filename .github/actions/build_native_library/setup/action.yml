@@ -147,7 +147,7 @@ runs:
     - name: Restore the cached Boost installer on Windows
       id: cache-boost-installer
       if: runner.os == 'Windows'
-      uses: actions/cache@v6
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ env.BOOST_INSTALLER_PATH }}
         key: boost-installer-${{ env.BOOST_DOWNLOAD_URI }}
@@ -155,7 +155,7 @@ runs:
     - name: Restore the cached SWIG archive on Windows
       id: cache-swig-archive
       if: runner.os == 'Windows'
-      uses: actions/cache@v6
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ env.SWIG_ZIP_FILE_PATH }}
         key: swig-archive-${{ env.SWIG_DOWNLOAD_URI }}
@@ -244,7 +244,7 @@ runs:
     # commit declaring 'using: node20', so every run was annotated with a Node.js 20 deprecation
     # warning. Upstream moved the action to node24 in v1.2.24.
     - name: Setup CCache
-      uses: hendrikmuhs/ccache-action@v1.2.24
+      uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
         key: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
@@ -254,7 +254,7 @@ runs:
         save: ${{ github.ref == 'refs/heads/master' && inputs.save-ccache == 'true' }}
 
     - name: Set up Visual Studio shell on Windows
-      uses: TheMrMilchmann/setup-msvc-dev@v4
+      uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
       if: runner.os == 'Windows'
       with:
         arch: x64
