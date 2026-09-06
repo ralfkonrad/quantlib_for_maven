@@ -7,16 +7,10 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 
-# Do not let a new push race the previous run's jobs, but never cancel a run on master: that is
-# the branch whose ccache entries every other branch and pull request restores from.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
-# Without this the jobs get the repository default, which is a read-write GITHUB_TOKEN. Nothing
-# here writes anything through the API, but every job runs cmake, mvnw (which downloads and
-# executes plugins from Maven Central), brew/apt/choco and four third-party actions, so the token
-# they are handed should not be able to push to master or delete caches.
 permissions:
   contents: read
 
@@ -49,9 +43,6 @@ jobs:
         with:
           submodules: "true"
 
-      # Of the three jdk jobs on a runner only the jdk17 one writes the compiler cache: the jdk
-      # version affects the SWIG wrapper translation unit alone, so the other two would store a
-      # near-identical copy of the same cache. Keep this in step with the matrix baseline above.
       - name: Build native library for ${{ matrix.os }} and jdk${{ matrix.java-version }}
         uses: ./.github/actions/build_native_library
         with:

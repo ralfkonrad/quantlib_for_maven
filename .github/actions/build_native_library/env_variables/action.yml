@@ -10,10 +10,6 @@ inputs:
 runs:
   using: composite
   steps:
-    # Pass the secret through the step environment instead of interpolating it into the command
-    # line, and write it with the heredoc form of $GITHUB_ENV. Interpolated, a passphrase holding a
-    # quote, a backtick or '$(...)' would break the step or run as shell, and one holding a newline
-    # would inject a second KEY=VALUE record into the job environment.
     - name: Set the 'MAVEN_GPG_PASSPHRASE'
       shell: bash
       env:
@@ -38,29 +34,18 @@ runs:
       run: |
         echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
 
-    # No HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK here. It was added to silence the dependents-check
-    # warning from an unconditional 'brew upgrade' that the setup step no longer runs, and Homebrew
-    # warns on every invocation while the variable is set - roughly ten annotations per push, the
-    # exact noise the cleanup it outlived set out to remove.
     - name: Setup build variables on macOs
       if: runner.os == 'macOs'
       shell: bash
       run: |
         echo "CXXFLAGS=-stdlib=libc++" >> "$GITHUB_ENV"
 
-    # Read both versions out of CMakeLists.txt instead of repeating them here. They are looked up
-    # with an EXACT find_package(), so a copy that drifts from QL_MVN_BOOST_VERSION /
-    # QL_MVN_SWIG_VERSION breaks the Windows build at configure time - bumping SWIG once already
-    # missed a copy in this file and broke every Windows job. CMakeLists.txt is the single source
-    # of truth, which is also the only file 'bump_toolchain_versions.yml' has to edit.
     - name: Setup installation directories on Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
         $cmakeLists = Get-Content "${env:GITHUB_WORKSPACE}\CMakeLists.txt" -Raw
 
-        # Fail here rather than letting an empty version through: an unmatched regex would
-        # otherwise build 'swigwin-.zip' URLs that 404 much later in the Setup step.
         $boostVersion = [regex]::Match(
             $cmakeLists, 'QL_MVN_BOOST_VERSION "([^"]+)"').Groups[1].Value
         if (-not $boostVersion) {

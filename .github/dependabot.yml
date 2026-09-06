@@ -1,7 +1,6 @@
 version: 2
 updates:
 
-  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -9,7 +8,6 @@ updates:
       time: "01:00"
       timezone: "Europe/Berlin"
 
-  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/.github/actions/build_native_library"
     schedule:
@@ -17,7 +15,6 @@ updates:
       time: "01:30"
       timezone: "Europe/Berlin"
 
-  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/.github/actions/build_native_library/env_variables"
     schedule:
@@ -25,7 +22,6 @@ updates:
       time: "02:00"
       timezone: "Europe/Berlin"
 
-  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/.github/actions/build_native_library/setup"
     schedule:
@@ -33,7 +29,6 @@ updates:
       time: "02:30"
       timezone: "Europe/Berlin"
 
-  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/.github/actions/build_native_library/setup/jdk"
     schedule:
@@ -41,7 +36,6 @@ updates:
       time: "03:00"
       timezone: "Europe/Berlin"
 
-  # Maintain dependencies for maven
   - package-ecosystem: "maven"
     directory: "/java"
     schedule:
