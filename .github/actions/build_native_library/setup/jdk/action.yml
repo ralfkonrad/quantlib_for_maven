@@ -21,10 +21,9 @@ runs:
         echo "The variable 'java-version' was not set"
         exit 1
 
-    # Warn, do not fail. Both build workflows run on 'pull_request', and a pull request from a
-    # fork is given no secrets, so a hard failure here would break every external contribution
-    # over a key that only the deploy job needs - 'actions/setup-java' just skips the gpg import
-    # when the key is empty. 'deploy-quantlib-snapshot' checks for the signing secrets itself.
+    # Warn, do not fail: a pull request from a fork is given no secrets, and a hard failure would
+    # break every external contribution over a key only the deploy job needs. 'actions/setup-java'
+    # skips the gpg import when the key is empty, and the deploy job checks for it itself.
     - name: Warn if gpg-secret-key variable is not Set
       if: inputs.gpg-secret-key == ''
       shell: bash
@@ -32,9 +31,7 @@ runs:
         echo "::warning::The variable 'gpg-secret-key' was not set; skipping the gpg key import"
 
     # The latch is keyed by the requested jdk version, not by a bare boolean: a job that sets up
-    # one jdk and then asks this action for a different one has to run 'setup-java' again. Keyed
-    # only on a boolean the second request was skipped silently, and the build ran against
-    # the first jdk while the step name announced the second.
+    # one jdk and then asks for another has to run 'setup-java' again.
     - uses: actions/setup-java@v6
       if: env.JAVA_IS_SETUP != inputs.java-version
       with:

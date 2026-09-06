@@ -6,8 +6,7 @@ on:
     - cron: '23 1 * * *'
       timezone: "Europe/Berlin"
 
-# The pull request is opened with REPO_SCOPED_TOKEN, so the GITHUB_TOKEN only has to check the
-# repository out. Without this it would get the repository default, which is read-write.
+# The pull request is opened with REPO_SCOPED_TOKEN, so GITHUB_TOKEN only has to check out.
 permissions:
   contents: read
 
