@@ -57,3 +57,24 @@ jobs:
           save-ccache: ${{ matrix.java-version == 17 }}
           gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-secret-key-password: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
+
+  # One stable context for branch protection. The matrix names encode the runner label and the
+  # jdk version, so requiring them by name means mirroring every matrix edit in the repository
+  # settings - and a leg added there and forgotten here is simply not required.
+  #
+  # 'if: always()' is what makes this a gate rather than a summary: without it a failing leg
+  # skips the job, and a skipped required check counts as neutral. A run cancelled by the
+  # concurrency group reports 'cancelled' and blocks, which is correct.
+  native-libraries-gate:
+    needs: [build-native]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check every leg succeeded
+        env:
+          RESULT: ${{ needs.build-native.result }}
+        run: |
+          echo "build-native: ${RESULT}"
+          [ "${RESULT}" = "success" ] || exit 1

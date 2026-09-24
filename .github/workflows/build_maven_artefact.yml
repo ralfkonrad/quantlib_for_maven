@@ -160,3 +160,24 @@ jobs:
         with:
           name: native-library-*
           failOnError: true
+
+  # One stable context for branch protection; see native-libraries-gate in
+  # build_native_libraries.yml for why. Both jobs are named, not just the deploy one:
+  # 'deploy-quantlib-snapshot' needs 'build-for-deploy', so a failing deploy leg skips it and a
+  # skipped required check counts as neutral.
+  maven-artefact-gate:
+    needs: [build-for-deploy, deploy-quantlib-snapshot]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check every job succeeded
+        env:
+          BUILD_RESULT: ${{ needs.build-for-deploy.result }}
+          DEPLOY_RESULT: ${{ needs.deploy-quantlib-snapshot.result }}
+        run: |
+          echo "build-for-deploy: ${BUILD_RESULT}"
+          echo "deploy-quantlib-snapshot: ${DEPLOY_RESULT}"
+          [ "${BUILD_RESULT}" = "success" ] || exit 1
+          [ "${DEPLOY_RESULT}" = "success" ] || exit 1
