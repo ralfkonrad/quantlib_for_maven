@@ -211,12 +211,59 @@ runs:
         java-version:   ${{ inputs.java-version }}
         gpg-secret-key: ${{ inputs.gpg-secret-key }}
 
+    # Ahead of the cache key below, which reads the compiler this puts on PATH.
+    - name: Set up Visual Studio shell on Windows
+      uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
+      if: runner.os == 'Windows'
+      with:
+        arch: x64
+
+    # Both ccache and sccache hash the compiler into every object key, and every compiler here
+    # comes from the runner image: MSVC from the Visual Studio it ships, g++ and clang++ from its
+    # apt set and its Xcode. Keying on the image version instead would spend a cold rebuild on
+    # every fortnightly respin; a digest of what the compiler prints for itself invalidates only
+    # when the toolchain actually changes.
+    - name: Determine the compiler cache key
+      id: compiler-cache-key
+      shell: bash
+      env:
+        RUNNER_NAME_INPUT: ${{ inputs.runner-name }}
+      run: |
+        if [ "${RUNNER_OS}" = "Windows" ]; then
+          # cl takes no --version and exits non-zero on its banner alone.
+          version=$(cl 2>&1 | head -1 || true)
+        else
+          # 'c++' is what CMake resolves by default; nothing here sets CMAKE_CXX_COMPILER.
+          version=$(c++ --version | head -1)
+        fi
+
+        # An empty read would key every toolchain alike, which is the bug this segment exists to
+        # prevent, so fail here rather than write it.
+        if [ -z "${version}" ]; then
+          echo "::error::Could not read a version from the C++ compiler"
+          exit 1
+        fi
+        echo "compiler: ${version}"
+
+        # sha256sum on Linux and in Git Bash, shasum on macOS.
+        if command -v sha256sum > /dev/null; then
+          digest=$(printf '%s' "${version}" | sha256sum)
+        else
+          digest=$(printf '%s' "${version}" | shasum -a 256)
+        fi
+
+        key="${RUNNER_OS}-${RUNNER_NAME_INPUT}-${RUNNER_ARCH}-cc${digest:0:12}"
+        echo "compiler cache key: ${key}"
+        echo "key=${key}" >> "$GITHUB_OUTPUT"
+
     # Compiler caches are only written on master, because GitHub makes only the default branch's
     # entries restorable from every other branch. Writing them on topic branches filled the 10GB
     # quota with unreadable entries and evicted master's. Which jdk job writes is up to the caller.
     #
     # A restore key matches by prefix, so no runner's key may be a prefix of another's: without
     # the trailing architecture 'Linux-ubuntu-22.04' also matches the '-arm' runner's entries.
+    # There is deliberately no rung without the compiler digest - falling back across toolchains
+    # is what leaves one entry holding two of them.
     #
     # Pin the patch version: the floating 'v1.2' tag still declares 'using: node20' and annotates
     # every run with a deprecation warning. Upstream moved to node24 in v1.2.24.
@@ -224,8 +271,8 @@ runs:
       uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
-        key: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
-        restore-keys: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
+        key: ${{ steps.compiler-cache-key.outputs.key }}
+        restore-keys: ${{ steps.compiler-cache-key.outputs.key }}
         # The last character is the unit, and sccache silently falls back to its own 10GB
         # default for a size it cannot parse: 'M', never 'MB'.
         # Windows filled the shared 250M bound where Linux uses 41% of it, so a submodule bump
@@ -234,9 +281,3 @@ runs:
         # ccache only; the action skips it for sccache, where max-size does the bounding.
         evict-old-files: 7d
         save: ${{ github.ref == 'refs/heads/master' && inputs.save-ccache == 'true' }}
-
-    - name: Set up Visual Studio shell on Windows
-      uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
-      if: runner.os == 'Windows'
-      with:
-        arch: x64
