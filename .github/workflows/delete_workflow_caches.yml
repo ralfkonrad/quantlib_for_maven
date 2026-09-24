@@ -6,7 +6,9 @@ name: Delete workflow caches
 # 'pull_request_target', not 'pull_request': a fork's 'pull_request' token stays read-only, so
 # every deletion would fail with 403. Nothing from the pull request is checked out or run here.
 #
-# 'workflow_dispatch' deletes the caches of one ref, or every cache when the input is empty.
+# 'workflow_dispatch' deletes the caches of one ref, or of the whole repository for the literal
+# input 'ALL'. An empty input fails the job: it used to mean everything, and it is what the
+# dispatch form pre-fills.
 
 on:
   workflow_dispatch:
@@ -14,7 +16,7 @@ on:
       ref:
         description: >-
           The ref whose caches to delete, e.g. 'refs/heads/my-branch' or just 'my-branch';
-          every cache of the repository if left empty
+          'ALL' for every cache of the repository
         type: string
         default: ''
         required: false
@@ -45,6 +47,8 @@ jobs:
     # A deleted tag has no caches of its own; only branch deletions are worth a run.
     if: github.event_name != 'delete' || github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
+    # Two REST calls per cache and nothing else, against at most a few dozen entries.
+    timeout-minutes: 10
     steps:
       - name: Delete the caches
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -60,11 +64,22 @@ jobs:
             // The caches API matches a ref only fully qualified: '?ref=master' answers 200 with
             // an empty list, so qualify anything that is not already a ref.
             const input = process.env.CACHE_REF;
-            const ref = input && !input.startsWith('refs/')
-              ? `refs/heads/${input}`
-              : input;
-            if (ref !== input) {
-              core.info(`Interpreted '${input}' as the branch ref '${ref}'.`);
+            // 'required: true' would not cover this - it is satisfied by the empty string, which
+            // the dispatch form pre-fills and which used to mean every cache in the repository.
+            if (!input) {
+              core.setFailed(
+                "No ref given. Pass a ref such as 'refs/heads/my-branch', or 'ALL' to delete "
+                + 'every cache of the repository.'
+              );
+              return;
+            }
+            // 'ALL' reaches the API as no ref filter at all, which is what matches everything.
+            const target = input === 'ALL' ? '' : input;
+            const ref = target && !target.startsWith('refs/')
+              ? `refs/heads/${target}`
+              : target;
+            if (ref !== target) {
+              core.info(`Interpreted '${target}' as the branch ref '${ref}'.`);
             }
             const scope = ref ? `for ${ref}` : 'in the repository';
 
