@@ -190,6 +190,14 @@ runs:
             throw "The Boost installer failed with exit code $($boostInstall.ExitCode)"
         }
 
+        # Boost_DIR is composed from the pinned version and the msvc toolset, so an installer
+        # that succeeds while laying the cmake config out differently leaves it pointing at
+        # nothing. Check the tree CMake actually consumes, here rather than as an opaque
+        # find_package failure minutes into the Build step.
+        if (-not (Test-Path -PathType Container $env:Boost_DIR)) {
+            throw "Boost_DIR does not exist after the install: $env:Boost_DIR"
+        }
+
         if ('${{ steps.cache-swig-archive.outputs.cache-hit }}' -ne 'true') {
             Invoke-DownloadWithRetry -Uri $env:SWIG_DOWNLOAD_URI `
                 -Destination $env:SWIG_ZIP_FILE_PATH
