@@ -227,8 +227,9 @@ runs:
         key: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
         restore-keys: ${{ runner.os }}-${{ inputs.runner-name }}-${{ runner.arch }}
         # The last character is the unit, and sccache silently falls back to its own 10GB
-        # default for a size it cannot parse: 'M', never 'MB'. Windows objects are the largest
-        # and sat exactly at the shared 250M bound, so sccache evicted what the next run needed.
+        # default for a size it cannot parse: 'M', never 'MB'.
+        # Windows filled the shared 250M bound where Linux uses 41% of it, so a submodule bump
+        # had to evict to make room for the ~1200 objects it recompiles.
         max-size: ${{ (runner.os == 'Windows' && '400M') || '250M' }}
         # ccache only; the action skips it for sccache, where max-size does the bounding.
         evict-old-files: 7d
