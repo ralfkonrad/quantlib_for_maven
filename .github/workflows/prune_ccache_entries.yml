@@ -1,0 +1,111 @@
+name: Prune superseded ccache entries
+
+# 'hendrikmuhs/ccache-action' appends an ISO timestamp to the key it is given, so every master
+# run writes a new entry per leg rather than replacing one. Only the newest per key is ever
+# restored, and the rest hold quota until eviction takes the live entries with them.
+
+on:
+  schedule:
+    # Before the day's master builds, which land between 06:00 and 08:30, so they find the
+    # headroom already freed. Clear of stale.yml at 03:00 and bump_toolchain_versions.yml at 04:37.
+    - cron: '33 3 * * *'
+      timezone: "Europe/Berlin"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: List what would be deleted without deleting it
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  actions: write
+
+# One repository-wide group is right here: the job reads the whole cache list, so two runs
+# racing would both see entries the other is deleting. Never cancel - a cancelled prune is a
+# generation kept.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  prune-ccache-entries:
+    name: Prune the superseded entries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Delete superseded master entries, and keys nothing restores
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+        with:
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Only master writes compiler caches, and only its entries are restorable from
+            // every other ref.
+            const caches = await github.paginate(
+              github.rest.actions.getActionsCacheList,
+              { owner, repo, ref: 'refs/heads/master', per_page: 100 });
+
+            // Match the timestamp the action appends, so that entries keyed by something else
+            // - the Boost installer, the SWIG archive, setup-java's own caches - are left
+            // alone. 'setup-java-jdkres-v2-...-2026-09-24' carries a bare date and no time,
+            // which is why the 'T' is required rather than optional.
+            const stamped = /-\d{4}-\d{2}-\d{2}T[\d:.]+Z?$/;
+
+            // Every master run rewrites every live key, so a key whose newest entry is this
+            // stale is one nothing asks for any more - a retired runner label or toolchain.
+            // Its survivor holds quota that no build can ever restore from.
+            const retiredAfterDays = 30;
+            const retiredBefore = Date.now() - retiredAfterDays * 24 * 60 * 60 * 1000;
+
+            const newest = new Map();
+            const superseded = [];
+            const byAgeDescending = caches
+              .filter((cache) => stamped.test(cache.key))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            for (const cache of byAgeDescending) {
+              const key = cache.key.replace(stamped, '');
+              if (newest.has(key)) {
+                superseded.push(cache);
+              } else {
+                newest.set(key, cache);
+              }
+            }
+
+            const retired = [...newest.values()].filter(
+              (cache) => new Date(cache.created_at).getTime() < retiredBefore);
+
+            core.info(`${caches.length} cache(s) on master, ${byAgeDescending.length} of them `
+                      + `compiler entries under ${newest.size} key(s); ${superseded.length} `
+                      + `superseded, ${retired.length} under a key nothing restores.`);
+
+            let deleted = 0;
+            for (const cache of [...superseded, ...retired]) {
+              const size = (cache.size_in_bytes / 1e6).toFixed(0);
+              if (dryRun) {
+                core.info(`Would delete ${cache.id} ${cache.key} (${size} MB)`);
+                continue;
+              }
+              try {
+                await github.rest.actions.deleteActionsCacheById(
+                  { owner, repo, cache_id: cache.id });
+                deleted += 1;
+                core.info(`Deleted ${cache.id} ${cache.key} (${size} MB)`);
+              } catch (error) {
+                // Only a concurrent deletion is harmless. Anything else - a token without
+                // 'actions: write' above all - must not pass as a green run that deleted
+                // nothing.
+                if (error.status !== 404) {
+                  throw error;
+                }
+                core.info(`Cache ${cache.id} was already gone.`);
+              }
+            }
+
+            const doomed = superseded.length + retired.length;
+            core.info(`Deleted ${deleted} of ${doomed} entry/entries.`);
