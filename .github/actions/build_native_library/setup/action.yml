@@ -279,6 +279,12 @@ runs:
       uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
       with:
         variant: ${{ env.CMAKE_CXX_COMPILER_LAUNCHER }}
+        # Homebrew stopped bottling ccache for the configurations it no longer supports, and a
+        # source build pulls llvm@22 in as a build dependency: the whole job budget goes to LLVM
+        # before the first QuantLib object compiles. 'binary' takes the upstream release the
+        # action pins a sha256 for instead. Linux keeps 'detect', where the Setup step's apt-get
+        # ccache is already on PATH; Windows has no package manager path for sccache anyway.
+        install: ${{ (runner.os == 'macOS' && 'binary') || 'detect' }}
         key: ${{ steps.compiler-cache-key.outputs.key }}
         restore-keys: ${{ steps.compiler-cache-key.outputs.key }}
         # The last character is the unit, and sccache silently falls back to its own 10GB

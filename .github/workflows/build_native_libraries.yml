@@ -26,11 +26,12 @@ jobs:
       matrix:
         java-version:
           - 17
+        # macos-15 is deliberately absent: build_maven_artefact.yml runs it through the same
+        # action with the same inputs, so a leg here would repeat that build and its Java tests
+        # on the priciest runner in the matrix. maven-artefact-gate is what requires it.
         os:
           - ubuntu-24.04
           - ubuntu-24.04-arm
-          - macos-15
-          - macos-15-intel
           - macos-26
           - windows-2025
         include:
