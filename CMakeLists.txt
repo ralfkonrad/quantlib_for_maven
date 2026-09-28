@@ -8,6 +8,13 @@ if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Target architectures for Apple platforms" FORCE)
 endif()
 
+# Nothing pins this otherwise and clang then defaults to the build host's version, which lets the
+# runner image decide the minimum macOS of a published artifact. Same guard as above, so a local
+# build can still override it with -D.
+if (APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version for Apple platforms" FORCE)
+endif()
+
 project(quantlib_for_maven VERSION 1.43 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use

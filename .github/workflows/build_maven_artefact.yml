@@ -33,7 +33,7 @@ jobs:
         java-version:
           - 17
         os:
-          - macos-14
+          - macos-15
           - ubuntu-22.04-arm
           - windows-2022
     runs-on: ${{ matrix.os }}
