@@ -137,8 +137,11 @@ jobs:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         working-directory: ${{ env.JAVA_PATH }}
+        # Maven 3.10 binds server id `central` to repo.maven.apache.org only and withholds its
+        # credentials from central.sonatype.com; match credentials by id alone.
         run: |
-          ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin
+          ./mvnw --batch-mode --show-version clean deploy -P enable-gpg-plugin \
+            -Dmaven.repository.credentialScope=id
 
       # Gated like the deploy step above: ungated, every pull request left an unsigned artifact
       # named exactly like the published snapshot.
