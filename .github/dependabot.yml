@@ -26,3 +26,8 @@ updates:
       interval: "daily"
       time: "03:00"
       timezone: "Europe/Berlin"
+    # central-publishing-maven-plugin 0.11.0 bundles the maven-metadata-local.xml that Maven 3.10
+    # writes into its staging directory, and Central rejects the release bundle.
+    ignore:
+      - dependency-name: "org.apache.maven:apache-maven"
+        versions: [">= 3.10.0"]
