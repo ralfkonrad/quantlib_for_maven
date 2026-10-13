@@ -15,7 +15,7 @@ if (APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version for Apple platforms" FORCE)
 endif()
 
-project(quantlib_for_maven VERSION 1.43 LANGUAGES CXX)
+project(quantlib_for_maven VERSION 1.44 LANGUAGES CXX)
 
 # set the Boost and Swig versions we want to use
 # to ensure compatibility across linux, macos and windows builds
